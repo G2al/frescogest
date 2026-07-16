@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Catalogo prodotti · Frescogest</title>
+    <link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body class="catalog-page">
+    <header id="site-header"></header>
+    <main>
+        <section class="catalog-hero">
+            <div class="catalog-container catalog-hero-grid">
+                <div class="catalog-hero-copy reveal">
+                    <span class="eyebrow">Frescogest</span>
+                    <h1><span>Catalogo</span> Prodotti</h1>
+                    <p class="lead">Scopri la nostra selezione di prodotti freschi e latticini. Consulta prezzi aggiornati e aggiungi facilmente i prodotti al tuo carrello.</p>
+                    <div class="catalog-highlights">
+                        <span><i data-lucide="tags"></i>Prezzi al kg</span>
+                        <span><i data-lucide="circle-user-round"></i>Listino personalizzato</span>
+                        <span><i data-lucide="badge-check"></i>Prodotti selezionati</span>
+                    </div>
+                    <div class="catalog-hero-actions">
+                        <a class="catalog-hero-primary" href="#catalog-results"><i data-lucide="layout-grid"></i>Esplora catalogo<i data-lucide="arrow-right"></i></a>
+                        <a class="catalog-hero-secondary" href="/catalog.html?category=latticini"><i data-lucide="milk"></i>Vedi latticini</a>
+                    </div>
+                </div>
+                <div class="catalog-hero-visual reveal">
+                    <div class="hero-glow"></div>
+                    <img src="/assets/images/catalog-hero.png" alt="Mozzarella, burrata e ricotta Frescogest">
+                </div>
+            </div>
+        </section>
+
+        <section class="catalog-content catalog-container">
+            <div class="catalog-toolbar">
+                <nav id="categories" class="category-tabs" aria-label="Categorie prodotti"></nav>
+                <div class="catalog-tools">
+                    <label class="catalog-search">
+                        <span class="sr-only">Cerca prodotto</span>
+                        <input id="product-search" type="search" placeholder="Cerca prodotto…" autocomplete="off">
+                        <i data-lucide="search"></i>
+                    </label>
+                    <button id="seasonal-filter" class="filter-button" type="button" aria-pressed="false">
+                        <i data-lucide="list-filter"></i>
+                        Stagionali
+                    </button>
+                </div>
+            </div>
+
+            <div id="catalog-results" class="catalog-results-head">
+                <div>
+                    <span class="eyebrow">La nostra selezione</span>
+                    <h2 id="catalog-title">Tutti i prodotti</h2>
+                </div>
+                <span id="product-count" class="result-count"></span>
+            </div>
+            <section id="products" class="catalog-grid" aria-live="polite"></section>
+        </section>
+
+        <section class="catalog-services catalog-container">
+            <article><span class="service-icon"><i data-lucide="sprout"></i></span><div><h3>Prodotti freschi</h3><p>Selezionati ogni giorno per qualità e genuinità.</p></div></article>
+            <article><span class="service-icon"><i data-lucide="truck"></i></span><div><h3>Consegna concordata</h3><p>Organizziamo con te tempi e dettagli della consegna.</p></div></article>
+            <article><span class="service-icon"><i data-lucide="badge-check"></i></span><div><h3>Qualità garantita</h3><p>Prodotti scelti con attenzione da fornitori di fiducia.</p></div></article>
+            <article><span class="service-icon"><i data-lucide="headphones"></i></span><div><h3>Assistenza dedicata</h3><p>Antonio è a disposizione per ogni necessità.</p></div></article>
+        </section>
+    </main>
+    <footer id="site-footer" class="footer"></footer>
+    <script type="module" src="/assets/js/catalog.js"></script>
+    <script type="module" src="/assets/js/cart.js"></script>
+</body>
+</html>
