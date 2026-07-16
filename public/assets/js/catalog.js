@@ -7,6 +7,8 @@ const searchInput = document.querySelector('#product-search');
 const seasonalButton = document.querySelector('#seasonal-filter');
 const titleRoot = document.querySelector('#catalog-title');
 const countRoot = document.querySelector('#product-count');
+const previousProductsButton = document.querySelector('#products-prev');
+const nextProductsButton = document.querySelector('#products-next');
 let categories = [];
 let requestId = 0;
 let modalRequestId = 0;
@@ -187,6 +189,16 @@ seasonalButton?.addEventListener('click', () => {
     updateUrl();
     loadProducts();
 });
+
+function scrollProducts(direction) {
+    const card = productsRoot?.querySelector('.product-card');
+    if (!card) return;
+    const gap = Number.parseFloat(getComputedStyle(productsRoot).columnGap || getComputedStyle(productsRoot).gap) || 16;
+    productsRoot.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' });
+}
+
+previousProductsButton?.addEventListener('click', () => scrollProducts(-1));
+nextProductsButton?.addEventListener('click', () => scrollProducts(1));
 
 productsRoot?.addEventListener('click', event => {
     const trigger = event.target.closest('.product-modal-trigger');

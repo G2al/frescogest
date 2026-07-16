@@ -46,8 +46,27 @@ export async function mountLayout() {
     const user = await currentUser();
     const header = document.querySelector('#site-header');
     if (header) {
+        const catalogActive = location.pathname === '/catalog.html';
+        const ordersActive = location.pathname === '/orders.html';
         header.className = 'site-header';
-        header.innerHTML = `<div class="container nav"><a class="brand" href="/" aria-label="Frescogest"><img class="brand-logo" src="/assets/images/frescogest-logo.png" alt="Frescogest"></a><nav class="nav-links"><a href="/catalog.html">Catalogo</a><a href="/orders.html">I miei ordini</a></nav><div class="nav-actions"><a class="btn header-cart" href="/cart.html"><i data-lucide="shopping-cart"></i><span>Carrello</span><span class="badge">${cartCount()}</span></a>${user ? `<a class="btn btn-link account-label" href="/profile.html"><i data-lucide="circle-user-round"></i>${user.name}</a><button class="btn btn-link header-logout" id="logout"><i data-lucide="log-out"></i>Esci</button>` : '<a class="btn btn-link header-login" href="/login.html"><i data-lucide="log-in"></i>Accedi</a><a class="btn btn-primary header-register" href="/register.html"><i data-lucide="user-plus"></i>Registrati</a>'}</div></div>`;
+        header.innerHTML = `
+            <div class="container nav">
+                <a class="brand" href="/" aria-label="Frescogest, torna alla home">
+                    <img class="brand-logo" src="/assets/images/frescogest-logo.png" alt="Frescogest">
+                </a>
+                <nav class="nav-links" aria-label="Navigazione principale">
+                    <a class="${catalogActive ? 'active' : ''}" href="/catalog.html" ${catalogActive ? 'aria-current="page"' : ''}><i data-lucide="layout-grid"></i><span>Catalogo</span></a>
+                    <a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><i data-lucide="receipt-text"></i><span>I miei ordini</span></a>
+                </nav>
+                <div class="nav-actions">
+                    <a class="btn header-cart" href="/cart.html" aria-label="Apri carrello" title="Carrello">
+                        <i data-lucide="shopping-cart"></i><span class="nav-action-label">Carrello</span><span class="badge">${cartCount()}</span>
+                    </a>
+                    ${user
+                        ? `<a class="btn btn-link account-label" href="/profile.html" aria-label="Apri profilo" title="${user.name}"><i data-lucide="circle-user-round"></i><span class="nav-action-label">${user.name}</span></a><button class="btn btn-link header-logout" id="logout" aria-label="Esci" title="Esci"><i data-lucide="log-out"></i><span class="nav-action-label">Esci</span></button>`
+                        : `<a class="btn btn-link header-login" href="/login.html" aria-label="Accedi" title="Accedi"><i data-lucide="log-in"></i><span class="nav-action-label">Accedi</span></a><a class="btn btn-primary header-register" href="/register.html" aria-label="Registrati" title="Registrati"><i data-lucide="user-plus"></i><span class="nav-action-label">Registrati</span></a>`}
+                </div>
+            </div>`;
         refreshIcons(header);
         document.querySelector('#logout')?.addEventListener('click', async () => {
             await api('/auth/logout', { method: 'POST', body: '{}' });
@@ -56,6 +75,7 @@ export async function mountLayout() {
     }
     const footer = document.querySelector('#site-footer');
     if (footer) footer.innerHTML = '<div class="container footer-content"><img class="footer-logo" src="/assets/images/frescogest-logo.png" alt="Frescogest"><span>Prodotti freschi, richieste semplici.</span></div>';
+    refreshIcons();
     return user;
 }
 

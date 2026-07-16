@@ -43,7 +43,7 @@
                     </label>
                     <button id="seasonal-filter" class="filter-button" type="button" aria-pressed="false">
                         <i data-lucide="list-filter"></i>
-                        Stagionali
+                        <span>Stagionali</span>
                     </button>
                 </div>
             </div>
@@ -53,7 +53,13 @@
                     <span class="eyebrow">La nostra selezione</span>
                     <h2 id="catalog-title">Tutti i prodotti</h2>
                 </div>
-                <span id="product-count" class="result-count"></span>
+                <div class="catalog-results-actions">
+                    <span id="product-count" class="result-count"></span>
+                    <div class="catalog-carousel-controls" aria-label="Navigazione prodotti">
+                        <button id="products-prev" type="button" aria-label="Prodotti precedenti"><i data-lucide="arrow-left"></i></button>
+                        <button id="products-next" type="button" aria-label="Prodotti successivi"><i data-lucide="arrow-right"></i></button>
+                    </div>
+                </div>
             </div>
             <section id="products" class="catalog-grid" aria-live="polite"></section>
         </section>
