@@ -27,16 +27,31 @@ use Database\Seeders\ProductCategorySeeder;
 use Database\Seeders\ProductSeeder;
 use Database\Seeders\TaxRateSeeder;
 use Database\Seeders\UnitOfMeasureSeeder;
+use Database\Seeders\UserSeeder;
 use Filament\Facades\Filament;
 use Filament\Panel;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Tests\TestCase;
 
 class RegistryStructureTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_user_seeder_creates_the_verified_panel_administrator(): void
+    {
+        $this->seed(UserSeeder::class);
+
+        $admin = User::query()->where('email', 'admin@frescogest.it')->firstOrFail();
+
+        $this->assertSame('Amministratore FrescoGest', $admin->name);
+        $this->assertTrue(Hash::check('password', $admin->password));
+        $this->assertNotNull($admin->email_verified_at);
+        $this->assertTrue($admin->active);
+        $this->assertTrue($admin->can_access_panel);
+    }
 
     public function test_panel_access_depends_on_active_and_authorized_flags(): void
     {
