@@ -1,4 +1,4 @@
-import { api, currentUser } from './api.js?v=20260717.8';
+import { api, currentUser } from './api.js?v=20260717.9';
 
 let iconLibraryPromise;
 
