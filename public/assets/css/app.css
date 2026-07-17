@@ -338,7 +338,7 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 .catalog-hero-grid { min-height: 620px; display: grid; grid-template-columns: .92fr 1.08fr; align-items: center; gap: 18px; }
 .catalog-hero-copy { z-index: 3; padding: 68px 0 110px; }
 .catalog-hero-copy .eyebrow { letter-spacing: .18em; }
-.catalog-hero-copy h1 { max-width: 650px; margin: 22px 0 22px; color: #063b34; font-family: Georgia,'Times New Roman',serif; font-size: clamp(4.7rem,7vw,7.2rem); font-weight: 650; line-height: .87; letter-spacing: -.065em; }
+.catalog-hero-copy h1 { max-width: 650px; margin: 22px 0 22px; color: #063b34; font-family: Inter,ui-sans-serif,system-ui,sans-serif; font-size: clamp(4.7rem,7vw,7.2rem); font-weight: 850; line-height: .87; letter-spacing: -.065em; }
 .catalog-hero-copy h1 span { display: block; }
 .catalog-hero-copy .lead { max-width: 570px; color: #526963; font-size: 1.15rem; line-height: 1.72; }
 .catalog-highlights { display: flex; flex-wrap: wrap; gap: 13px 27px; margin-top: 27px; color: #173f38; font-size: .88rem; font-weight: 800; }
