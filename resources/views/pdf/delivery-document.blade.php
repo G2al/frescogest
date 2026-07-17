@@ -4,27 +4,28 @@
     <meta charset="utf-8">
     <title>{{ $document->document_number }}</title>
     <style>
-        @page { margin: 26px 30px 42px; }
+        @page { margin: 24px 28px 40px; }
         * { box-sizing: border-box; }
-        body { margin: 0; color: #183f39; font-family: DejaVu Sans, sans-serif; font-size: 10px; line-height: 1.45; }
-        .header { width: 100%; margin-bottom: 20px; border-bottom: 3px solid #07845f; }
-        .header td { padding-bottom: 14px; vertical-align: middle; }
-        .logo { width: 190px; max-height: 58px; object-fit: contain; }
-        .brand { color: #07845f; font-size: 25px; font-weight: bold; }
-        .document-title { text-align: right; }
-        .document-title h1 { margin: 0; color: #073f3a; font-size: 22px; letter-spacing: .4px; }
-        .document-title strong { display: block; margin-top: 4px; color: #07845f; font-size: 13px; }
+        body { margin: 0; color: #183f39; font-family: DejaVu Sans, sans-serif; font-size: 10.5px; line-height: 1.5; }
+        .header { width: 100%; margin-bottom: 18px; table-layout: fixed; border-bottom: 3px solid #07845f; }
+        .header td { height: 78px; padding-bottom: 13px; vertical-align: middle; }
+        .logo-cell { width: 44%; padding-right: 20px; }
+        .logo { width: 265px; height: auto; max-width: 100%; max-height: 72px; }
+        .brand { color: #07845f; font-size: 29px; font-weight: bold; }
+        .document-title { width: 56%; text-align: right; }
+        .document-title h1 { margin: 0; color: #073f3a; font-size: 23px; letter-spacing: .4px; }
+        .document-title strong { display: block; margin: 5px 0 2px; color: #07845f; font-size: 13.5px; }
         .grid { width: 100%; margin-bottom: 14px; border-collapse: separate; border-spacing: 8px 0; }
         .grid td { width: 50%; padding: 12px; vertical-align: top; border: 1px solid #cfe3dc; border-radius: 6px; }
         .grid td:first-child { margin-left: -8px; }
-        .label { margin-bottom: 5px; color: #07845f; font-size: 8px; font-weight: bold; letter-spacing: .8px; text-transform: uppercase; }
-        .party-name { margin-bottom: 4px; color: #073f3a; font-size: 13px; font-weight: bold; }
+        .label { margin-bottom: 5px; color: #07845f; font-size: 8.5px; font-weight: bold; letter-spacing: .8px; text-transform: uppercase; }
+        .party-name { margin-bottom: 4px; color: #073f3a; font-size: 13.5px; font-weight: bold; }
         .meta { width: 100%; margin: 5px 0 15px; border-collapse: collapse; }
         .meta td { padding: 8px 10px; border: 1px solid #cfe3dc; }
         .meta .value { color: #073f3a; font-weight: bold; }
         .items { width: 100%; margin-bottom: 14px; border-collapse: collapse; }
         .items thead { display: table-header-group; }
-        .items th { padding: 9px 8px; color: #fff; background: #07845f; font-size: 8px; letter-spacing: .6px; text-align: left; text-transform: uppercase; }
+        .items th { padding: 9px 8px; color: #fff; background: #07845f; font-size: 8.5px; letter-spacing: .6px; text-align: left; text-transform: uppercase; }
         .items td { padding: 9px 8px; border-right: 1px solid #dcebe6; border-bottom: 1px solid #dcebe6; }
         .items td:first-child { border-left: 1px solid #dcebe6; }
         .items .number { text-align: right; }
@@ -33,7 +34,7 @@
         .notes { min-height: 48px; margin-bottom: 16px; padding: 10px; border: 1px solid #dcebe6; }
         .signatures { width: 100%; margin-top: 28px; border-collapse: separate; border-spacing: 12px 0; }
         .signatures td { width: 33.33%; height: 70px; padding-top: 8px; vertical-align: top; border-top: 1px solid #78968f; text-align: center; }
-        .footer { position: fixed; right: 0; bottom: -28px; left: 0; padding-top: 7px; border-top: 1px solid #dcebe6; color: #66817b; font-size: 8px; text-align: center; }
+        .footer { position: fixed; right: 0; bottom: -27px; left: 0; padding-top: 7px; border-top: 1px solid #dcebe6; color: #66817b; font-size: 8px; text-align: center; }
         .muted { color: #66817b; }
     </style>
 </head>
@@ -46,7 +47,7 @@
 
 <table class="header">
     <tr>
-        <td>
+        <td class="logo-cell">
             @if ($logo)
                 <img class="logo" src="{{ $logo }}" alt="Frescogest">
             @else
