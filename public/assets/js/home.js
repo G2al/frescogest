@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260717.10';
-import { refreshIcons } from './ui.js?v=20260717.10';
+import { refreshIcons } from './ui.js?v=20260717.11';
 
 const productsRoot = document.querySelector('#featured-products');
 const previousButton = document.querySelector('#featured-prev');
@@ -16,7 +16,7 @@ function featuredProduct(product) {
 
     return `
         <a class="featured-product" href="/product.html?slug=${encodeURIComponent(product.slug)}">
-            <span class="featured-product-image">${image}</span>
+            <span class="featured-product-image">${image}<img class="featured-quality-seal" src="/assets/images/frescogest-quality-seal.png" alt="" aria-hidden="true"></span>
             <span class="featured-product-copy">
                 <small>${product.category?.name || 'Catalogo'}</small>
                 <strong>${product.name}</strong>

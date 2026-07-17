@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260717.10';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260717.10';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260717.11';
 
 const categoriesRoot = document.querySelector('#categories');
 const productsRoot = document.querySelector('#products');

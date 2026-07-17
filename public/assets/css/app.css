@@ -265,6 +265,8 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 .featured-product:hover { transform: translateY(-2px); border-color: rgba(0,132,95,.35); box-shadow: 0 12px 28px rgba(0,70,55,.12); }
 .featured-product-image { width: 82px; height: 80px; display: grid; overflow: hidden; place-items: center; border-radius: 11px; background: linear-gradient(145deg,#f8fcfa,#e6f4ed); }
 .featured-product-image img { width: 100%; height: 100%; padding: 4px; object-fit: contain; }
+.featured-product-image { position: relative; }
+.featured-product-image .featured-quality-seal { width: 31px; height: 31px; position: absolute; top: 5px; left: 5px; z-index: 2; padding: 0; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(75,0,0,.3)); transform: rotate(-8deg); }
 .featured-placeholder { color: var(--green); }
 .featured-placeholder svg { width: 27px; height: 27px; }
 .featured-product-copy { min-width: 0; display: grid; gap: 1px; }
@@ -381,6 +383,8 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 .product-modal-trigger { cursor: pointer; }
 .product-media img { width: 100%; height: 100%; padding: 10px; object-fit: contain; transition: transform .35s ease; }
 .product-card:hover .product-media img { transform: scale(1.035); }
+.product-media .quality-seal { width: 70px; height: 70px; position: absolute; z-index: 3; top: 14px; left: 14px; padding: 0; object-fit: contain; filter: drop-shadow(0 7px 7px rgba(75,0,0,.28)); transform: rotate(-8deg); transition: transform .25s ease; }
+.product-card:hover .product-media .quality-seal { transform: rotate(-4deg) scale(1.06); }
 .product-placeholder { font-size: 5rem; filter: drop-shadow(0 10px 12px rgba(0,80,60,.12)); }
 .seasonal-badge { display: inline-flex; position: absolute; top: 12px; right: 12px; align-items: center; gap: 4px; padding: 5px 9px; border-radius: 999px; color: #fff; background: rgba(0,112,96,.9); font-size: .7rem; font-weight: 800; backdrop-filter: blur(8px); }
 .seasonal-badge svg { width: 12px; height: 12px; }
