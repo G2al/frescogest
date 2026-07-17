@@ -23,13 +23,13 @@ class DeliveryDocumentController extends Controller
         return Pdf::loadView('pdf.delivery-document', [
             'document' => $document,
             'order' => $order,
-            'logo' => $this->logoDataUri($document->sender_snapshot['logo_path'] ?? null),
+            'logo' => $this->logoData($document->sender_snapshot['logo_path'] ?? null),
         ])
             ->setPaper('a4')
             ->stream($document->document_number.'.pdf');
     }
 
-    private function logoDataUri(?string $logoPath): ?string
+    private function logoData(?string $logoPath): ?array
     {
         $paths = array_filter([
             $logoPath ? storage_path('app/public/'.$logoPath) : null,
@@ -42,11 +42,32 @@ class DeliveryDocumentController extends Controller
                 continue;
             }
 
-            $mime = mime_content_type($path) ?: 'image/png';
+            $size = getimagesize($path);
 
-            return 'data:'.$mime.';base64,'.base64_encode((string) file_get_contents($path));
+            if ($size === false) {
+                continue;
+            }
+
+            [$width, $height] = $this->fitLogo($size[0], $size[1]);
+            $mime = $size['mime'] ?? (mime_content_type($path) ?: 'image/png');
+
+            return [
+                'data' => 'data:'.$mime.';base64,'.base64_encode((string) file_get_contents($path)),
+                'width' => $width,
+                'height' => $height,
+            ];
         }
 
         return null;
+    }
+
+    private function fitLogo(int $sourceWidth, int $sourceHeight): array
+    {
+        $scale = min(270 / $sourceWidth, 70 / $sourceHeight);
+
+        return [
+            max(1, (int) round($sourceWidth * $scale)),
+            max(1, (int) round($sourceHeight * $scale)),
+        ];
     }
 }

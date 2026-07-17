@@ -10,7 +10,7 @@
         .header { width: 100%; margin-bottom: 18px; table-layout: fixed; border-bottom: 3px solid #07845f; }
         .header td { height: 78px; padding-bottom: 13px; vertical-align: middle; }
         .logo-cell { width: 44%; padding-right: 20px; }
-        .logo { width: 265px; height: auto; max-width: 100%; max-height: 72px; }
+        .logo { display: block; }
         .brand { color: #07845f; font-size: 29px; font-weight: bold; }
         .document-title { width: 56%; text-align: right; }
         .document-title h1 { margin: 0; color: #073f3a; font-size: 23px; letter-spacing: .4px; }
@@ -49,7 +49,13 @@
     <tr>
         <td class="logo-cell">
             @if ($logo)
-                <img class="logo" src="{{ $logo }}" alt="Frescogest">
+                <img
+                    class="logo"
+                    src="{{ $logo['data'] }}"
+                    width="{{ $logo['width'] }}"
+                    height="{{ $logo['height'] }}"
+                    alt="Frescogest"
+                >
             @else
                 <div class="brand">Frescogest</div>
             @endif
