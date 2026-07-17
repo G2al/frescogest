@@ -1,6 +1,6 @@
-import { api } from './api.js?v=20260717.9';
-import { addToCart } from './cart.js?v=20260717.9';
-import { notify } from './ui.js?v=20260717.9';
+import { api } from './api.js?v=20260717.10';
+import { addToCart } from './cart.js?v=20260717.10';
+import { notify } from './ui.js?v=20260717.10';
 
 const slug = new URLSearchParams(location.search).get('slug');
 if (slug) api(`/catalog/products/${encodeURIComponent(slug)}`).then(({ data }) => {

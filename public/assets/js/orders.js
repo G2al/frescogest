@@ -1,5 +1,5 @@
-import { api, currentUser } from './api.js?v=20260717.9';
-import { notify, refreshIcons } from './ui.js?v=20260717.9';
+import { api, currentUser } from './api.js?v=20260717.10';
+import { notify, refreshIcons } from './ui.js?v=20260717.10';
 
 document.body.classList.add('orders-page');
 

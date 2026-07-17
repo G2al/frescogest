@@ -1,4 +1,4 @@
-import { api, currentUser } from './api.js?v=20260717.9';
+import { api, currentUser } from './api.js?v=20260717.10';
 
 let iconLibraryPromise;
 
@@ -59,7 +59,7 @@ export async function mountLayout() {
                     <a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><i data-lucide="receipt-text"></i><span>I miei ordini</span></a>
                 </nav>
                 <div class="nav-actions">
-                    <a class="btn header-cart" href="/cart.html" aria-label="Apri carrello" title="Carrello">
+                    <a class="header-cart" href="/cart.html" aria-label="Apri carrello" title="Carrello">
                         <svg class="header-cart-icon" viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L22 6H5.12"></path></svg><span class="nav-action-label">Carrello</span><span class="badge">${cartCount()}</span>
                     </a>
                     ${user

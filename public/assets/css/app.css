@@ -27,6 +27,9 @@ button, input, textarea { font: inherit; }
 .nav-links { display: flex; align-items: center; gap: 20px; margin-left: auto; }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
 .nav-actions svg { width: 18px; height: 18px; }
+.header-cart { min-width: 112px; min-height: 44px; display: inline-grid; grid-template-columns: 23px auto 22px; align-items: center; justify-content: center; gap: 8px; padding: 9px 13px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--surface); font-weight: 750; }
+.header-cart-icon { width: 23px; height: 23px; }
+.header-cart .badge { min-width: 22px; justify-content: center; }
 .btn { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 10px 18px; cursor: pointer; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--surface); font-weight: 750; transition: transform .2s ease, box-shadow .2s ease, background .2s ease, opacity .2s ease; }
 .btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(28,55,44,.08); }
 .btn-primary { color: #fff; border-color: var(--green); background: var(--green); }
@@ -425,7 +428,7 @@ html, body { touch-action: pan-y; }
     .brand-logo, .catalog-page .brand-logo { width: 132px; max-width: 100%; }
     .nav-actions, .catalog-page .nav-actions { display: flex; grid-column: 2; grid-row: 1; flex: 0 0 auto; gap: 5px; margin: 0; }
     .nav-actions .btn, .catalog-page .nav-actions .btn { width: 42px; min-width: 42px; min-height: 42px; flex: 0 0 42px; padding: 0; border: 1px solid var(--line); border-radius: 12px; }
-    .nav-actions .header-cart, .catalog-page .header-cart { width: 72px; min-width: 72px; max-width: 72px; min-height: 44px; flex: 0 0 72px; padding: 0 9px; font-size: inherit; }
+    .header-cart, .nav-actions .header-cart, .catalog-page .header-cart { width: 72px !important; min-width: 72px !important; max-width: 72px !important; min-height: 44px; display: inline-grid !important; grid-template-columns: 23px 22px !important; flex: 0 0 72px !important; gap: 7px; padding: 0 9px !important; font-size: inherit; }
     .nav-actions .header-register, .catalog-page .header-register { display: inline-flex; border-color: var(--green); }
     .nav-actions .nav-action-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     .nav-actions svg { width: 21px; height: 21px; }
@@ -565,7 +568,7 @@ html, body { touch-action: pan-y; }
 @media (max-width: 380px) {
     .brand-logo, .catalog-page .brand-logo { width: 118px; }
     .nav-actions .btn, .catalog-page .nav-actions .btn { width: 39px; min-width: 39px; min-height: 39px; flex-basis: 39px; }
-    .nav-actions .header-cart, .catalog-page .header-cart { width: 68px; min-width: 68px; max-width: 68px; flex-basis: 68px; }
+    .header-cart, .nav-actions .header-cart, .catalog-page .header-cart { width: 68px !important; min-width: 68px !important; max-width: 68px !important; flex-basis: 68px !important; gap: 5px; padding-inline: 8px !important; }
     .catalog-hero-copy h1 { font-size: 2.65rem; }
     .catalog-hero-actions { grid-template-columns: 1fr; }
     .product-purchase { grid-template-columns: 1fr; }
