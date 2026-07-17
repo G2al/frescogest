@@ -123,7 +123,7 @@ class OrderTest extends TestCase
     public function test_a_paid_order_can_generate_a_progressive_delivery_document_pdf(): void
     {
         [$user, $product] = $this->customerAndProduct();
-        Company::create([
+        $company = Company::create([
             'business_name' => 'Frescogest S.r.l.',
             'vat_number' => '01234567890',
             'address' => 'Via Roma 1',
@@ -150,6 +150,7 @@ class OrderTest extends TestCase
         $admin = User::factory()->create(['active' => true, 'can_access_panel' => true]);
 
         $document = app(CreateDeliveryDocumentService::class)->create($order, $admin, [
+            'company_id' => $company->id,
             'issued_at' => now(),
             'transport_reason' => 'Vendita',
             'transport_method' => 'Mittente',

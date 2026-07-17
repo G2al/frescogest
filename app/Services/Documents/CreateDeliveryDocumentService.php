@@ -27,11 +27,14 @@ class CreateDeliveryDocumentService
             ]);
         }
 
-        $company = Company::query()->where('active', true)->oldest('id')->first();
+        $company = Company::query()
+            ->whereKey($data['company_id'])
+            ->where('active', true)
+            ->first();
 
         if (! $company) {
             throw ValidationException::withMessages([
-                'company' => 'Configura almeno un’azienda attiva prima di generare il DDT.',
+                'company_id' => 'Seleziona un’azienda emittente attiva prima di generare il DDT.',
             ]);
         }
 
