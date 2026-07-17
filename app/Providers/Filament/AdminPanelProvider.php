@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('admin')
             ->login()
             ->brandLogo(asset('assets/images/frescogest-logo.png'))
-            ->darkModeBrandLogo(asset('assets/images/frescogest-logo.png'))
+            ->darkModeBrandLogo(asset('assets/images/frescogest-logo-dark.png'))
             ->brandLogoHeight('2rem')
             ->favicon(asset('assets/images/frescogest-mark.png'))
             ->colors([
