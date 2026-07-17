@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class OrderItemResource extends JsonResource
 {
@@ -23,6 +24,9 @@ class OrderItemResource extends JsonResource
             'line_total' => $this->line_total,
             'unit_of_measure_name' => $this->unit_of_measure_name,
             'unit_of_measure_symbol' => $this->unit_of_measure_symbol,
+            'image_url' => $this->product?->image_path
+                ? Storage::disk('public')->url($this->product->image_path)
+                : null,
         ];
     }
 }

@@ -35,7 +35,7 @@ class OrderController extends Controller
     {
         return OrderResource::collection(
             $request->user()->customer->orders()
-                ->with('items')
+                ->with('items.product')
                 ->latest('requested_at')
                 ->paginate(20),
         );
@@ -46,7 +46,7 @@ class OrderController extends Controller
         $order = Order::query()
             ->where('customer_id', $request->user()->customer->id)
             ->where('order_number', $orderNumber)
-            ->with('items')
+            ->with('items.product')
             ->firstOrFail();
 
         return new OrderResource($order);

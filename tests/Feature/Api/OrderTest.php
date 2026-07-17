@@ -14,6 +14,7 @@ use App\Models\User;
 use App\Services\Documents\CreateDeliveryDocumentService;
 use App\Services\Orders\UpdateOrderStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -24,6 +25,7 @@ class OrderTest extends TestCase
     {
         config(['frescogest.whatsapp_number' => '+39 379 268 8229']);
         [$user, $product] = $this->customerAndProduct();
+        $product->update(['image_path' => 'catalog/products/pomodori.png']);
         $user->customer->productPrices()->where('product_id', $product->id)->update([
             'custom_price_per_kg' => 3.60,
         ]);
@@ -49,6 +51,10 @@ class OrderTest extends TestCase
         $this->assertSame('9.00', $order->total_amount);
         $this->assertStringStartsWith('https://wa.me/393792688229?text=', $response->json('data.whatsapp_url'));
         $this->assertSame(OrderStatus::PendingContact, $order->fresh()->status);
+        $this->actingAs($user, 'customer')
+            ->getJson('/api/v1/orders')
+            ->assertOk()
+            ->assertJsonPath('data.0.items.0.image_url', Storage::disk('public')->url($product->image_path));
     }
 
     public function test_orders_are_private_and_unavailable_products_are_rejected(): void
