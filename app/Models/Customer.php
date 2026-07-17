@@ -29,6 +29,7 @@ class Customer extends Model
         'province',
         'notes',
         'active',
+        'global_discount_percentage',
     ];
 
     public function getDisplayNameAttribute(): string
@@ -51,8 +52,16 @@ class Customer extends Model
         return $this->hasMany(CustomerProductPrice::class);
     }
 
+    public function categoryDiscounts(): HasMany
+    {
+        return $this->hasMany(CustomerCategoryDiscount::class);
+    }
+
     protected function casts(): array
     {
-        return ['active' => 'boolean'];
+        return [
+            'active' => 'boolean',
+            'global_discount_percentage' => 'decimal:2',
+        ];
     }
 }

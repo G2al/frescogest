@@ -50,11 +50,33 @@ class CatalogTest extends TestCase
 
         $user = User::factory()->create(['active' => true]);
         $customer = Customer::factory()->create(['user_id' => $user->id]);
-        $customer->productPrices()->where('product_id', $product->id)->update(['custom_price_per_kg' => 2.75]);
+
+        $customer->update(['global_discount_percentage' => 10]);
 
         $this->actingAs($user, 'customer')->getJson('/api/v1/catalog/products/mele')
             ->assertOk()
-            ->assertJsonPath('data.price_per_kg', '2.75')
-            ->assertJsonPath('data.has_personalized_price', true);
+            ->assertJsonPath('data.price_per_kg', '3.15')
+            ->assertJsonPath('data.pricing_source', 'global')
+            ->assertJsonPath('data.discount_percentage', '10.00');
+
+        $customer->categoryDiscounts()->create([
+            'product_category_id' => $category->id,
+            'discount_percentage' => 20,
+        ]);
+
+        $this->actingAs($user, 'customer')->getJson('/api/v1/catalog/products/mele')
+            ->assertOk()
+            ->assertJsonPath('data.price_per_kg', '2.80')
+            ->assertJsonPath('data.pricing_source', 'category')
+            ->assertJsonPath('data.discount_percentage', '20.00');
+
+        $customer->productPrices()->where('product_id', $product->id)->update(['custom_price_per_kg' => 40]);
+
+        $this->actingAs($user, 'customer')->getJson('/api/v1/catalog/products/mele')
+            ->assertOk()
+            ->assertJsonPath('data.price_per_kg', '40.00')
+            ->assertJsonPath('data.has_personalized_price', true)
+            ->assertJsonPath('data.pricing_source', 'product')
+            ->assertJsonPath('data.discount_percentage', null);
     }
 }

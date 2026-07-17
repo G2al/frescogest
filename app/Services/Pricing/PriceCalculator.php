@@ -20,6 +20,20 @@ class PriceCalculator
         return $this->formatCents($totalCents);
     }
 
+    public function discountedPrice(
+        string|int|float $price,
+        string|int|float $discountPercentage,
+    ): string {
+        $priceCents = $this->scaledInteger($price, 2);
+        $discountHundredths = $this->scaledInteger($discountPercentage, 2);
+        $discountedCents = intdiv(
+            ($priceCents * (10000 - $discountHundredths)) + 5000,
+            10000,
+        );
+
+        return $this->formatCents($discountedCents);
+    }
+
     private function scaledInteger(string|int|float $value, int $decimals): int
     {
         $normalized = str_replace(',', '.', trim((string) $value));

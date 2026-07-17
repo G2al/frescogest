@@ -22,6 +22,8 @@ class ProductResource extends JsonResource
             'description' => $this->public_description,
             'price_per_kg' => $this->effective_price_per_kg ?? $this->price_per_kg,
             'has_personalized_price' => (bool) ($this->has_personalized_price ?? false),
+            'pricing_source' => $this->pricing_source ?? 'base',
+            'discount_percentage' => $this->discount_percentage,
             'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
             'is_seasonal' => $this->is_seasonal,
             'category' => ProductCategoryResource::make($this->whenLoaded('productCategory')),
