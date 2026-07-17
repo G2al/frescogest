@@ -429,7 +429,7 @@ html, body { touch-action: pan-y; }
     .nav-actions .header-register, .catalog-page .header-register { display: inline-flex; border-color: var(--green); }
     .nav-actions .nav-action-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
     .nav-actions svg { width: 21px; height: 21px; }
-    .site-header .header-cart > svg { width: 23px !important; height: 23px !important; flex: 0 0 23px; stroke-width: 2; }
+    .site-header .header-cart-icon { width: 23px !important; min-width: 23px !important; max-width: 23px !important; height: 23px !important; flex: 0 0 23px !important; stroke-width: 2 !important; }
     .header-cart .badge, .catalog-page .header-cart .badge { min-width: 22px; padding: 2px 6px; justify-content: center; font-size: .72rem; }
     .nav-links, .catalog-page .nav-links { min-width: 0; display: grid; grid-column: 1 / -1; grid-row: 2; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; margin: 0; padding-top: 7px; border-top: 1px solid rgba(0,112,96,.09); }
     .nav-links a, .catalog-page .nav-links a { min-height: 36px; justify-content: center; padding: 7px 10px; border-radius: 10px; color: var(--muted); font-size: .78rem; font-weight: 750; }

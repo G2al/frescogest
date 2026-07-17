@@ -1,4 +1,4 @@
-﻿import { api, currentUser } from './api.js';
+import { api, currentUser } from './api.js?v=20260717.8';
 
 let iconLibraryPromise;
 
@@ -60,7 +60,7 @@ export async function mountLayout() {
                 </nav>
                 <div class="nav-actions">
                     <a class="btn header-cart" href="/cart.html" aria-label="Apri carrello" title="Carrello">
-                        <i data-lucide="shopping-cart"></i><span class="nav-action-label">Carrello</span><span class="badge">${cartCount()}</span>
+                        <svg class="header-cart-icon" viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L22 6H5.12"></path></svg><span class="nav-action-label">Carrello</span><span class="badge">${cartCount()}</span>
                     </a>
                     ${user
                         ? `<a class="btn btn-link account-label" href="/profile.html" aria-label="Apri profilo" title="${user.name}"><i data-lucide="circle-user-round"></i><span class="nav-action-label">${user.name}</span></a><button class="btn btn-link header-logout" id="logout" aria-label="Esci" title="Esci"><i data-lucide="log-out"></i><span class="nav-action-label">Esci</span></button>`

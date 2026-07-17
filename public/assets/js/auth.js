@@ -1,5 +1,5 @@
-import { api, currentUser } from './api.js';
-import { notify } from './ui.js';
+import { api, currentUser } from './api.js?v=20260717.8';
+import { notify } from './ui.js?v=20260717.8';
 
 const form = document.querySelector('form[data-endpoint]');
 if (form) form.addEventListener('submit', async event => {

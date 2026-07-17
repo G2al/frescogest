@@ -1,5 +1,5 @@
-﻿import { api, currentUser } from './api.js';
-import { notify, refreshIcons } from './ui.js';
+import { api, currentUser } from './api.js?v=20260717.8';
+import { notify, refreshIcons } from './ui.js?v=20260717.8';
 
 let drawerNotes = '';
 
