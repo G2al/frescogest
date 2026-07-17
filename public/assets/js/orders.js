@@ -1,6 +1,8 @@
 import { api, currentUser } from './api.js';
 import { notify, refreshIcons } from './ui.js';
 
+document.body.classList.add('orders-page');
+
 function currency(value) {
     return Number(value).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
 }
