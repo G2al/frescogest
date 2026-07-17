@@ -42,7 +42,10 @@ class DeliveryDocumentController extends Controller
                 continue;
             }
 
-            $size = getimagesize($path);
+            $contents = (string) file_get_contents($path);
+            $preparedLogo = $this->cropTransparentLogo($contents);
+            $contents = $preparedLogo['contents'] ?? $contents;
+            $size = getimagesizefromstring($contents);
 
             if ($size === false) {
                 continue;
@@ -52,7 +55,7 @@ class DeliveryDocumentController extends Controller
             $mime = $size['mime'] ?? (mime_content_type($path) ?: 'image/png');
 
             return [
-                'data' => 'data:'.$mime.';base64,'.base64_encode((string) file_get_contents($path)),
+                'data' => 'data:'.$mime.';base64,'.base64_encode($contents),
                 'width' => $width,
                 'height' => $height,
             ];
@@ -63,11 +66,79 @@ class DeliveryDocumentController extends Controller
 
     private function fitLogo(int $sourceWidth, int $sourceHeight): array
     {
-        $scale = min(270 / $sourceWidth, 70 / $sourceHeight);
+        $scale = min(340 / $sourceWidth, 85 / $sourceHeight);
 
         return [
             max(1, (int) round($sourceWidth * $scale)),
             max(1, (int) round($sourceHeight * $scale)),
         ];
+    }
+
+    private function cropTransparentLogo(string $contents): ?array
+    {
+        if (! function_exists('imagecreatefromstring') || ! function_exists('imagecrop')) {
+            return null;
+        }
+
+        $image = @imagecreatefromstring($contents);
+
+        if ($image === false) {
+            return null;
+        }
+
+        $width = imagesx($image);
+        $height = imagesy($image);
+        $bounds = [$width, $height, -1, -1];
+
+        for ($y = 0; $y < $height; $y++) {
+            for ($x = 0; $x < $width; $x++) {
+                $alpha = (imagecolorat($image, $x, $y) >> 24) & 0x7F;
+
+                if ($alpha >= 120) {
+                    continue;
+                }
+
+                $bounds[0] = min($bounds[0], $x);
+                $bounds[1] = min($bounds[1], $y);
+                $bounds[2] = max($bounds[2], $x);
+                $bounds[3] = max($bounds[3], $y);
+            }
+        }
+
+        if ($bounds[2] < $bounds[0] || $bounds[3] < $bounds[1]) {
+            imagedestroy($image);
+
+            return null;
+        }
+
+        $padding = max(4, (int) round(max($width, $height) * 0.01));
+        $x = max(0, $bounds[0] - $padding);
+        $y = max(0, $bounds[1] - $padding);
+        $cropWidth = min($width - $x, ($bounds[2] - $bounds[0] + 1) + ($padding * 2));
+        $cropHeight = min($height - $y, ($bounds[3] - $bounds[1] + 1) + ($padding * 2));
+        $cropped = imagecrop($image, [
+            'x' => $x,
+            'y' => $y,
+            'width' => $cropWidth,
+            'height' => $cropHeight,
+        ]);
+        imagedestroy($image);
+
+        if ($cropped === false) {
+            return null;
+        }
+
+        imagealphablending($cropped, false);
+        imagesavealpha($cropped, true);
+        ob_start();
+        imagepng($cropped);
+        $croppedContents = ob_get_clean();
+        imagedestroy($cropped);
+
+        if (! is_string($croppedContents)) {
+            return null;
+        }
+
+        return ['contents' => $croppedContents];
     }
 }

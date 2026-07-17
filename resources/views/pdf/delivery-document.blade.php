@@ -8,11 +8,11 @@
         * { box-sizing: border-box; }
         body { margin: 0; color: #183f39; font-family: DejaVu Sans, sans-serif; font-size: 10.5px; line-height: 1.5; }
         .header { width: 100%; margin-bottom: 18px; table-layout: fixed; border-bottom: 3px solid #07845f; }
-        .header td { height: 78px; padding-bottom: 13px; vertical-align: middle; }
-        .logo-cell { width: 44%; padding-right: 20px; }
+        .header td { height: 94px; padding-bottom: 13px; vertical-align: middle; }
+        .logo-cell { width: 46%; padding-right: 20px; }
         .logo { display: block; }
         .brand { color: #07845f; font-size: 29px; font-weight: bold; }
-        .document-title { width: 56%; text-align: right; }
+        .document-title { width: 54%; text-align: right; }
         .document-title h1 { margin: 0; color: #073f3a; font-size: 23px; letter-spacing: .4px; }
         .document-title strong { display: block; margin: 5px 0 2px; color: #07845f; font-size: 13.5px; }
         .grid { width: 100%; margin-bottom: 14px; border-collapse: separate; border-spacing: 8px 0; }
