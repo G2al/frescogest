@@ -34,6 +34,26 @@ class CatalogTest extends TestCase
         $this->getJson('/api/v1/catalog/products?search=mele')->assertOk()->assertJsonCount(1, 'data');
         $this->getJson('/api/v1/catalog/products?seasonal=1')->assertOk()->assertJsonCount(1, 'data');
         $this->getJson('/api/v1/catalog/products/segreto')->assertNotFound();
+
+        foreach (range(1, 12) as $index) {
+            Product::create($defaults + [
+                'product_category_id' => $visible->id,
+                'name' => "Prodotto {$index}",
+                'slug' => "prodotto-{$index}",
+            ]);
+        }
+
+        $this->getJson('/api/v1/catalog/products')
+            ->assertOk()
+            ->assertJsonCount(12, 'data')
+            ->assertJsonPath('meta.per_page', 12)
+            ->assertJsonPath('meta.total', 13)
+            ->assertJsonPath('meta.last_page', 2);
+
+        $this->getJson('/api/v1/catalog/products?page=2')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('meta.current_page', 2);
     }
 
     public function test_authenticated_customer_receives_personalized_price(): void

@@ -7,6 +7,7 @@ const searchInput = document.querySelector('#product-search');
 const seasonalButton = document.querySelector('#seasonal-filter');
 const titleRoot = document.querySelector('#catalog-title');
 const countRoot = document.querySelector('#product-count');
+const paginationRoot = document.querySelector('#catalog-pagination');
 const previousProductsButton = document.querySelector('#products-prev');
 const nextProductsButton = document.querySelector('#products-next');
 let categories = [];
@@ -18,6 +19,7 @@ const state = {
     category: new URLSearchParams(location.search).get('category') || '',
     search: new URLSearchParams(location.search).get('search') || '',
     seasonal: new URLSearchParams(location.search).get('seasonal') === '1',
+    page: Math.max(Number.parseInt(new URLSearchParams(location.search).get('page') || '1', 10) || 1, 1),
 };
 
 const categoryIcons = {
@@ -117,7 +119,52 @@ function updateUrl() {
     if (state.category) params.set('category', state.category);
     if (state.search) params.set('search', state.search);
     if (state.seasonal) params.set('seasonal', '1');
+    if (state.page > 1) params.set('page', String(state.page));
     history.replaceState({}, '', `${location.pathname}${params.size ? `?${params}` : ''}`);
+}
+
+function pageNumbers(currentPage, lastPage) {
+    const pages = new Set([1, lastPage, currentPage - 1, currentPage, currentPage + 1]);
+    const visible = [...pages].filter(page => page >= 1 && page <= lastPage).sort((a, b) => a - b);
+
+    return visible.flatMap((page, index) => {
+        const previous = visible[index - 1];
+        return [
+            ...(previous && page - previous > 1 ? ['ellipsis'] : []),
+            page,
+        ];
+    });
+}
+
+function renderPagination(meta) {
+    const currentPage = meta?.current_page ?? 1;
+    const lastPage = meta?.last_page ?? 1;
+    const hasPrevious = currentPage > 1;
+    const hasNext = currentPage < lastPage;
+
+    previousProductsButton.disabled = !hasPrevious;
+    nextProductsButton.disabled = !hasNext;
+
+    if (lastPage <= 1) {
+        paginationRoot.classList.add('hidden');
+        paginationRoot.innerHTML = '';
+        return;
+    }
+
+    paginationRoot.classList.remove('hidden');
+    paginationRoot.innerHTML = `
+        <button class="pagination-direction" type="button" data-page="${currentPage - 1}" ${hasPrevious ? '' : 'disabled'}>
+            <i data-lucide="chevron-left"></i><span>Precedente</span>
+        </button>
+        <div class="pagination-pages">
+            ${pageNumbers(currentPage, lastPage).map(page => page === 'ellipsis'
+                ? '<span class="pagination-ellipsis" aria-hidden="true">…</span>'
+                : `<button class="pagination-page ${page === currentPage ? 'active' : ''}" type="button" data-page="${page}" ${page === currentPage ? 'aria-current="page"' : ''}>${page}</button>`).join('')}
+        </div>
+        <button class="pagination-direction" type="button" data-page="${currentPage + 1}" ${hasNext ? '' : 'disabled'}>
+            <span>Successivo</span><i data-lucide="chevron-right"></i>
+        </button>`;
+    refreshIcons(paginationRoot);
 }
 
 async function loadProducts() {
@@ -128,6 +175,7 @@ async function loadProducts() {
     if (state.category) params.set('category', state.category);
     if (state.search) params.set('search', state.search);
     if (state.seasonal) params.set('seasonal', '1');
+    params.set('page', String(state.page));
 
     try {
         const payload = await api(`/catalog/products${params.size ? `?${params}` : ''}`);
@@ -137,13 +185,26 @@ async function loadProducts() {
             : '<div class="empty catalog-empty">Nessun prodotto corrisponde alla ricerca.</div>';
         refreshIcons(productsRoot);
         const total = payload.meta?.total ?? payload.data.length;
-        countRoot.textContent = `${total} ${total === 1 ? 'prodotto' : 'prodotti'}`;
+        const from = payload.meta?.from ?? (total ? 1 : 0);
+        const to = payload.meta?.to ?? payload.data.length;
+        countRoot.textContent = total > payload.data.length
+            ? `${from}–${to} di ${total} prodotti`
+            : `${total} ${total === 1 ? 'prodotto' : 'prodotti'}`;
+        renderPagination(payload.meta);
     } catch (error) {
         if (currentRequest !== requestId) return;
         productsRoot.innerHTML = '<div class="empty catalog-empty">Impossibile caricare il catalogo.</div>';
         countRoot.textContent = '';
+        paginationRoot.classList.add('hidden');
         notify(error.message);
     }
+}
+
+function changePage(page) {
+    if (!Number.isInteger(page) || page < 1 || page === state.page) return;
+    state.page = page;
+    updateUrl();
+    loadProducts().then(() => document.querySelector('#catalog-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
 }
 
 async function initialize() {
@@ -167,6 +228,7 @@ categoriesRoot?.addEventListener('click', event => {
     const tab = event.target.closest('.category-tab');
     if (!tab) return;
     state.category = tab.dataset.category;
+    state.page = 1;
     renderCategories();
     updateUrl();
     loadProducts();
@@ -177,6 +239,7 @@ searchInput?.addEventListener('input', event => {
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
         state.search = event.target.value.trim();
+        state.page = 1;
         updateUrl();
         loadProducts();
     }, 300);
@@ -184,21 +247,20 @@ searchInput?.addEventListener('input', event => {
 
 seasonalButton?.addEventListener('click', () => {
     state.seasonal = !state.seasonal;
+    state.page = 1;
     seasonalButton.classList.toggle('active', state.seasonal);
     seasonalButton.setAttribute('aria-pressed', String(state.seasonal));
     updateUrl();
     loadProducts();
 });
 
-function scrollProducts(direction) {
-    const card = productsRoot?.querySelector('.product-card');
-    if (!card) return;
-    const gap = Number.parseFloat(getComputedStyle(productsRoot).columnGap || getComputedStyle(productsRoot).gap) || 16;
-    productsRoot.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' });
-}
-
-previousProductsButton?.addEventListener('click', () => scrollProducts(-1));
-nextProductsButton?.addEventListener('click', () => scrollProducts(1));
+previousProductsButton?.addEventListener('click', () => changePage(state.page - 1));
+nextProductsButton?.addEventListener('click', () => changePage(state.page + 1));
+paginationRoot?.addEventListener('click', event => {
+    const button = event.target.closest('button[data-page]');
+    if (!button || button.disabled) return;
+    changePage(Number.parseInt(button.dataset.page, 10));
+});
 
 productsRoot?.addEventListener('click', event => {
     const trigger = event.target.closest('.product-modal-trigger');

@@ -401,6 +401,15 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 .catalog-add-button:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(0,112,96,.28); }
 .catalog-add-button svg { width: 19px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .catalog-empty { grid-column: 1 / -1; }
+.catalog-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 38px 0 12px; }
+.pagination-pages { display: flex; align-items: center; gap: 7px; }
+.catalog-pagination button { min-width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; cursor: pointer; border: 1px solid #d5e7e1; border-radius: 12px; color: #315b53; background: #fff; font: inherit; font-size: .84rem; font-weight: 800; box-shadow: 0 7px 18px rgba(0,80,65,.06); transition: transform .2s ease,border-color .2s ease,background .2s ease,color .2s ease; }
+.catalog-pagination button:hover:not(:disabled) { transform: translateY(-2px); border-color: rgba(0,112,96,.35); color: var(--brand-teal); background: #f4faf7; }
+.catalog-pagination button:disabled { cursor: default; opacity: .38; box-shadow: none; }
+.catalog-pagination .pagination-direction { min-width: 126px; padding: 0 15px; }
+.catalog-pagination svg { width: 17px; height: 17px; }
+.pagination-page.active { color: #fff; border-color: var(--brand-teal); background: linear-gradient(135deg,#007b5d,#00966c); box-shadow: 0 9px 22px rgba(0,112,96,.22); }
+.pagination-ellipsis { min-width: 25px; color: var(--muted); text-align: center; }
 
 .catalog-services { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; margin-bottom: 20px; padding: 28px 18px; border: 1px solid rgba(0,112,96,.09); border-radius: 24px; background: linear-gradient(120deg,#f7fbf9,#edf7f3); }
 .catalog-services article { display: flex; align-items: flex-start; gap: 14px; padding: 10px 24px; border-right: 1px solid rgba(0,112,96,.1); }
@@ -448,6 +457,11 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
     .catalog-grid { grid-template-columns: 1fr; gap: 17px; }
     .product-media { height: 310px; }
     .product-description { min-height: auto; }
+    .catalog-pagination { gap: 8px; margin-top: 25px; }
+    .catalog-pagination .pagination-direction { min-width: 44px; width: 44px; padding: 0; }
+    .catalog-pagination .pagination-direction span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+    .pagination-pages { gap: 5px; }
+    .catalog-pagination button { min-width: 40px; height: 40px; border-radius: 10px; }
     .catalog-services { grid-template-columns: 1fr; }
     .catalog-services article { border-right: 0; border-bottom: 1px solid rgba(0,112,96,.1); }
     .catalog-services article:last-child { border-bottom: 0; }
