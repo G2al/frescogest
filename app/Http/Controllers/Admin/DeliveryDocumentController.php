@@ -12,7 +12,9 @@ class DeliveryDocumentController extends Controller
 {
     public function __invoke(Request $request, Order $order): Response
     {
-        abort_unless($request->user()?->active && $request->user()?->can_access_panel, 403);
+        $user = $request->user('admin');
+
+        abort_unless($user?->active && $user->can_access_panel, 403);
 
         $order->loadMissing(['deliveryDocument', 'paymentMethod']);
         $document = $order->deliveryDocument;

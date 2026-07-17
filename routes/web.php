@@ -4,7 +4,7 @@ use App\Http\Controllers\Admin\DeliveryDocumentController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/admin/orders/{order}/delivery-document', DeliveryDocumentController::class)
-    ->middleware('auth')
+    ->middleware('auth:admin')
     ->name('admin.orders.delivery-document');
 
 Route::redirect('/', '/index.html');

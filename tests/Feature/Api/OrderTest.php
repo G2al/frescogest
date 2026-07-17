@@ -161,7 +161,7 @@ class OrderTest extends TestCase
         $this->assertSame('DDT-'.now()->year.'-000001', $document->document_number);
         $this->assertSame('Pomodori', $document->items_snapshot[0]['name']);
         $this->assertSame('Frescogest S.r.l.', $document->sender_snapshot['business_name']);
-        $this->actingAs($admin)
+        $this->actingAs($admin, 'admin')
             ->get(route('admin.orders.delivery-document', $order))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
