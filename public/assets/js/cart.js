@@ -226,22 +226,14 @@ async function submitOrder(customerNotes, button) {
     if (button.disabled || !getCart().length) return;
     button.disabled = true;
     button.classList.add('is-loading');
-    const whatsappWindow = window.open('', '_blank');
-    if (!await currentUser()) { whatsappWindow?.close(); location.href = '/login.html?next=/cart.html'; return; }
+    if (!await currentUser()) { location.href = '/login.html?next=/cart.html'; return; }
     try {
         const payload = await api('/orders', { method: 'POST', body: JSON.stringify({ customer_notes: customerNotes || null, items: getCart().map(({ product_id, quantity }) => ({ product_id, quantity })) }) });
         saveCart([]);
         drawerNotes = '';
         updateCartBadges();
-        if (whatsappWindow) {
-            whatsappWindow.opener = null;
-            whatsappWindow.location.href = payload.data.whatsapp_url;
-        } else {
-            location.href = payload.data.whatsapp_url;
-            return;
-        }
-        location.href = `/orders.html?created=${encodeURIComponent(payload.data.order_number)}`;
-    } catch (error) { whatsappWindow?.close(); notify(error.message); button.disabled = false; button.classList.remove('is-loading'); }
+        location.assign(payload.data.whatsapp_url);
+    } catch (error) { notify(error.message); button.disabled = false; button.classList.remove('is-loading'); }
 }
 
 document.querySelector('#order-form')?.addEventListener('submit', async event => {
