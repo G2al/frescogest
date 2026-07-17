@@ -3,21 +3,31 @@
 namespace App\Filament\Resources\Orders\Actions;
 
 use App\Models\Order;
-use Filament\Actions\DeleteAction;
+use App\Services\Orders\DeleteOrderService;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 
 class OrderDeleteAction
 {
-    public static function make(): DeleteAction
+    public static function make(): Action
     {
-        return DeleteAction::make()
+        return Action::make('deleteOrder')
             ->label('Elimina')
             ->icon('heroicon-o-trash')
+            ->iconButton()
+            ->tooltip('Elimina definitivamente')
             ->color('danger')
-            ->visible(fn (Order $record): bool => ! $record->deliveryDocument()->exists())
             ->requiresConfirmation()
             ->modalHeading('Eliminare definitivamente l’ordine?')
-            ->modalDescription('L’ordine e tutte le righe prodotto collegate verranno eliminati definitivamente. Questa operazione non può essere annullata.')
+            ->modalDescription('L’ordine, le righe prodotto e l’eventuale DDT collegato verranno eliminati definitivamente. Questa operazione non può essere annullata.')
             ->modalSubmitActionLabel('Elimina definitivamente')
-            ->successNotificationTitle('Ordine eliminato definitivamente');
+            ->action(function (Order $record): void {
+                app(DeleteOrderService::class)->delete($record);
+
+                Notification::make()
+                    ->success()
+                    ->title('Ordine eliminato definitivamente')
+                    ->send();
+            });
     }
 }

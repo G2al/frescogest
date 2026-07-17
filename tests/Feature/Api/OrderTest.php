@@ -12,6 +12,7 @@ use App\Models\TaxRate;
 use App\Models\UnitOfMeasure;
 use App\Models\User;
 use App\Services\Documents\CreateDeliveryDocumentService;
+use App\Services\Orders\DeleteOrderService;
 use App\Services\Orders\UpdateOrderStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -165,6 +166,11 @@ class OrderTest extends TestCase
             ->get(route('admin.orders.delivery-document', $order))
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
+
+        app(DeleteOrderService::class)->delete($order);
+
+        $this->assertDatabaseMissing('delivery_documents', ['id' => $document->id]);
+        $this->assertDatabaseMissing('orders', ['id' => $order->id]);
     }
 
     private function customerAndProduct(): array

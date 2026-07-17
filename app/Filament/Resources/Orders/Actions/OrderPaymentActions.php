@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Actions;
 
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
@@ -16,8 +17,14 @@ class OrderPaymentActions
             Action::make('markPaid')
                 ->label('Segna pagato')
                 ->icon('heroicon-o-banknotes')
+                ->iconButton()
+                ->tooltip('Segna come pagato')
                 ->color('success')
-                ->visible(fn (Order $record): bool => blank($record->paid_at))
+                ->visible(fn (Order $record): bool => blank($record->paid_at) && in_array($record->status, [
+                    OrderStatus::Confirmed,
+                    OrderStatus::Preparing,
+                    OrderStatus::Delivered,
+                ], true))
                 ->schema([
                     DateTimePicker::make('paid_at')
                         ->label('Pagato il')
@@ -39,6 +46,8 @@ class OrderPaymentActions
             Action::make('markUnpaid')
                 ->label('Annulla pagamento')
                 ->icon('heroicon-o-arrow-uturn-left')
+                ->iconButton()
+                ->tooltip('Annulla pagamento')
                 ->color('warning')
                 ->visible(fn (Order $record): bool => filled($record->paid_at) && ! $record->deliveryDocument()->exists())
                 ->requiresConfirmation()
