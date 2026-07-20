@@ -14,6 +14,7 @@ use App\Filament\Resources\ProductCategories\ProductCategoryResource;
 use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\TaxRates\TaxRateResource;
 use App\Filament\Resources\UnitOfMeasures\UnitOfMeasureResource;
+use App\Livewire\PendingOrdersPoller;
 use App\Models\Company;
 use App\Models\CostCategory;
 use App\Models\Customer;
@@ -100,6 +101,21 @@ class RegistryStructureTest extends TestCase
 
         $this->assertSame('2', OrderResource::getNavigationBadge());
         $this->assertSame('warning', OrderResource::getNavigationBadgeColor());
+    }
+
+    public function test_pending_order_poller_updates_without_reloading_the_panel(): void
+    {
+        $customer = Customer::factory()->create();
+        $poller = Livewire::test(PendingOrdersPoller::class)->assertSet('count', 0);
+
+        Order::create([
+            'order_number' => 'IPF-000001',
+            'customer_id' => $customer->id,
+            'status' => OrderStatus::WhatsAppPending,
+            'requested_at' => now(),
+        ]);
+
+        $poller->call('poll')->assertSet('count', 1);
     }
 
     public function test_reference_data_is_seeded_idempotently(): void

@@ -35,6 +35,45 @@ function updateProductTotal(input) {
     requestAnimationFrame(() => preview.classList.add('is-updated'));
 }
 
+function minimumQuantityMessage(minimum, unit = 'u.') {
+    const formattedMinimum = Number(minimum).toLocaleString('it-IT', { maximumFractionDigits: 3 });
+    return `La quantità minima acquistabile è ${formattedMinimum} ${unit}.`;
+}
+
+function quantityDetails(input) {
+    const container = input.closest('.product-card, .product-modal-panel');
+    const button = container?.querySelector('.add-cart');
+
+    return {
+        minimum: Number(input.min || button?.dataset.minimum || 1),
+        unit: input.dataset.unit || button?.dataset.unit || 'u.',
+    };
+}
+
+export function normalizeProductQuantity(input, showNotice = false) {
+    const { minimum, unit } = quantityDetails(input);
+    const value = Number(String(input.value).replace(',', '.'));
+    const valid = Number.isFinite(value) && value >= minimum && value <= 99999;
+
+    input.classList.toggle('is-invalid', !valid);
+    input.setAttribute('aria-invalid', String(!valid));
+    input.setCustomValidity(valid ? '' : minimumQuantityMessage(minimum, unit));
+    input.closest('.quantity-stepper')?.classList.toggle('is-invalid', !valid);
+
+    if (valid) return false;
+
+    input.value = String(minimum);
+    input.classList.remove('is-invalid');
+    input.setAttribute('aria-invalid', 'false');
+    input.setCustomValidity('');
+    input.closest('.quantity-stepper')?.classList.remove('is-invalid');
+    updateProductTotal(input);
+
+    if (showNotice) notify(minimumQuantityMessage(minimum, unit), 'warning');
+
+    return true;
+}
+
 function escapeHtml(value) {
     const element = document.createElement('div');
     element.textContent = value;
@@ -122,7 +161,7 @@ export async function addToCart(product, quantity = 1) {
     const parsedQuantity = Number(String(quantity).replace(',', '.'));
     const minimum = Number(product.minimum_quantity || product.minimum || 1);
     if (!Number.isFinite(parsedQuantity) || parsedQuantity < minimum || parsedQuantity > 99999) {
-        notify('Inserisci una quantità valida maggiore di zero.', 'warning');
+        notify(minimumQuantityMessage(minimum, product.unit), 'warning');
         return false;
     }
     if (!await currentUser()) {
@@ -148,7 +187,9 @@ export async function addToCart(product, quantity = 1) {
 document.addEventListener('click', async event => {
     const button = event.target.closest('.add-cart');
     if (!button) return;
-    const quantity = button.closest('.product-card, .product-modal-panel')?.querySelector('.card-quantity')?.value || 1;
+    const input = button.closest('.product-card, .product-modal-panel')?.querySelector('.card-quantity');
+    if (input) normalizeProductQuantity(input, true);
+    const quantity = input?.value || 1;
     button.classList.add('is-loading');
     button.disabled = true;
     await addToCart({ id: button.dataset.id, name: button.dataset.name, slug: button.dataset.slug, price_per_kg: button.dataset.price, image_url: button.dataset.image, minimum_quantity: button.dataset.minimum, unit: button.dataset.unit }, quantity);
@@ -212,7 +253,21 @@ document.addEventListener('click', async event => {
 
 document.addEventListener('input', event => {
     if (event.target.matches('#cart-drawer-notes')) drawerNotes = event.target.value;
-    if (event.target.matches('.card-quantity')) updateProductTotal(event.target);
+    if (event.target.matches('.card-quantity, #quantity')) {
+        const input = event.target;
+        const { minimum } = quantityDetails(input);
+        const value = Number(String(input.value).replace(',', '.'));
+        const invalid = input.value !== '' && (!Number.isFinite(value) || value < minimum || value > 99999);
+        input.classList.toggle('is-invalid', invalid);
+        input.setAttribute('aria-invalid', String(invalid));
+        input.setCustomValidity(invalid ? minimumQuantityMessage(minimum, quantityDetails(input).unit) : '');
+        input.closest('.quantity-stepper')?.classList.toggle('is-invalid', invalid);
+        updateProductTotal(input);
+    }
+});
+
+document.addEventListener('change', event => {
+    if (event.target.matches('.card-quantity, #quantity')) normalizeProductQuantity(event.target, true);
 });
 
 document.addEventListener('keydown', event => {
@@ -250,7 +305,7 @@ document.addEventListener('change', event => {
     const quantity = Number(String(event.target.value).replace(',', '.'));
     const item = cart[Number(event.target.dataset.index)];
     if (!Number.isFinite(quantity) || quantity < Number(item?.minimum_quantity || 1) || quantity > 99999) {
-        notify('Inserisci una quantità valida maggiore di zero.', 'warning');
+        notify(minimumQuantityMessage(Number(item?.minimum_quantity || 1), item?.unit), 'warning');
         renderCart();
         return;
     }
@@ -271,14 +326,34 @@ async function submitOrder(customerNotes, button) {
     if (button.disabled || !getCart().length) return;
     button.disabled = true;
     button.classList.add('is-loading');
-    if (!await currentUser()) { location.href = '/login.html?next=/cart.html'; return; }
+    const whatsappWindow = window.open('/whatsapp.html', '_blank');
+
+    if (!whatsappWindow) {
+        notify('Consenti l’apertura delle finestre per proseguire su WhatsApp.', 'warning');
+        button.disabled = false;
+        button.classList.remove('is-loading');
+        return;
+    }
+
+    whatsappWindow.opener = null;
+
+    if (!await currentUser()) {
+        whatsappWindow.close();
+        location.href = '/login.html?next=/cart.html';
+        return;
+    }
     try {
         const payload = await api('/orders', { method: 'POST', body: JSON.stringify({ customer_notes: customerNotes || null, items: getCart().map(({ product_id, quantity }) => ({ product_id, quantity })) }) });
         saveCart([]);
         drawerNotes = '';
         updateCartBadges();
-        location.assign(payload.data.whatsapp_url);
-    } catch (error) { notify(error.message, 'error'); button.disabled = false; button.classList.remove('is-loading'); }
+        whatsappWindow.location.replace(payload.data.whatsapp_url);
+    } catch (error) {
+        whatsappWindow.close();
+        notify(error.message, 'error');
+        button.disabled = false;
+        button.classList.remove('is-loading');
+    }
 }
 
 document.querySelector('#order-form')?.addEventListener('submit', async event => {

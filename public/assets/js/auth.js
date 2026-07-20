@@ -19,7 +19,71 @@ function clearFormMessage() {
     if (!container) return;
     container.className = 'form-message';
     container.replaceChildren();
-    form.querySelectorAll('.is-invalid').forEach(field => field.classList.remove('is-invalid'));
+    form.querySelectorAll('.is-invalid').forEach(field => {
+        field.classList.remove('is-invalid');
+        field.removeAttribute('aria-invalid');
+        field.removeAttribute('aria-describedby');
+    });
+    form.querySelectorAll('.field-error').forEach(error => error.remove());
+}
+
+function readableError(message) {
+    const fallbacks = {
+        'validation.required': 'Questo campo è obbligatorio.',
+        'validation.email': 'Inserisci un indirizzo email valido.',
+        'validation.unique': 'Questo dato risulta già utilizzato.',
+        'validation.confirmed': 'I valori inseriti non coincidono.',
+        'validation.min.string': 'Il valore inserito è troppo corto.',
+    };
+
+    return fallbacks[message] || message;
+}
+
+function fieldContainer(field) {
+    if (field.name === 'type') return field.closest('.account-type-field');
+    return field.closest('.field');
+}
+
+function showFieldErrors(errors) {
+    let firstInvalidField = null;
+
+    Object.entries(errors).forEach(([name, messages]) => {
+        const fields = [...form.querySelectorAll(`[name="${CSS.escape(name)}"]`)];
+        if (!fields.length) return;
+
+        const field = fields[0];
+        const container = fieldContainer(field);
+        const message = readableError(Array.isArray(messages) ? messages[0] : messages);
+        const error = document.createElement('small');
+        const errorId = `${name}-error`;
+        error.id = errorId;
+        error.className = 'field-error';
+        error.setAttribute('role', 'alert');
+        error.textContent = message;
+        container?.append(error);
+
+        fields.forEach(input => {
+            input.classList.add('is-invalid');
+            input.setAttribute('aria-invalid', 'true');
+            input.setAttribute('aria-describedby', errorId);
+        });
+
+        firstInvalidField ||= field;
+    });
+
+    if (firstInvalidField) {
+        firstInvalidField.focus({ preventScroll: true });
+        fieldContainer(firstInvalidField)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function errorSummary(error) {
+    const messages = Object.values(error.errors || {}).flat().map(readableError).filter(Boolean);
+    if (messages.length) return messages[0];
+    if (error.status === 429) return 'Hai effettuato troppi tentativi. Attendi un minuto e riprova.';
+    if (error.status >= 500) return 'Il servizio non è momentaneamente disponibile. Riprova tra poco.';
+    if (!navigator.onLine) return 'Connessione assente. Controlla la rete e riprova.';
+    return readableError(error.message) || 'Controlla i dati inseriti e riprova.';
 }
 
 function updateRegistrationFields() {
@@ -95,6 +159,19 @@ form?.querySelectorAll('[name="password"]').forEach(input => {
 customerTypes.forEach(type => type.addEventListener('change', updateRegistrationFields));
 updateRegistrationFields();
 
+form?.addEventListener('input', event => {
+    const field = event.target.closest('[name]');
+    if (!field) return;
+    const error = fieldContainer(field)?.querySelector('.field-error');
+    const relatedFields = form.querySelectorAll(`[name="${CSS.escape(field.name)}"]`);
+    relatedFields.forEach(input => {
+        input.classList.remove('is-invalid');
+        input.removeAttribute('aria-invalid');
+        input.removeAttribute('aria-describedby');
+    });
+    error?.remove();
+});
+
 if (form) {
     form.addEventListener('submit', async event => {
         event.preventDefault();
@@ -130,11 +207,8 @@ if (form) {
             const next = new URLSearchParams(location.search).get('next') || '/catalog.html';
             setTimeout(() => { location.href = next; }, 650);
         } catch (error) {
-            const entries = Object.entries(error.errors || {});
-            const first = entries.flatMap(([, errors]) => errors)[0];
-            const message = first || error.message || 'Controlla i dati inseriti e riprova.';
-            const invalidField = entries[0]?.[0];
-            form.querySelector(`[name="${invalidField}"]`)?.classList.add('is-invalid');
+            const message = errorSummary(error);
+            showFieldErrors(error.errors || {});
             showFormMessage(message);
             notify(message, 'error');
             submitButton.disabled = false;

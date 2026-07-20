@@ -25,7 +25,7 @@ class AuthController extends Controller
             ], 409);
         } catch (QueryException) {
             return response()->json([
-                'message' => 'Esiste già un account o un cliente con questi dati.',
+                'message' => 'Non è stato possibile completare la registrazione perché alcuni dati risultano già utilizzati.',
             ], 409);
         }
 
@@ -45,7 +45,10 @@ class AuthController extends Controller
         ];
 
         if (! Auth::guard('customer')->attempt($credentials, $request->boolean('remember'))) {
-            return response()->json(['message' => 'Credenziali non valide.'], 401);
+            return response()->json([
+                'message' => 'Email o password non corretti.',
+                'errors' => ['email' => ['Controlla l’indirizzo email e la password inseriti.']],
+            ], 401);
         }
 
         $request->session()->regenerate();
@@ -56,7 +59,10 @@ class AuthController extends Controller
             $request->session()->migrate(true);
             $request->session()->regenerateToken();
 
-            return response()->json(['message' => 'Account non attivo.'], 403);
+            return response()->json([
+                'message' => 'Il tuo account è stato disattivato. Contatta l’assistenza per maggiori informazioni.',
+                'errors' => ['email' => ['Questo account non è attualmente abilitato all’accesso.']],
+            ], 403);
         }
 
         return (new UserResource($user->load('customer')))->additional([

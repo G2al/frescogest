@@ -697,6 +697,13 @@ html, body { touch-action: pan-y; }
 .footer-company strong { color: #fff; }
 .footer-bottom { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-block: 20px; border-top: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.58); font-size: .78rem; }
 
+.whatsapp-redirect-page { min-height: 100dvh; display: grid; margin: 0; place-items: center; padding: 24px; background: radial-gradient(circle at 50% 20%,rgba(35,190,113,.17),transparent 32%),linear-gradient(180deg,#f8fcfa,#edf8f3); }
+.whatsapp-redirect-card { width: min(440px,100%); display: grid; justify-items: center; padding: 44px 30px; border: 1px solid rgba(0,112,96,.16); border-radius: 28px; text-align: center; background: #fff; box-shadow: 0 28px 70px rgba(4,65,54,.13); }
+.whatsapp-redirect-card img { width: 180px; height: 130px; object-fit: contain; }
+.whatsapp-redirect-card h1 { margin: 20px 0 8px; font-size: 1.75rem; }
+.whatsapp-redirect-card p { max-width: 330px; margin: 0; color: var(--muted); line-height: 1.6; }
+.whatsapp-loader { width: 34px; height: 34px; margin-top: 22px; border: 3px solid #d8eee5; border-top-color: var(--brand-teal); border-radius: 50%; animation: spin .8s linear infinite; }
+
 .auth-page { background: radial-gradient(circle at 12% 18%,rgba(35,190,113,.12),transparent 30%),linear-gradient(180deg,#f8fcfa,#eef8f4); }
 .auth-page .site-header, .auth-page .footer { display: none; }
 .auth-main { min-height: 100dvh; display: grid; place-items: center; padding: 34px 0; }
@@ -708,6 +715,10 @@ html, body { touch-action: pan-y; }
 .auth-form-head h2 { font-size: clamp(2.1rem,5vw,3rem); }
 .auth-form input { min-height: 50px; transition: border-color .2s ease,box-shadow .2s ease,background .2s ease; }
 .auth-form input.is-invalid { border-color: #d53c3c; background: #fff8f8; box-shadow: 0 0 0 3px rgba(213,60,60,.1); }
+.auth-form .account-type-option input.is-invalid + .account-type-card { border-color: #d53c3c; background: #fff8f8; box-shadow: 0 0 0 3px rgba(213,60,60,.1); }
+.field-error { display: flex; align-items: center; gap: 6px; margin-top: 7px; color: #b12f35; font-size: .75rem; font-weight: 750; line-height: 1.4; }
+.field-error::before { width: 5px; height: 5px; flex: 0 0 auto; border-radius: 50%; background: currentColor; content: ''; }
+.quantity-stepper.is-invalid, .quantity.is-invalid { border-color: #d53c3c; background: #fff8f8; box-shadow: 0 0 0 3px rgba(213,60,60,.1); }
 .account-type-field { min-width: 0; margin: 0; padding: 0; border: 0; }
 .account-type-field.full { grid-column: 1 / -1; }
 .account-type-field legend { margin-bottom: 11px; font-size: .95rem; font-weight: 800; }

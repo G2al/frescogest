@@ -39,6 +39,10 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::HEAD_END,
                 fn (): string => view('filament.admin-login-branding')->render(),
             )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => view('filament.pending-orders-poller')->render(),
+            )
             ->colors([
                 'primary' => '#007060',
                 'success' => '#10B050',

@@ -1,0 +1,1 @@
+<livewire:pending-orders-poller />

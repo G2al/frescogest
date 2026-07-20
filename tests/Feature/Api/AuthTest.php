@@ -62,15 +62,47 @@ class AuthTest extends TestCase
         $this->postJson('/api/v1/auth/register', $base + [
             'email' => 'existing@example.com',
             'phone' => '+39 320 111 2222',
-        ])->assertConflict();
+        ])->assertConflict()
+            ->assertJsonPath('errors.email.0', 'Questo indirizzo email è già associato a un cliente. Accedi oppure contatta l’assistenza.');
 
         $this->postJson('/api/v1/auth/register', $base + [
             'email' => 'other@example.com',
             'phone' => '+39 333 000 1111',
-        ])->assertConflict();
+        ])->assertConflict()
+            ->assertJsonPath('errors.phone.0', 'Questo numero di telefono è già associato a un cliente. Accedi oppure contatta l’assistenza.');
 
         $this->assertNull($customer->fresh()->user_id);
         $this->assertDatabaseCount('users', 0);
+    }
+
+    public function test_authentication_validation_returns_clear_italian_messages(): void
+    {
+        User::factory()->create(['email' => 'existing@example.com']);
+
+        $this->postJson('/api/v1/auth/register', [
+            'first_name' => 'Mario',
+            'last_name' => 'Rossi',
+            'email' => 'EXISTING@EXAMPLE.COM',
+            'phone' => '+39 333 123 4567',
+            'password' => 'pass',
+            'password_confirmation' => 'pass',
+        ])->assertUnprocessable()
+            ->assertJsonPath('errors.email.0', 'Esiste già un account con questo indirizzo email. Accedi oppure recupera la password.');
+
+        $this->postJson('/api/v1/auth/register', [
+            'email' => 'not-an-email',
+        ])->assertUnprocessable()
+            ->assertJsonPath('errors.first_name.0', 'Inserisci il tuo nome.')
+            ->assertJsonPath('errors.email.0', 'Inserisci un indirizzo email valido.')
+            ->assertJsonPath('errors.phone.0', 'Inserisci il tuo numero di telefono.')
+            ->assertJsonPath('errors.password.0', 'Inserisci una password.');
+
+        $this->postJson('/api/v1/auth/login', [
+            'email' => 'existing@example.com',
+            'password' => 'wrong-password',
+        ])->assertUnauthorized()
+            ->assertJsonPath('message', 'Email o password non corretti.')
+            ->assertJsonPath('errors.email.0', 'Controlla l’indirizzo email e la password inseriti.');
     }
 
     public function test_password_can_be_recovered_without_disclosing_unknown_accounts(): void
