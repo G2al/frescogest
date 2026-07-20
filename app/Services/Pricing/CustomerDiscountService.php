@@ -35,7 +35,7 @@ class CustomerDiscountService
 
     public function resetManualPrices(Customer $customer): void
     {
-        $customer->productPrices()->update(['custom_price_per_kg' => null]);
+        $customer->productPrices()->update(['custom_price_per_unit' => null, 'custom_minimum_quantity' => null]);
     }
 
     public function resetAll(Customer $customer): void
@@ -43,7 +43,7 @@ class CustomerDiscountService
         DB::transaction(function () use ($customer): void {
             $customer->update(['global_discount_percentage' => null]);
             $customer->categoryDiscounts()->delete();
-            $customer->productPrices()->update(['custom_price_per_kg' => null]);
+            $customer->productPrices()->update(['custom_price_per_unit' => null, 'custom_minimum_quantity' => null]);
         });
     }
 }

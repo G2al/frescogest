@@ -1,5 +1,5 @@
-import { api, currentUser } from './api.js?v=20260717.10';
-import { notify, refreshIcons } from './ui.js?v=20260717.10';
+import { api, currentUser } from './api.js?v=20260720.5';
+import { notify, refreshIcons } from './ui.js?v=20260720.5';
 
 document.body.classList.add('orders-page');
 
@@ -78,7 +78,7 @@ async function loadOrders() {
         details.hidden = expanded;
     });
     const created = new URLSearchParams(location.search).get('created');
-    if (created) notify(`Richiesta ${created} salvata. WhatsApp non costituisce conferma dell’ordine.`);
+    if (created) notify(`Richiesta ${created} salvata. WhatsApp non costituisce conferma dell’ordine.`, 'success');
 }
 
-loadOrders().catch(error => notify(error.message));
+loadOrders().catch(error => notify(error.message, 'error'));

@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Services\Pricing\ProductListPriceCalculator;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
@@ -38,24 +40,57 @@ class ProductForm
                         Toggle::make('active')
                             ->label('Attivo')
                             ->default(true),
-                        Toggle::make('is_public')
-                            ->label('Pubblico nel catalogo')
-                            ->default(false),
-                        Toggle::make('is_seasonal')
-                            ->label('Stagionale')
-                            ->default(false),
-                        TextInput::make('sort_order')
-                            ->label('Ordine visualizzazione')
+                        TextInput::make('purchase_cost_per_unit')
+                            ->label('Costo di acquisto netto')
+                            ->helperText('Costo senza IVA per ogni kg, cassa, pezzo o altra unità selezionata.')
                             ->numeric()
-                            ->default(0),
-                        TextInput::make('price_per_kg')
-                            ->label('Prezzo base')
+                            ->minValue(0)
+                            ->step(0.0001)
+                            ->prefix('€')
+                            ->required()
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(fn (Get $get, Set $set) => self::updateCalculatedPrices($get, $set)),
+                        TextInput::make('markup_percentage')
+                            ->label('Ricarico sul costo')
+                            ->helperText('100% significa che il prezzo di vendita è il doppio del costo di acquisto.')
                             ->numeric()
-                            ->minValue(0.01)
-                            ->maxValue(99999)
+                            ->minValue(0)
+                            ->maxValue(10000)
+                            ->step(0.01)
+                            ->suffix('%')
+                            ->default(100)
+                            ->required()
+                            ->live(debounce: 500)
+                            ->afterStateUpdated(fn (Get $get, Set $set) => self::updateCalculatedPrices($get, $set)),
+                        TextInput::make('base_price_per_unit')
+                            ->label('Prezzo listino base netto')
+                            ->helperText('Calcolato automaticamente: costo di acquisto + ricarico.')
+                            ->numeric()
                             ->step(0.01)
                             ->prefix('€')
-                            ->suffix('/kg')
+                            ->readOnly()
+                            ->dehydrated(false),
+                        TextInput::make('base_minimum_quantity')
+                            ->label('Quantità minima listino base')
+                            ->helperText('Quantità minima acquistabile espressa nell’unità di misura selezionata.')
+                            ->numeric()
+                            ->minValue(0.001)
+                            ->step(0.001)
+                            ->required(),
+                        TextInput::make('restaurant_price_per_unit')
+                            ->label('Prezzo listino ristoratori netto')
+                            ->helperText('Uguale al prezzo unitario del listino base; cambia soltanto la quantità minima.')
+                            ->numeric()
+                            ->step(0.01)
+                            ->prefix('€')
+                            ->readOnly()
+                            ->dehydrated(false),
+                        TextInput::make('restaurant_minimum_quantity')
+                            ->label('Quantità minima ristoratori')
+                            ->helperText('Quantità minima acquistabile da un ristoratore nell’unità selezionata.')
+                            ->numeric()
+                            ->minValue(0.001)
+                            ->step(0.001)
                             ->required(),
                         Textarea::make('description')
                             ->label('Descrizione')
@@ -106,5 +141,16 @@ class ProductForm
                     ])
                     ->columns(2),
             ]);
+    }
+
+    private static function updateCalculatedPrices(Get $get, Set $set): void
+    {
+        $prices = app(ProductListPriceCalculator::class)->calculate(
+            $get('purchase_cost_per_unit'),
+            $get('markup_percentage'),
+        );
+
+        $set('base_price_per_unit', number_format($prices['base_price'], 2, '.', ''));
+        $set('restaurant_price_per_unit', number_format($prices['restaurant_price'], 2, '.', ''));
     }
 }

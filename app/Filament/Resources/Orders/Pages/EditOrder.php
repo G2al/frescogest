@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Orders\Pages;
 use App\Filament\Resources\Orders\Actions\DeliveryDocumentActions;
 use App\Filament\Resources\Orders\Actions\OrderDeleteAction;
 use App\Filament\Resources\Orders\Actions\OrderPaymentActions;
+use App\Filament\Resources\Orders\Actions\OrderStatusActions;
 use App\Filament\Resources\Orders\OrderResource;
 use Filament\Resources\Pages\EditRecord;
 
@@ -17,6 +18,7 @@ class EditOrder extends EditRecord
         return [
             ...OrderPaymentActions::make(),
             ...DeliveryDocumentActions::make(),
+            ...OrderStatusActions::make(),
             OrderDeleteAction::make(),
         ];
     }
@@ -25,10 +27,6 @@ class EditOrder extends EditRecord
     {
         if ($data['status'] === 'confirmed' && blank($data['confirmed_at'] ?? null)) {
             $data['confirmed_at'] = now();
-        }
-
-        if ($data['status'] === 'delivered' && blank($data['delivered_at'] ?? null)) {
-            $data['delivered_at'] = now();
         }
 
         return $data;

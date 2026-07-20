@@ -12,7 +12,7 @@ class CreateOrder extends CreateRecord
     protected function afterCreate(): void
     {
         $this->record->update([
-            'order_number' => 'FG-'.str_pad((string) $this->record->id, 6, '0', STR_PAD_LEFT),
+            'order_number' => 'IPF-'.str_pad((string) $this->record->id, 6, '0', STR_PAD_LEFT),
         ]);
     }
 }

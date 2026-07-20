@@ -24,7 +24,7 @@ class OrderBulkActions
                 ->requiresConfirmation()
                 ->action(fn (Collection $records) => self::updateStatus(
                     $records,
-                    OrderStatus::PendingContact,
+                    OrderStatus::WhatsAppPending,
                     OrderStatus::Confirmed,
                     'Ordini selezionati confermati',
                 ))
@@ -38,9 +38,8 @@ class OrderBulkActions
                     DB::transaction(function () use ($records): void {
                         $records
                             ->filter(fn (Order $order): bool => in_array($order->status, [
-                                OrderStatus::PendingContact,
+                                OrderStatus::WhatsAppPending,
                                 OrderStatus::Confirmed,
-                                OrderStatus::Preparing,
                             ], true))
                             ->each(fn (Order $order) => app(UpdateOrderStatusService::class)
                                 ->update($order, OrderStatus::Cancelled));

@@ -9,14 +9,14 @@ class WhatsAppLinkService
 {
     public function create(Order $order): array
     {
-        $number = preg_replace('/\D+/', '', (string) config('frescogest.whatsapp_number'));
+        $number = preg_replace('/\D+/', '', (string) config('ilparadisodellafrutta.whatsapp_number'));
 
         if ($number === '') {
             throw new RuntimeException('Il numero WhatsApp non è configurato.');
         }
 
         $lines = [
-            '🥬 *FRESCOGEST*',
+            '🥬 *IL PARADISO DELLA FRUTTA*',
             "*Richiesta ordine {$order->order_number}*",
             '',
             "👤 *Cliente:* {$order->customer->display_name}",
@@ -25,13 +25,14 @@ class WhatsAppLinkService
         ];
 
         foreach ($order->items as $item) {
-            $quantity = rtrim(rtrim(number_format((float) $item->quantity, 3, '.', ''), '0'), '.');
+            $unitPrice = $item->unit_price_net ?: $item->price_per_kg;
+            $lineGross = $item->line_gross ?: $item->line_total;
             $lines[] = "• *{$item->product_name}*";
-            $lines[] = "  {$quantity} kg × € {$item->price_per_kg}/kg = *€ {$item->line_total}*";
+            $lines[] = "  {$this->quantity($item->quantity, $item->unit_of_measure_symbol)} × € {$this->money($unitPrice)}/{$item->unit_of_measure_symbol} = *€ {$this->money($lineGross)} IVA incl.*";
         }
 
         $lines[] = '';
-        $lines[] = "💶 *TOTALE INDICATIVO: € {$order->total_amount}*";
+        $lines[] = '💶 *TOTALE IVA INCLUSA: € '.$this->money($order->total_gross ?: $order->total_amount).'*';
 
         if (filled($order->customer_notes)) {
             $lines[] = '';
@@ -40,14 +41,31 @@ class WhatsAppLinkService
         }
 
         $lines[] = '';
-        $lines[] = '⏳ _Richiesta in attesa di conferma._';
+        $lines[] = '⏳ _Richiesta in trattativa WhatsApp._';
         $lines[] = 'Ti contatto per concordare disponibilità, dettagli e consegna.';
-
         $message = implode("\n", $lines);
 
-        return [
-            'url' => "https://wa.me/{$number}?text=".rawurlencode($message),
-            'message' => $message,
-        ];
+        return ['url' => "https://wa.me/{$number}?text=".rawurlencode($message), 'message' => $message];
+    }
+
+    private function quantity(string|int|float $quantity, string $unit): string
+    {
+        $value = (float) $quantity;
+
+        if ($unit === 'kg' && $value > 0 && $value < 1) {
+            return $this->number($value * 1000).' g';
+        }
+
+        return $this->number($value).' '.$unit;
+    }
+
+    private function money(string|int|float $amount): string
+    {
+        return number_format((float) $amount, 2, ',', '.');
+    }
+
+    private function number(float $value): string
+    {
+        return rtrim(rtrim(number_format($value, 3, ',', ''), '0'), ',');
     }
 }

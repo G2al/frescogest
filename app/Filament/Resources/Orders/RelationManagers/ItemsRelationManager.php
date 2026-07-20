@@ -45,8 +45,11 @@ class ItemsRelationManager extends RelationManager
                 TextColumn::make('product_name')->label('Prodotto')->searchable(),
                 TextColumn::make('quantity')->label('Quantità')->numeric(decimalPlaces: 3),
                 TextColumn::make('unit_of_measure_symbol')->label('Unità'),
-                TextColumn::make('price_per_kg')->label('Prezzo/kg')->money('EUR'),
-                TextColumn::make('line_total')->label('Totale')->money('EUR'),
+                TextColumn::make('unit_price_net')->label('Prezzo netto')->money('EUR'),
+                TextColumn::make('tax_percentage')->label('IVA')->suffix('%'),
+                TextColumn::make('line_net')->label('Netto')->money('EUR'),
+                TextColumn::make('line_gross')->label('IVA inclusa')->money('EUR'),
+                TextColumn::make('margin_amount')->label('Margine')->money('EUR'),
             ])
             ->headerActions([
                 CreateAction::make()

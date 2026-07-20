@@ -37,10 +37,24 @@ class ProductsTable
                 TextColumn::make('defaultUnitOfMeasure.symbol')
                     ->label('Unità')
                     ->sortable(),
-                TextColumn::make('price_per_kg')
-                    ->label('Prezzo base')
+                TextColumn::make('purchase_cost_per_unit')
+                    ->label('Costo netto')
                     ->money('EUR')
-                    ->suffix('/kg')
+                    ->sortable(),
+                TextColumn::make('purchase_cost_gross')
+                    ->label('Costo IVA incl.')
+                    ->money('EUR'),
+                TextColumn::make('base_price_per_unit')
+                    ->label('Listino base')
+                    ->money('EUR')
+                    ->sortable(),
+                TextColumn::make('markup_percentage')
+                    ->label('Ricarico')
+                    ->suffix('%')
+                    ->sortable(),
+                TextColumn::make('restaurant_price_per_unit')
+                    ->label('Listino ristoratori')
+                    ->money('EUR')
                     ->sortable(),
                 TextColumn::make('active')
                     ->label('Stato')
@@ -48,11 +62,6 @@ class ProductsTable
                     ->formatStateUsing(fn (bool $state): string => $state ? 'Attivo' : 'Non attivo')
                     ->color(fn (bool $state): string => $state ? 'success' : 'gray')
                     ->sortable(),
-                TextColumn::make('is_public')
-                    ->label('Catalogo')
-                    ->badge()
-                    ->formatStateUsing(fn (bool $state): string => $state ? 'Pubblico' : 'Nascosto')
-                    ->color(fn (bool $state): string => $state ? 'success' : 'gray'),
             ])
             ->filters([
                 TernaryFilter::make('active')

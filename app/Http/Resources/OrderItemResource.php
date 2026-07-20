@@ -21,7 +21,12 @@ class OrderItemResource extends JsonResource
             'product_name' => $this->product_name,
             'quantity' => $this->quantity,
             'price_per_kg' => $this->price_per_kg,
+            'unit_price_net' => $this->unit_price_net,
+            'tax_percentage' => $this->tax_percentage,
             'line_total' => $this->line_total,
+            'line_net' => $this->line_net,
+            'line_tax' => $this->line_tax,
+            'line_gross' => $this->line_gross,
             'unit_of_measure_name' => $this->unit_of_measure_name,
             'unit_of_measure_symbol' => $this->unit_of_measure_symbol,
             'image_url' => $this->product?->image_path

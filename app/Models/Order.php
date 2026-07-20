@@ -21,6 +21,12 @@ class Order extends Model
         'requested_at',
         'customer_notes',
         'total_amount',
+        'total_net',
+        'total_tax',
+        'total_gross',
+        'total_purchase_cost_net',
+        'gross_margin',
+        'gross_margin_percentage',
         'internal_notes',
         'delivery_address',
         'delivery_city',
@@ -31,6 +37,7 @@ class Order extends Model
         'expected_delivery_at',
         'delivered_at',
         'paid_at',
+        'payment_amount',
         'payment_reference',
     ];
 
@@ -64,6 +71,13 @@ class Order extends Model
             'delivered_at' => 'datetime',
             'paid_at' => 'datetime',
             'total_amount' => 'decimal:2',
+            'total_net' => 'decimal:2',
+            'total_tax' => 'decimal:2',
+            'total_gross' => 'decimal:2',
+            'total_purchase_cost_net' => 'decimal:2',
+            'gross_margin' => 'decimal:2',
+            'gross_margin_percentage' => 'decimal:2',
+            'payment_amount' => 'decimal:2',
         ];
     }
 }

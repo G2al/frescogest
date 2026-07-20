@@ -38,7 +38,6 @@ class CatalogController extends Controller
                 });
             })
             ->when($request->boolean('seasonal'), fn ($query) => $query->where('is_seasonal', true))
-            ->orderBy('sort_order')
             ->orderBy('name')
             ->paginate(12);
 

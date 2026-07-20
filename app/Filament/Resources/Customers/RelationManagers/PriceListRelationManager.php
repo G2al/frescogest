@@ -27,7 +27,7 @@ class PriceListRelationManager extends RelationManager
 
     public static function getBadge(Model $ownerRecord, string $pageClass): ?string
     {
-        $rules = $ownerRecord->productPrices()->whereNotNull('custom_price_per_kg')->count()
+        $rules = $ownerRecord->productPrices()->whereNotNull('custom_price_per_unit')->count()
             + $ownerRecord->categoryDiscounts()->count()
             + (filled($ownerRecord->global_discount_percentage) ? 1 : 0);
 
@@ -42,7 +42,7 @@ class PriceListRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('custom_price_per_kg')
+            TextInput::make('custom_price_per_unit')
                 ->label('Prezzo manuale per questo cliente')
                 ->helperText('Ha precedenza su qualsiasi sconto. Lascia vuoto per applicare lo sconto di categoria, quello generale o il prezzo base.')
                 ->numeric()
@@ -50,7 +50,11 @@ class PriceListRelationManager extends RelationManager
                 ->maxValue(99999)
                 ->step(0.01)
                 ->prefix('€')
-                ->suffix('/kg'),
+                ->helperText('Prezzo netto per l’unità di vendita.'),
+            TextInput::make('custom_minimum_quantity')
+                ->label('Quantità minima personalizzata')
+                ->helperText('Lascia vuoto per usare il minimo del listino assegnato.')
+                ->numeric()->minValue(0.001)->step(0.001),
         ]);
     }
 
@@ -61,7 +65,7 @@ class PriceListRelationManager extends RelationManager
                 ->with(['customer.categoryDiscounts', 'product.productCategory'])
                 ->whereHas('product', fn (Builder $product): Builder => $product
                     ->where('active', true)
-                    ->where('price_per_kg', '>', 0)))
+                    ->where('base_price_per_unit', '>', 0)))
             ->recordTitleAttribute('product.name')
             ->columns([
                 TextColumn::make('product.name')
@@ -71,10 +75,9 @@ class PriceListRelationManager extends RelationManager
                 TextColumn::make('product.productCategory.name')
                     ->label('Categoria')
                     ->sortable(),
-                TextColumn::make('product.price_per_kg')
+                TextColumn::make('product.base_price_per_unit')
                     ->label('Prezzo base')
                     ->money('EUR')
-                    ->suffix('/kg')
                     ->sortable(),
                 TextColumn::make('pricing_rule')
                     ->label('Regola applicata')
@@ -86,10 +89,9 @@ class PriceListRelationManager extends RelationManager
                         'global' => 'success',
                         default => 'gray',
                     }),
-                TextColumn::make('effective_price_per_kg')
+                TextColumn::make('effective_price_per_unit')
                     ->label('Prezzo cliente')
                     ->money('EUR')
-                    ->suffix('/kg')
                     ->weight('bold'),
             ])
             ->filters([
@@ -105,7 +107,7 @@ class PriceListRelationManager extends RelationManager
                             ->whereHas('product', fn (Builder $product): Builder => $product
                                 ->where('product_category_id', $categoryId)),
                     )),
-                TernaryFilter::make('custom_price_per_kg')
+                TernaryFilter::make('custom_price_per_unit')
                     ->label('Prezzo manuale')
                     ->trueLabel('Con prezzo manuale')
                     ->falseLabel('Senza prezzo manuale')
@@ -206,6 +208,8 @@ class PriceListRelationManager extends RelationManager
             'product' => 'Prezzo manuale',
             'category' => 'Categoria -'.$this->formatPercentage($details['discount_percentage']).'%',
             'global' => 'Generale -'.$this->formatPercentage($details['discount_percentage']).'%',
+            'restaurant' => 'Listino ristoratori',
+            'minimum' => 'Minimo personalizzato',
             default => 'Prezzo base',
         };
     }

@@ -27,6 +27,9 @@ class DeliveryDocument extends Model
         'recipient_snapshot',
         'destination_snapshot',
         'items_snapshot',
+        'total_net',
+        'total_tax',
+        'total_gross',
     ];
 
     public function order(): BelongsTo
@@ -49,6 +52,9 @@ class DeliveryDocument extends Model
             'recipient_snapshot' => 'array',
             'destination_snapshot' => 'array',
             'items_snapshot' => 'array',
+            'total_net' => 'decimal:2',
+            'total_tax' => 'decimal:2',
+            'total_gross' => 'decimal:2',
         ];
     }
 }

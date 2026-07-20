@@ -24,22 +24,22 @@ class OrderTest extends TestCase
 
     public function test_order_is_saved_before_whatsapp_with_snapshots_and_pending_status(): void
     {
-        config(['frescogest.whatsapp_number' => '+39 379 268 8229']);
+        config(['ilparadisodellafrutta.whatsapp_number' => '+39 379 268 8229']);
         [$user, $product] = $this->customerAndProduct();
         $product->update(['image_path' => 'catalog/products/pomodori.png']);
         $user->customer->productPrices()->where('product_id', $product->id)->update([
-            'custom_price_per_kg' => 3.60,
+            'custom_price_per_unit' => 3.60,
         ]);
 
         $response = $this->actingAs($user, 'customer')->postJson('/api/v1/orders', [
             'customer_notes' => 'Consegna al mattino',
             'items' => [['product_id' => $product->id, 'quantity' => 2.5]],
         ])->assertCreated()
-            ->assertJsonPath('data.order_number', 'FG-000001')
+            ->assertJsonPath('data.order_number', 'IPF-000001')
             ->assertJsonPath('data.order.status', OrderStatus::PendingContact->value);
 
         $order = Order::query()->firstOrFail();
-        $this->assertSame('FG-000001', $order->order_number);
+        $this->assertSame('IPF-000001', $order->order_number);
         $this->assertSame(OrderStatus::PendingContact, $order->status);
         $this->assertDatabaseHas('order_items', [
             'order_id' => $order->id,
@@ -47,9 +47,13 @@ class OrderTest extends TestCase
             'unit_of_measure_symbol' => 'kg',
             'quantity' => 2.5,
             'price_per_kg' => 3.60,
-            'line_total' => 9.00,
+            'line_net' => 9.00,
+            'line_gross' => 9.36,
         ]);
-        $this->assertSame('9.00', $order->total_amount);
+        $this->assertSame('9.36', $order->total_amount);
+        $this->assertSame('9.00', $order->total_net);
+        $this->assertSame('0.36', $order->total_tax);
+        $this->assertSame('9.36', $order->total_gross);
         $this->assertStringStartsWith('https://wa.me/393792688229?text=', $response->json('data.whatsapp_url'));
         $this->assertSame(OrderStatus::PendingContact, $order->fresh()->status);
         $this->actingAs($user, 'customer')
@@ -61,21 +65,51 @@ class OrderTest extends TestCase
     public function test_orders_are_private_and_unavailable_products_are_rejected(): void
     {
         [$owner, $product] = $this->customerAndProduct();
-        $order = Order::create(['customer_id' => $owner->customer->id, 'order_number' => 'FG-000001', 'status' => OrderStatus::PendingContact, 'requested_at' => now()]);
+        $order = Order::create(['customer_id' => $owner->customer->id, 'order_number' => 'IPF-000001', 'status' => OrderStatus::PendingContact, 'requested_at' => now()]);
         $other = User::factory()->create(['active' => true]);
         Customer::factory()->create(['user_id' => $other->id]);
 
         $this->actingAs($other, 'customer')->getJson("/api/v1/orders/{$order->order_number}")->assertNotFound();
-        $product->update(['is_public' => false]);
+        $product->update(['active' => false]);
         $this->actingAs($owner, 'customer')->postJson('/api/v1/orders', ['items' => [['product_id' => $product->id, 'quantity' => 1]]])->assertUnprocessable();
     }
 
-    public function test_order_status_updates_manage_confirmation_and_delivery_dates(): void
+    public function test_a_two_hundred_gram_package_uses_a_kilogram_unit_price(): void
+    {
+        [$user, $product] = $this->customerAndProduct();
+        $product->update([
+            'purchase_cost_per_unit' => 24.65,
+            'markup_percentage' => 100,
+            'base_minimum_quantity' => 0.2,
+            'restaurant_minimum_quantity' => 1,
+        ]);
+
+        $this->actingAs($user, 'customer')->postJson('/api/v1/orders', [
+            'items' => [['product_id' => $product->id, 'quantity' => 0.2]],
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('order_items', [
+            'product_id' => $product->id,
+            'quantity' => 0.2,
+            'unit_of_measure_symbol' => 'kg',
+            'unit_price_net' => 49.30,
+            'line_net' => 9.86,
+            'line_tax' => 0.39,
+            'line_gross' => 10.25,
+        ]);
+        $this->assertDatabaseHas('orders', [
+            'total_net' => 9.86,
+            'total_tax' => 0.39,
+            'total_gross' => 10.25,
+        ]);
+    }
+
+    public function test_order_status_updates_manage_the_confirmed_and_whatsapp_states(): void
     {
         [$user] = $this->customerAndProduct();
         $order = Order::create([
             'customer_id' => $user->customer->id,
-            'order_number' => 'FG-000001',
+            'order_number' => 'IPF-000001',
             'status' => OrderStatus::PendingContact,
             'requested_at' => now(),
         ]);
@@ -84,11 +118,6 @@ class OrderTest extends TestCase
         $service->update($order, OrderStatus::Confirmed);
         $this->assertSame(OrderStatus::Confirmed, $order->status);
         $this->assertNotNull($order->confirmed_at);
-
-        $service->update($order, OrderStatus::Preparing);
-        $service->update($order, OrderStatus::Delivered);
-        $this->assertSame(OrderStatus::Delivered, $order->status);
-        $this->assertNotNull($order->delivered_at);
 
         $service->update($order, OrderStatus::PendingContact);
         $this->assertSame(OrderStatus::PendingContact, $order->status);
@@ -101,7 +130,7 @@ class OrderTest extends TestCase
         [$user, $product] = $this->customerAndProduct();
         $order = Order::create([
             'customer_id' => $user->customer->id,
-            'order_number' => 'FG-000001',
+            'order_number' => 'IPF-000001',
             'status' => OrderStatus::PendingContact,
             'requested_at' => now(),
         ]);
@@ -125,43 +154,43 @@ class OrderTest extends TestCase
     {
         [$user, $product] = $this->customerAndProduct();
         $company = Company::create([
-            'business_name' => 'Frescogest S.r.l.',
-            'vat_number' => '01234567890',
-            'address' => 'Via Roma 1',
-            'city' => 'Napoli',
-            'postal_code' => '80100',
-            'province' => 'NA',
+            'business_name' => 'Il Paradiso della Frutta di Castaldo Mariarosaria',
+            'vat_number' => '02396610186',
+            'address' => 'Via dei Caduti Genovesi, 8',
+            'city' => 'Bornasco',
+            'province' => 'PV',
             'active' => true,
         ]);
         $order = Order::create([
             'customer_id' => $user->customer->id,
-            'order_number' => 'FG-000001',
-            'status' => OrderStatus::Delivered,
+            'order_number' => 'IPF-000001',
+            'status' => OrderStatus::Confirmed,
             'requested_at' => now(),
-            'delivered_at' => now(),
-            'paid_at' => now(),
+            'total_net' => 8.40,
+            'total_tax' => 0.34,
+            'total_gross' => 8.74,
         ]);
         $order->items()->create([
             'product_id' => $product->id,
             'product_name' => $product->name,
             'quantity' => 2,
+            'unit_price_net' => 4.20,
+            'tax_percentage' => 4,
+            'line_net' => 8.40,
+            'line_gross' => 8.74,
             'unit_of_measure_name' => 'Chilogrammi',
             'unit_of_measure_symbol' => 'kg',
         ]);
         $admin = User::factory()->create(['active' => true, 'can_access_panel' => true]);
 
         $document = app(CreateDeliveryDocumentService::class)->create($order, $admin, [
-            'company_id' => $company->id,
             'issued_at' => now(),
-            'transport_reason' => 'Vendita',
-            'transport_method' => 'Mittente',
-            'goods_appearance' => 'Colli',
-            'packages_count' => 1,
+            'mark_as_paid' => false,
         ]);
 
-        $this->assertSame('DDT-'.now()->year.'-000001', $document->document_number);
+        $this->assertSame('BC-'.now()->year.'-000001', $document->document_number);
         $this->assertSame('Pomodori', $document->items_snapshot[0]['name']);
-        $this->assertSame('Frescogest S.r.l.', $document->sender_snapshot['business_name']);
+        $this->assertSame('Il Paradiso della Frutta di Castaldo Mariarosaria', $document->sender_snapshot['business_name']);
         $this->actingAs($admin, 'admin')
             ->get(route('admin.orders.delivery-document', $order))
             ->assertOk()
@@ -180,7 +209,7 @@ class OrderTest extends TestCase
         $category = ProductCategory::create(['name' => 'Verdura', 'slug' => 'verdura', 'active' => true, 'is_public' => true]);
         $tax = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
         $unit = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
-        $product = Product::create(['product_category_id' => $category->id, 'tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $unit->id, 'name' => 'Pomodori', 'slug' => 'pomodori', 'price_per_kg' => 4.20, 'active' => true, 'is_public' => true]);
+        $product = Product::create(['product_category_id' => $category->id, 'tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $unit->id, 'name' => 'Pomodori', 'slug' => 'pomodori', 'purchase_cost_per_unit' => 2.10, 'markup_percentage' => 100, 'active' => true]);
 
         return [$user->load('customer'), $product];
     }

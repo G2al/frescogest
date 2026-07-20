@@ -20,6 +20,7 @@ class CustomerFactory extends Factory
         $phone = fake()->unique()->phoneNumber();
 
         return [
+            'type' => 'private',
             'company_name' => fake()->company(),
             'first_name' => fake()->firstName(),
             'last_name' => fake()->lastName(),

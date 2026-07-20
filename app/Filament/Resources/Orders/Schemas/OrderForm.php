@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Enums\OrderStatus;
-use App\Models\Order;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -31,19 +30,23 @@ class OrderForm
                         Select::make('status')
                             ->label('Stato')
                             ->options(OrderStatus::options())
-                            ->default(OrderStatus::PendingContact->value)
+                            ->default(OrderStatus::WhatsAppPending->value)
+                            ->disabled()
+                            ->dehydrated()
                             ->required(),
                         Select::make('payment_method_id')
                             ->label('Metodo di pagamento')
                             ->relationship('paymentMethod', 'name')
                             ->searchable()
-                            ->preload(),
+                            ->preload()
+                            ->disabled()
+                            ->dehydrated(false),
                         DateTimePicker::make('requested_at')
                             ->label('Richiesto il')
                             ->default(now())
                             ->required(),
-                        TextInput::make('total_amount')
-                            ->label('Totale ordine')
+                        TextInput::make('total_gross')
+                            ->label('Totale IVA inclusa')
                             ->prefix('€')
                             ->disabled(),
                     ])
@@ -56,7 +59,6 @@ class OrderForm
                         TextInput::make('delivery_postal_code')->label('CAP')->maxLength(10),
                         TextInput::make('delivery_province')->label('Provincia')->maxLength(2),
                         DateTimePicker::make('expected_delivery_at')->label('Consegna prevista'),
-                        DateTimePicker::make('delivered_at')->label('Consegnato il'),
                         Textarea::make('delivery_notes')->label('Note consegna')->columnSpanFull(),
                     ])
                     ->columns(2),
@@ -65,14 +67,16 @@ class OrderForm
                     ->schema([
                         DateTimePicker::make('paid_at')
                             ->label('Pagato il')
-                            ->disabled(fn (?Order $record): bool => $record?->deliveryDocument()->exists() ?? false)
+                            ->disabled()
+                            ->dehydrated(false)
                             ->seconds(false),
                         TextInput::make('payment_reference')
                             ->label('Riferimento pagamento')
-                            ->disabled(fn (?Order $record): bool => $record?->deliveryDocument()->exists() ?? false)
+                            ->disabled()
+                            ->dehydrated(false)
                             ->maxLength(255),
                         TextInput::make('deliveryDocument.document_number')
-                            ->label('Numero DDT')
+                            ->label('Numero bolla')
                             ->disabled(),
                     ])
                     ->columns(2),

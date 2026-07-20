@@ -15,15 +15,12 @@ class UpdateOrderStatusService
             $data['confirmed_at'] = now();
         }
 
-        if ($status === OrderStatus::Delivered) {
-            $data['delivered_at'] = now();
-        } elseif ($order->status === OrderStatus::Delivered) {
-            $data['delivered_at'] = null;
+        if ($status === OrderStatus::WhatsAppPending) {
+            $data['confirmed_at'] = null;
         }
 
-        if ($status === OrderStatus::PendingContact) {
-            $data['confirmed_at'] = null;
-            $data['delivered_at'] = null;
+        if ($status !== OrderStatus::Paid) {
+            $data += ['paid_at' => null, 'payment_amount' => null, 'payment_method_id' => null];
         }
 
         $order->update($data);

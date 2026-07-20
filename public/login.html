@@ -3,21 +3,22 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-    <title>Accedi · FrescoGest</title>
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260717.10">
+    <title>Accedi · Il Paradiso della Frutta</title>
+    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260720.5">
 </head>
 <body class="auth-page" data-guest-only="true">
-    <header id="site-header"></header>
     <main class="auth-main">
         <form class="form-shell auth-form" data-endpoint="/auth/login">
+            <a class="auth-brand" href="/" aria-label="Torna alla home"><img src="/assets/images/ilparadisodellafrutta-logo-primary.png" alt="Il Paradiso della Frutta"></a>
             <div class="auth-form-head">
                 <span class="auth-form-icon"><i data-lucide="log-in"></i></span>
                 <div><span class="eyebrow">Bentornato</span><h2>Accedi</h2></div>
             </div>
             <div class="stack">
                 <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" required></div>
-                <div class="field"><label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required></div>
-                <label class="remember-row"><input name="remember" type="checkbox" value="1"> <span>Ricordami</span></label>
+                <div class="field"><label for="password">Password</label><div class="password-control"><input id="password" name="password" type="password" autocomplete="current-password" minlength="4" required><button class="password-toggle" type="button" data-target="password" aria-label="Mostra password"><i data-lucide="eye"></i></button></div></div>
+                <label class="remember-row"><input name="remember" type="checkbox" value="1"><span>Ricordami</span></label>
             </div>
             <div class="form-message"></div>
             <div class="auth-form-actions">
@@ -27,7 +28,6 @@
             <p class="auth-alternative">Non hai ancora un account? <a href="/register.html">Registrati</a></p>
         </form>
     </main>
-    <footer id="site-footer" class="footer"></footer>
-    <script type="module" src="/assets/js/auth.js?v=20260717.10"></script>
+    <script type="module" src="/assets/js/auth.js?v=20260720.5"></script>
 </body>
 </html>

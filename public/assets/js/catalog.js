@@ -1,5 +1,5 @@
-import { api } from './api.js?v=20260717.10';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260717.11';
+import { api } from './api.js?v=20260720.5';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260720.6';
 
 const categoriesRoot = document.querySelector('#categories');
 const productsRoot = document.querySelector('#products');
@@ -78,7 +78,7 @@ async function showProductModal(slug, trigger) {
     try {
         const { data: product } = await api(`/catalog/products/${encodeURIComponent(slug)}`);
         if (currentRequest !== modalRequestId) return;
-        const price = Number(product.price_per_kg).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+        const price = Number(product.price_per_unit ?? product.price_per_kg).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
         const image = product.image_url
             ? `<img src="${product.image_url}" alt="${product.name}">`
             : '<span class="product-modal-placeholder"><i data-lucide="image"></i></span>';
@@ -87,7 +87,7 @@ async function showProductModal(slug, trigger) {
             <div class="product-modal-copy">
                 <span class="eyebrow">${product.category?.name || 'Catalogo'}</span>
                 <h2 id="product-modal-title">${product.name}</h2>
-                <p>${product.description || 'Prodotto selezionato da Frescogest.'}</p>
+                <p>${product.description || 'Prodotto selezionato da Il Paradiso della Frutta.'}</p>
                 <div class="product-modal-facts"><span><i data-lucide="scale"></i>Venduto al kg</span><span><i data-lucide="badge-check"></i>Qualità selezionata</span></div>
                 <div class="product-modal-price"><strong>${price}<small>/kg</small></strong>${product.has_personalized_price ? '<span class="badge">Il tuo prezzo</span>' : ''}</div>
                 <div class="product-modal-purchase">
@@ -98,11 +98,34 @@ async function showProductModal(slug, trigger) {
                     </div>
                 </div>
             </div>`;
+        const unit = product.unit_of_measure?.symbol || 'u.';
+        const minimum = Number(product.minimum_quantity || 1);
+        const addButton = content.querySelector('.add-cart');
+        const quantityInput = content.querySelector('.card-quantity');
+        if (addButton) {
+            addButton.dataset.price = product.price_per_unit ?? product.price_per_kg;
+            addButton.dataset.minimum = String(minimum);
+            addButton.dataset.unit = unit;
+        }
+        if (quantityInput) {
+            quantityInput.min = String(minimum);
+            quantityInput.step = String(minimum);
+            quantityInput.value = String(minimum);
+            quantityInput.closest('.quantity-stepper')?.querySelectorAll('.qty-step').forEach(step => {
+                step.dataset.step = String((Number(step.dataset.step) < 0 ? -1 : 1) * minimum);
+            });
+        }
+        const quantityLabel = content.querySelector('.product-modal-purchase > label');
+        if (quantityLabel) quantityLabel.textContent = `Quantità in ${unit} · minimo ${minimum}`;
+        const priceSuffix = content.querySelector('.product-modal-price small');
+        if (priceSuffix) priceSuffix.textContent = `/${unit}`;
+        const saleFact = content.querySelector('.product-modal-facts span');
+        if (saleFact) saleFact.lastChild.textContent = `Venduto a ${unit}`;
         refreshIcons(content);
     } catch (error) {
         if (currentRequest !== modalRequestId) return;
         content.innerHTML = '<div class="empty product-modal-error">Impossibile caricare il prodotto.</div>';
-        notify(error.message);
+        notify(error.message, 'error');
     }
 }
 
@@ -124,16 +147,21 @@ function updateUrl() {
 }
 
 function pageNumbers(currentPage, lastPage) {
-    const pages = new Set([1, lastPage, currentPage - 1, currentPage, currentPage + 1]);
-    const visible = [...pages].filter(page => page >= 1 && page <= lastPage).sort((a, b) => a - b);
+    const windowSize = 7;
+    let start = Math.max(1, currentPage - Math.floor(windowSize / 2));
+    let end = Math.min(lastPage, start + windowSize - 1);
+    start = Math.max(1, end - windowSize + 1);
+    const visible = Array.from({ length: end - start + 1 }, (_, index) => start + index);
 
-    return visible.flatMap((page, index) => {
-        const previous = visible[index - 1];
-        return [
-            ...(previous && page - previous > 1 ? ['ellipsis'] : []),
-            page,
-        ];
-    });
+    if (start > 1) {
+        visible.unshift(...(start > 2 ? [1, 'ellipsis'] : [1]));
+    }
+
+    if (end < lastPage) {
+        visible.push(...(end < lastPage - 1 ? ['ellipsis', lastPage] : [lastPage]));
+    }
+
+    return visible;
 }
 
 function renderPagination(meta) {
@@ -184,6 +212,27 @@ async function loadProducts() {
             ? payload.data.map(productCard).join('')
             : '<div class="empty catalog-empty">Nessun prodotto corrisponde alla ricerca.</div>';
         refreshIcons(productsRoot);
+        payload.data.forEach(product => {
+            const button = productsRoot.querySelector(`.add-cart[data-id="${product.id}"]`);
+            const input = button?.closest('.product-card')?.querySelector('.card-quantity');
+            const minimum = Number(product.minimum_quantity || 1);
+            const unit = product.unit_of_measure?.symbol || 'u.';
+            if (button) {
+                button.dataset.price = product.price_per_unit ?? product.price_per_kg;
+                button.dataset.minimum = String(minimum);
+                button.dataset.unit = unit;
+                const suffix = button.closest('.product-card')?.querySelector('.price small');
+                if (suffix) suffix.textContent = `/${unit}`;
+            }
+            if (input) {
+                input.min = String(minimum);
+                input.step = String(minimum);
+                input.value = String(minimum);
+                input.closest('.quantity-stepper')?.querySelectorAll('.qty-step').forEach(step => {
+                    step.dataset.step = String((Number(step.dataset.step) < 0 ? -1 : 1) * minimum);
+                });
+            }
+        });
         const total = payload.meta?.total ?? payload.data.length;
         const from = payload.meta?.from ?? (total ? 1 : 0);
         const to = payload.meta?.to ?? payload.data.length;
@@ -196,7 +245,7 @@ async function loadProducts() {
         productsRoot.innerHTML = '<div class="empty catalog-empty">Impossibile caricare il catalogo.</div>';
         countRoot.textContent = '';
         paginationRoot.classList.add('hidden');
-        notify(error.message);
+        notify(error.message, 'error');
     }
 }
 
@@ -220,7 +269,7 @@ async function initialize() {
         renderCategories();
         await loadProducts();
     } catch (error) {
-        notify(error.message);
+        notify(error.message, 'error');
     }
 }
 

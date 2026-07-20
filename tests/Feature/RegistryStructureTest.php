@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Pages\BusinessReports;
 use App\Filament\Resources\Companies\CompanyResource;
+use App\Filament\Resources\CostCategories\CostCategoryResource;
 use App\Filament\Resources\Customers\CustomerResource;
 use App\Filament\Resources\Customers\Pages\CreateCustomer;
 use App\Filament\Resources\Orders\OrderResource;
@@ -12,6 +14,7 @@ use App\Filament\Resources\Products\ProductResource;
 use App\Filament\Resources\TaxRates\TaxRateResource;
 use App\Filament\Resources\UnitOfMeasures\UnitOfMeasureResource;
 use App\Models\Company;
+use App\Models\CostCategory;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\PaymentMethod;
@@ -44,9 +47,9 @@ class RegistryStructureTest extends TestCase
     {
         $this->seed(UserSeeder::class);
 
-        $admin = User::query()->where('email', 'admin@frescogest.it')->firstOrFail();
+        $admin = User::query()->where('email', 'admin@ilparadisodellafrutta.it')->firstOrFail();
 
-        $this->assertSame('Amministratore FrescoGest', $admin->name);
+        $this->assertSame('Amministratore Il Paradiso della Frutta', $admin->name);
         $this->assertTrue(Hash::check('password', $admin->password));
         $this->assertNotNull($admin->email_verified_at);
         $this->assertTrue($admin->active);
@@ -98,7 +101,7 @@ class RegistryStructureTest extends TestCase
         $this->assertDatabaseCount('tax_rates', 3);
         $this->assertDatabaseCount('unit_of_measures', 7);
         $this->assertDatabaseCount('payment_methods', 2);
-        $this->assertDatabaseCount('products', 44);
+        $this->assertDatabaseCount('products', 153);
         $this->assertDatabaseHas('payment_methods', ['name' => 'Contanti']);
         $this->assertDatabaseHas('payment_methods', ['name' => 'Bonifico']);
     }
@@ -107,12 +110,12 @@ class RegistryStructureTest extends TestCase
     {
         $this->seed(DemoSeeder::class);
 
-        $this->assertDatabaseCount('companies', 3);
+        $this->assertDatabaseCount('companies', 1);
         $this->assertDatabaseCount('customers', 50);
-        $this->assertDatabaseCount('products', 44);
-        $this->assertDatabaseCount('customer_product_prices', 2200);
-        $this->assertDatabaseHas('products', ['code' => 'LAT-001', 'name' => 'Mozzarella di bufala campana']);
-        $this->assertDatabaseHas('products', ['code' => 'FRU-003', 'name' => 'Banane']);
+        $this->assertDatabaseCount('products', 153);
+        $this->assertDatabaseCount('customer_product_prices', 7650);
+        $this->assertDatabaseHas('products', ['name' => 'Mozzarella di bufala campana']);
+        $this->assertDatabaseHas('products', ['name' => 'Mele Fuji']);
 
         foreach ([
             'company_name',
@@ -183,7 +186,7 @@ class RegistryStructureTest extends TestCase
     public function test_customer_requires_a_company_or_a_complete_person_name(): void
     {
         $this->actingAs(User::factory()->create([
-            'email' => 'admin@frescogest.it',
+            'email' => 'admin@ilparadisodellafrutta.it',
             'email_verified_at' => now(),
             'can_access_panel' => true,
         ]), 'admin');
@@ -217,7 +220,7 @@ class RegistryStructureTest extends TestCase
     public function test_all_filament_resource_pages_open(): void
     {
         $this->seed(DatabaseSeeder::class);
-        $this->actingAs(User::where('email', 'admin@frescogest.it')->firstOrFail(), 'admin');
+        $this->actingAs(User::where('email', 'admin@ilparadisodellafrutta.it')->firstOrFail(), 'admin');
 
         $category = ProductCategory::firstOrFail();
         $taxRate = TaxRate::firstOrFail();
@@ -227,15 +230,16 @@ class RegistryStructureTest extends TestCase
             'active' => true,
         ]);
         $order = Order::create([
-            'order_number' => 'FG-000001',
+            'order_number' => 'IPF-000001',
             'customer_id' => $customer->id,
-            'status' => 'pending_contact',
+            'status' => 'whatsapp_pending',
             'requested_at' => now(),
         ]);
 
         foreach ([
+            [CostCategoryResource::class, CostCategory::firstOrFail()],
             [CompanyResource::class, Company::create([
-                'business_name' => 'FrescoGest',
+                'business_name' => 'Il Paradiso della Frutta',
                 'vat_number' => '00000000000',
                 'active' => true,
             ])],
@@ -257,8 +261,12 @@ class RegistryStructureTest extends TestCase
             ])],
         ] as [$resource, $record]) {
             $this->get($resource::getUrl('index'))->assertOk();
-            $this->get($resource::getUrl('create'))->assertOk();
+            if ($resource !== CompanyResource::class) {
+                $this->get($resource::getUrl('create'))->assertOk();
+            }
             $this->get($resource::getUrl('edit', ['record' => $record]))->assertOk();
         }
+
+        $this->get(BusinessReports::getUrl())->assertOk();
     }
 }

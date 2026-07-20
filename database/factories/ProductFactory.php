@@ -22,6 +22,8 @@ class ProductFactory extends Factory
     public function definition(): array
     {
         $name = ucfirst(fake()->unique()->words(fake()->numberBetween(1, 3), true));
+        $purchaseCost = fake()->randomFloat(2, 0.5, 15);
+        $basePrice = round($purchaseCost * 2, 2);
 
         return [
             'product_category_id' => fn (): int => ProductCategory::query()->inRandomOrder()->firstOrFail()->getKey(),
@@ -33,6 +35,12 @@ class ProductFactory extends Factory
             'description' => fake()->optional(0.7)->sentence(),
             'public_description' => fake()->sentence(),
             'price_per_kg' => fake()->randomFloat(2, 1, 30),
+            'purchase_cost_per_unit' => $purchaseCost,
+            'markup_percentage' => 100,
+            'base_price_per_unit' => $basePrice,
+            'restaurant_price_per_unit' => $basePrice,
+            'base_minimum_quantity' => 1,
+            'restaurant_minimum_quantity' => 5,
             'image_path' => null,
             'is_public' => true,
             'is_seasonal' => fake()->boolean(25),

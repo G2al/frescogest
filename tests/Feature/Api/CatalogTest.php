@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api;
 
+use App\Enums\CustomerType;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\ProductCategory;
@@ -15,16 +16,16 @@ class CatalogTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_catalog_exposes_only_active_public_products_and_categories(): void
+    public function test_catalog_exposes_only_active_products_in_public_categories(): void
     {
         $visible = ProductCategory::create(['name' => 'Frutta', 'slug' => 'frutta', 'active' => true, 'is_public' => true]);
         $hidden = ProductCategory::create(['name' => 'Nascosta', 'slug' => 'nascosta', 'active' => true, 'is_public' => false]);
         $tax = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
         $unit = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
-        $defaults = ['tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $unit->id, 'price_per_kg' => 3.50, 'active' => true, 'is_public' => true];
+        $defaults = ['tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $unit->id, 'purchase_cost_per_unit' => 1.75, 'markup_percentage' => 100, 'active' => true];
         Product::create($defaults + ['product_category_id' => $visible->id, 'name' => 'Mele', 'slug' => 'mele', 'is_seasonal' => true]);
         Product::create($defaults + ['product_category_id' => $hidden->id, 'name' => 'Segreto', 'slug' => 'segreto']);
-        Product::create(array_merge($defaults, ['product_category_id' => $visible->id, 'name' => 'Privato', 'slug' => 'privato', 'is_public' => false]));
+        Product::create(array_merge($defaults, ['product_category_id' => $visible->id, 'name' => 'Non attivo', 'slug' => 'non-attivo', 'active' => false]));
 
         $this->getJson('/api/v1/catalog/categories')
             ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.slug', 'frutta');
@@ -61,7 +62,7 @@ class CatalogTest extends TestCase
         $category = ProductCategory::create(['name' => 'Frutta', 'slug' => 'frutta', 'active' => true, 'is_public' => true]);
         $tax = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
         $unit = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
-        $product = Product::create(['product_category_id' => $category->id, 'tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $unit->id, 'name' => 'Mele', 'slug' => 'mele', 'price_per_kg' => 3.50, 'active' => true, 'is_public' => true]);
+        $product = Product::create(['product_category_id' => $category->id, 'tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $unit->id, 'name' => 'Mele', 'slug' => 'mele', 'purchase_cost_per_unit' => 1.75, 'markup_percentage' => 100, 'active' => true]);
 
         $this->getJson('/api/v1/catalog/products/mele')
             ->assertOk()
@@ -90,7 +91,7 @@ class CatalogTest extends TestCase
             ->assertJsonPath('data.pricing_source', 'category')
             ->assertJsonPath('data.discount_percentage', '20.00');
 
-        $customer->productPrices()->where('product_id', $product->id)->update(['custom_price_per_kg' => 40]);
+        $customer->productPrices()->where('product_id', $product->id)->update(['custom_price_per_unit' => 40]);
 
         $this->actingAs($user, 'customer')->getJson('/api/v1/catalog/products/mele')
             ->assertOk()
@@ -98,5 +99,32 @@ class CatalogTest extends TestCase
             ->assertJsonPath('data.has_personalized_price', true)
             ->assertJsonPath('data.pricing_source', 'product')
             ->assertJsonPath('data.discount_percentage', null);
+    }
+
+    public function test_restaurant_list_and_customer_overrides_have_the_expected_priority(): void
+    {
+        $category = ProductCategory::create(['name' => 'Verdura', 'slug' => 'verdura', 'active' => true, 'is_public' => true]);
+        $tax = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
+        $unit = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
+        $product = Product::create([
+            'product_category_id' => $category->id, 'tax_rate_id' => $tax->id,
+            'default_unit_of_measure_id' => $unit->id, 'name' => 'Pomodori', 'slug' => 'pomodori',
+            'purchase_cost_per_unit' => 1, 'markup_percentage' => 100,
+            'base_minimum_quantity' => 1, 'restaurant_minimum_quantity' => 5,
+            'active' => true, 'is_public' => true,
+        ]);
+        $user = User::factory()->create(['active' => true]);
+        $customer = Customer::factory()->create(['user_id' => $user->id, 'type' => CustomerType::Restaurant]);
+
+        $this->actingAs($user, 'customer')->getJson('/api/v1/catalog/products/pomodori')
+            ->assertOk()->assertJsonPath('data.price_per_unit', '2.00')->assertJsonPath('data.minimum_quantity', '5.000');
+
+        $customer->productPrices()->where('product_id', $product->id)->update([
+            'custom_price_per_unit' => 4.50,
+            'custom_minimum_quantity' => 0.5,
+        ]);
+
+        $this->actingAs($user, 'customer')->getJson('/api/v1/catalog/products/pomodori')
+            ->assertOk()->assertJsonPath('data.price_per_unit', '4.50')->assertJsonPath('data.minimum_quantity', '0.500')->assertJsonPath('data.pricing_source', 'product');
     }
 }

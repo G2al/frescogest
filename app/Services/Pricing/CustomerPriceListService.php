@@ -15,6 +15,8 @@ class CustomerPriceListService
             'customer_id' => $customer->id,
             'product_id' => $productId,
             'custom_price_per_kg' => null,
+            'custom_price_per_unit' => null,
+            'custom_minimum_quantity' => null,
             'created_at' => $now,
             'updated_at' => $now,
         ])->all();
@@ -31,6 +33,8 @@ class CustomerPriceListService
             'customer_id' => $customerId,
             'product_id' => $product->id,
             'custom_price_per_kg' => null,
+            'custom_price_per_unit' => null,
+            'custom_minimum_quantity' => null,
             'created_at' => $now,
             'updated_at' => $now,
         ])->all();
@@ -42,6 +46,6 @@ class CustomerPriceListService
 
     public function resetCustomer(Customer $customer): void
     {
-        $customer->productPrices()->update(['custom_price_per_kg' => null]);
+        $customer->productPrices()->update(['custom_price_per_unit' => null, 'custom_minimum_quantity' => null]);
     }
 }

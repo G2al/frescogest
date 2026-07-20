@@ -4,8 +4,11 @@ namespace App\Filament\Resources\Orders\Actions;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\PaymentMethod;
+use App\Services\Orders\RecordOrderPaymentService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 
@@ -15,53 +18,26 @@ class OrderPaymentActions
     {
         return [
             Action::make('markPaid')
-                ->label('Segna pagato')
-                ->icon('heroicon-o-banknotes')
-                ->iconButton()
-                ->tooltip('Segna come pagato')
-                ->color('success')
-                ->visible(fn (Order $record): bool => blank($record->paid_at) && in_array($record->status, [
-                    OrderStatus::Confirmed,
-                    OrderStatus::Preparing,
-                    OrderStatus::Delivered,
-                ], true))
+                ->icon('heroicon-o-banknotes')->iconButton()->tooltip('Registra pagamento')->color('success')
+                ->visible(fn (Order $record): bool => $record->status === OrderStatus::Confirmed)
                 ->schema([
-                    DateTimePicker::make('paid_at')
-                        ->label('Pagato il')
-                        ->seconds(false)
-                        ->required(),
-                    TextInput::make('payment_reference')
-                        ->label('Riferimento pagamento')
-                        ->maxLength(255),
+                    Select::make('payment_method_id')->label('Metodo')->options(fn () => PaymentMethod::query()->where('active', true)->pluck('name', 'id')->all())->required(),
+                    TextInput::make('payment_amount')->label('Importo')->numeric()->prefix('€')->required(),
+                    DateTimePicker::make('paid_at')->label('Data pagamento')->seconds(false)->required(),
+                    TextInput::make('payment_reference')->label('Riferimento')->maxLength(255),
                 ])
-                ->fillForm(fn (): array => ['paid_at' => now()])
+                ->fillForm(fn (Order $record): array => ['payment_amount' => $record->total_gross, 'paid_at' => now()])
                 ->action(function (Order $record, array $data): void {
-                    $record->update($data);
-
-                    Notification::make()
-                        ->success()
-                        ->title('Pagamento registrato')
-                        ->send();
+                    app(RecordOrderPaymentService::class)->record($record, $data);
+                    Notification::make()->success()->title('Pagamento registrato')->send();
                 }),
             Action::make('markUnpaid')
-                ->label('Annulla pagamento')
-                ->icon('heroicon-o-arrow-uturn-left')
-                ->iconButton()
-                ->tooltip('Annulla pagamento')
-                ->color('warning')
-                ->visible(fn (Order $record): bool => filled($record->paid_at) && ! $record->deliveryDocument()->exists())
+                ->icon('heroicon-o-arrow-uturn-left')->iconButton()->tooltip('Annulla pagamento')->color('warning')
+                ->visible(fn (Order $record): bool => $record->status === OrderStatus::Paid)
                 ->requiresConfirmation()
-                ->modalHeading('Annullare la registrazione del pagamento?')
                 ->action(function (Order $record): void {
-                    $record->update([
-                        'paid_at' => null,
-                        'payment_reference' => null,
-                    ]);
-
-                    Notification::make()
-                        ->success()
-                        ->title('Pagamento annullato')
-                        ->send();
+                    app(RecordOrderPaymentService::class)->clear($record);
+                    Notification::make()->success()->title('Pagamento annullato')->send();
                 }),
         ];
     }

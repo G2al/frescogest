@@ -1,0 +1,375 @@
+.fi-simple-header .fi-logo {
+    width: 13rem !important;
+    max-width: none !important;
+    height: 13rem !important;
+    object-fit: contain;
+}
+
+.business-report {
+    --br-primary: #009b72;
+    --br-primary-soft: #eaf9f3;
+    --br-blue: #2583db;
+    --br-blue-soft: #edf6ff;
+    --br-amber: #d88311;
+    --br-amber-soft: #fff7e8;
+    --br-violet: #7656d6;
+    --br-violet-soft: #f3efff;
+    --br-red: #d04444;
+    --br-red-soft: #fff0f0;
+    --br-text: #102f2b;
+    --br-muted: #667c77;
+    --br-border: #dbe8e4;
+    --br-surface: #ffffff;
+    display: grid;
+    gap: 1.5rem;
+}
+
+.business-report-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid var(--br-border);
+    border-radius: 1.15rem;
+    background: linear-gradient(120deg, var(--br-surface), #f4fbf8);
+    box-shadow: 0 8px 28px rgba(8, 74, 62, .06);
+}
+
+.business-report-toolbar-copy {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: .9rem;
+}
+
+.business-report-toolbar-icon,
+.business-report-card-icon,
+.business-report-section-icon {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    color: var(--br-primary);
+    background: var(--br-primary-soft);
+}
+
+.business-report-toolbar-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: .9rem;
+}
+
+.business-report-toolbar-icon svg,
+.business-report-card-icon svg,
+.business-report-section-icon svg {
+    width: 1.4rem;
+    height: 1.4rem;
+}
+
+.business-report-toolbar h2,
+.business-report-section-heading h2 {
+    margin: 0;
+    color: var(--br-text);
+    font-size: 1rem;
+    font-weight: 750;
+}
+
+.business-report-toolbar p,
+.business-report-section-heading p {
+    margin: .2rem 0 0;
+    color: var(--br-muted);
+    font-size: .78rem;
+}
+
+.business-report-period {
+    display: grid;
+    gap: .4rem;
+}
+
+.business-report-period label {
+    color: var(--br-muted);
+    font-size: .7rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.business-report-period input {
+    min-width: 13rem;
+    padding: .72rem .85rem;
+    border: 1px solid var(--br-border);
+    border-radius: .75rem;
+    outline: none;
+    color: var(--br-text);
+    background: var(--br-surface);
+    font: inherit;
+    font-size: .85rem;
+    font-weight: 650;
+    box-shadow: 0 3px 10px rgba(8, 74, 62, .04);
+}
+
+.business-report-period input:focus {
+    border-color: var(--br-primary);
+    box-shadow: 0 0 0 3px rgba(0, 155, 114, .12);
+}
+
+.business-report-loading {
+    color: var(--br-primary);
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.business-report-cards {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.business-report-card {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: .85rem;
+    padding: 1.15rem;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--br-border);
+    border-radius: 1rem;
+    background: var(--br-surface);
+    box-shadow: 0 7px 24px rgba(8, 74, 62, .055);
+}
+
+.business-report-card::after {
+    content: '';
+    width: 4.5rem;
+    height: 4.5rem;
+    position: absolute;
+    right: -2.2rem;
+    bottom: -2.2rem;
+    border-radius: 999px;
+    background: var(--br-card-soft);
+}
+
+.business-report-card-icon {
+    width: 2.65rem;
+    height: 2.65rem;
+    border-radius: .8rem;
+    color: var(--br-card-color);
+    background: var(--br-card-soft);
+}
+
+.business-report-card-copy {
+    min-width: 0;
+}
+
+.business-report-card-label {
+    display: block;
+    overflow: hidden;
+    color: var(--br-muted);
+    font-size: .73rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.business-report-card-value {
+    display: block;
+    margin-top: .32rem;
+    color: var(--br-text);
+    font-size: clamp(1.3rem, 2vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: -.035em;
+    line-height: 1.1;
+}
+
+.business-report-card-description {
+    display: block;
+    margin-top: .45rem;
+    color: var(--br-muted);
+    font-size: .68rem;
+    line-height: 1.4;
+}
+
+.business-report-card.is-green { --br-card-color: var(--br-primary); --br-card-soft: var(--br-primary-soft); }
+.business-report-card.is-blue { --br-card-color: var(--br-blue); --br-card-soft: var(--br-blue-soft); }
+.business-report-card.is-amber { --br-card-color: var(--br-amber); --br-card-soft: var(--br-amber-soft); }
+.business-report-card.is-violet { --br-card-color: var(--br-violet); --br-card-soft: var(--br-violet-soft); }
+.business-report-card.is-red { --br-card-color: var(--br-red); --br-card-soft: var(--br-red-soft); }
+
+.business-report-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+}
+
+.business-report-section {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--br-border);
+    border-radius: 1.1rem;
+    background: var(--br-surface);
+    box-shadow: 0 7px 24px rgba(8, 74, 62, .05);
+}
+
+.business-report-section.is-wide {
+    grid-column: 1 / -1;
+}
+
+.business-report-section-heading {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    padding: 1rem 1.15rem;
+    border-bottom: 1px solid var(--br-border);
+    background: linear-gradient(110deg, #fbfdfc, #f4faf7);
+}
+
+.business-report-section-icon {
+    width: 2.45rem;
+    height: 2.45rem;
+    border-radius: .75rem;
+}
+
+.business-report-table-wrap {
+    overflow-x: auto;
+}
+
+.business-report-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--br-text);
+    font-size: .8rem;
+}
+
+.business-report-table th {
+    padding: .75rem 1rem;
+    color: var(--br-muted);
+    background: #f8fbfa;
+    font-size: .66rem;
+    font-weight: 750;
+    letter-spacing: .045em;
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.business-report-table td {
+    padding: .9rem 1rem;
+    border-top: 1px solid var(--br-border);
+    vertical-align: middle;
+}
+
+.business-report-table tbody tr:first-child td {
+    border-top: 0;
+}
+
+.business-report-table tbody tr:hover {
+    background: #f8fcfa;
+}
+
+.business-report-table .is-number {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.business-report-table .is-name {
+    min-width: 12rem;
+    font-weight: 700;
+}
+
+.business-report-margin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .27rem .55rem;
+    border-radius: 999px;
+    color: #08704f;
+    background: #e7f8f0;
+    font-size: .72rem;
+    font-weight: 750;
+}
+
+.business-report-empty {
+    padding: 2.5rem 1rem !important;
+    color: var(--br-muted);
+    text-align: center;
+}
+
+.dark .business-report {
+    --br-primary-soft: rgba(16, 185, 129, .13);
+    --br-blue-soft: rgba(37, 131, 219, .13);
+    --br-amber-soft: rgba(216, 131, 17, .13);
+    --br-violet-soft: rgba(118, 86, 214, .14);
+    --br-red-soft: rgba(208, 68, 68, .14);
+    --br-text: #f2f7f5;
+    --br-muted: #9eaaa7;
+    --br-border: rgba(255, 255, 255, .1);
+    --br-surface: rgba(255, 255, 255, .045);
+}
+
+.dark .business-report-toolbar,
+.dark .business-report-section-heading {
+    background: linear-gradient(120deg, rgba(255, 255, 255, .05), rgba(16, 185, 129, .035));
+}
+
+.dark .business-report-period input,
+.dark .business-report-table th {
+    color: var(--br-text);
+    background: rgba(255, 255, 255, .045);
+}
+
+.dark .business-report-table tbody tr:hover {
+    background: rgba(255, 255, 255, .03);
+}
+
+.dark .business-report-margin {
+    color: #73dfb8;
+    background: rgba(16, 185, 129, .13);
+}
+
+@media (max-width: 1280px) {
+    .business-report-cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .business-report-cards,
+    .business-report-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .business-report-section {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .fi-simple-header .fi-logo {
+        width: 10rem !important;
+        height: 10rem !important;
+    }
+
+    .business-report-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .business-report-period input {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .business-report-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .business-report-card {
+        min-height: 6.2rem;
+    }
+
+    .business-report-table th,
+    .business-report-table td {
+        padding-inline: .8rem;
+    }
+}

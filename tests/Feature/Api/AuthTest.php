@@ -21,8 +21,8 @@ class AuthTest extends TestCase
             'last_name' => 'Rossi',
             'email' => 'MARIO@EXAMPLE.COM',
             'phone' => '+39 333 123 4567',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'pass',
+            'password_confirmation' => 'pass',
         ];
 
         $this->postJson('/api/v1/auth/register', $payload)
@@ -36,7 +36,7 @@ class AuthTest extends TestCase
         $this->assertSame('393331234567', $user->customer->phone_normalized);
 
         $this->postJson('/api/v1/auth/logout')->assertOk();
-        $this->postJson('/api/v1/auth/login', ['email' => 'mario@example.com', 'password' => 'password'])
+        $this->postJson('/api/v1/auth/login', ['email' => 'mario@example.com', 'password' => 'pass'])
             ->assertOk();
         $this->getJson('/api/v1/auth/user')->assertOk()->assertJsonPath('data.id', $user->id);
         $this->postJson('/api/v1/auth/logout')->assertOk();
@@ -90,11 +90,11 @@ class AuthTest extends TestCase
         $this->postJson('/api/v1/auth/reset-password', [
             'email' => $user->email,
             'token' => $token,
-            'password' => 'new-password',
-            'password_confirmation' => 'new-password',
+            'password' => 'new1',
+            'password_confirmation' => 'new1',
         ])->assertOk();
 
-        $this->assertTrue(Hash::check('new-password', $user->fresh()->password));
+        $this->assertTrue(Hash::check('new1', $user->fresh()->password));
     }
 
     public function test_admin_and_customer_authentication_are_independent(): void

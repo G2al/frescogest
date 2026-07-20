@@ -20,7 +20,9 @@ class ProductResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->public_description,
-            'price_per_kg' => $this->effective_price_per_kg ?? $this->price_per_kg,
+            'price_per_unit' => $this->effective_price_per_unit ?? $this->base_price_per_unit,
+            'price_per_kg' => $this->effective_price_per_unit ?? $this->base_price_per_unit,
+            'minimum_quantity' => $this->minimum_quantity ?? $this->base_minimum_quantity,
             'has_personalized_price' => (bool) ($this->has_personalized_price ?? false),
             'pricing_source' => $this->pricing_source ?? 'base',
             'discount_percentage' => $this->discount_percentage,
@@ -28,8 +30,8 @@ class ProductResource extends JsonResource
             'is_seasonal' => $this->is_seasonal,
             'category' => ProductCategoryResource::make($this->whenLoaded('productCategory')),
             'unit_of_measure' => [
-                'name' => 'Chilogrammi',
-                'symbol' => 'kg',
+                'name' => $this->defaultUnitOfMeasure?->name,
+                'symbol' => $this->defaultUnitOfMeasure?->symbol,
             ],
         ];
     }

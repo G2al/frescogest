@@ -38,10 +38,12 @@ class OrdersTable
                     ->boolean()
                     ->getStateUsing(fn (Order $record): bool => filled($record->paid_at)),
                 TextColumn::make('deliveryDocument.document_number')
-                    ->label('DDT')
+                    ->label('Bolla')
                     ->placeholder('—'),
                 TextColumn::make('items_count')->label('Righe')->counts('items'),
-                TextColumn::make('total_amount')->label('Totale')->money('EUR')->sortable(),
+                TextColumn::make('total_net')->label('Netto')->money('EUR')->sortable(),
+                TextColumn::make('total_gross')->label('Totale IVA incl.')->money('EUR')->sortable(),
+                TextColumn::make('gross_margin')->label('Margine')->money('EUR')->sortable(),
                 TextColumn::make('requested_at')->label('Richiesto il')->dateTime('d/m/Y H:i')->sortable(),
                 TextColumn::make('expected_delivery_at')->label('Consegna prevista')->dateTime('d/m/Y H:i'),
             ])
@@ -53,9 +55,9 @@ class OrdersTable
                     ->falseLabel('Non pagati')
                     ->nullable(),
                 TernaryFilter::make('delivery_document')
-                    ->label('DDT')
-                    ->trueLabel('Con DDT')
-                    ->falseLabel('Senza DDT')
+                    ->label('Bolla')
+                    ->trueLabel('Con bolla')
+                    ->falseLabel('Senza bolla')
                     ->queries(
                         true: fn (Builder $query): Builder => $query->whereHas('deliveryDocument'),
                         false: fn (Builder $query): Builder => $query->whereDoesntHave('deliveryDocument'),

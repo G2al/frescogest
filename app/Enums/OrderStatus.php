@@ -4,19 +4,23 @@ namespace App\Enums;
 
 enum OrderStatus: string
 {
-    case PendingContact = 'pending_contact';
+    case WhatsAppPending = 'whatsapp_pending';
     case Confirmed = 'confirmed';
-    case Preparing = 'preparing';
-    case Delivered = 'delivered';
+    case Paid = 'paid';
     case Cancelled = 'cancelled';
+
+    public const PendingContact = self::WhatsAppPending;
+
+    public const Preparing = self::Confirmed;
+
+    public const Delivered = self::Paid;
 
     public function label(): string
     {
         return match ($this) {
-            self::PendingContact => 'In attesa di contatto',
+            self::WhatsAppPending => 'In trattativa WhatsApp',
             self::Confirmed => 'Confermato',
-            self::Preparing => 'In preparazione',
-            self::Delivered => 'Consegnato',
+            self::Paid => 'Pagato',
             self::Cancelled => 'Annullato',
         };
     }
@@ -24,10 +28,9 @@ enum OrderStatus: string
     public function color(): string
     {
         return match ($this) {
-            self::PendingContact => 'warning',
+            self::WhatsAppPending => 'warning',
             self::Confirmed => 'info',
-            self::Preparing => 'primary',
-            self::Delivered => 'success',
+            self::Paid => 'success',
             self::Cancelled => 'danger',
         };
     }

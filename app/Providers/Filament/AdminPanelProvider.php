@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\FinancialOverview;
+use App\Filament\Widgets\MonthlyPerformanceChart;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -10,8 +12,8 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -29,10 +31,14 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->authGuard('admin')
             ->login()
-            ->brandLogo(asset('assets/images/frescogest-logo.png'))
-            ->darkModeBrandLogo(asset('assets/images/frescogest-logo-dark.png'))
-            ->brandLogoHeight('2rem')
-            ->favicon(asset('assets/images/frescogest-mark.png'))
+            ->brandLogo(asset('assets/images/ilparadisodellafrutta-logo-primary.png'))
+            ->darkModeBrandLogo(asset('assets/images/ilparadisodellafrutta-logo-white.png'))
+            ->brandLogoHeight('5.75rem')
+            ->favicon(asset('assets/images/favicon.png'))
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => view('filament.admin-login-branding')->render(),
+            )
             ->colors([
                 'primary' => '#007060',
                 'success' => '#10B050',
@@ -58,7 +64,8 @@ class AdminPanelProvider extends PanelProvider
             )
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
+                FinancialOverview::class,
+                MonthlyPerformanceChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,

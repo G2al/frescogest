@@ -2,6 +2,7 @@
 
 namespace App\Services\Pricing;
 
+use App\Enums\CustomerType;
 use App\Models\Customer;
 use App\Models\CustomerProductPrice;
 use App\Models\Product;
@@ -9,36 +10,24 @@ use Illuminate\Support\Collection;
 
 class ProductPricingService
 {
-    public function __construct(
-        private readonly PriceCalculator $calculator,
-    ) {}
+    public function __construct(private readonly PriceCalculator $calculator) {}
 
     public function apply(Collection $products, ?Customer $customer): Collection
     {
         if ($customer === null) {
-            return $products->each(fn (Product $product) => $this->applyDetails($product, [
-                'price' => $product->price_per_kg,
-                'source' => 'base',
-                'discount_percentage' => null,
-            ]));
+            return $products->each(fn (Product $product) => $this->applyDetails(
+                $product,
+                $this->calculate($product, null),
+            ));
         }
 
-        $customPrices = CustomerProductPrice::query()
-            ->where('customer_id', $customer->id)
-            ->whereIn('product_id', $products->pluck('id'))
-            ->whereNotNull('custom_price_per_kg')
-            ->pluck('custom_price_per_kg', 'product_id');
-        $categoryDiscounts = $customer->categoryDiscounts()
-            ->pluck('discount_percentage', 'product_category_id');
+        $customer->unsetRelation('productPrices')->unsetRelation('categoryDiscounts');
+        $customer->load(['productPrices', 'categoryDiscounts']);
 
-        return $products->each(function (Product $product) use ($categoryDiscounts, $customer, $customPrices): void {
-            $this->applyDetails($product, $this->calculate(
-                $product,
-                $customPrices->get($product->id),
-                $categoryDiscounts->get($product->product_category_id),
-                $customer->global_discount_percentage,
-            ));
-        });
+        return $products->each(fn (Product $product) => $this->applyDetails(
+            $product,
+            $this->calculate($product, $customer),
+        ));
     }
 
     public function resolve(Product $product, Customer $customer): string
@@ -48,78 +37,90 @@ class ProductPricingService
 
     public function details(Product $product, Customer $customer): array
     {
-        $customPrice = CustomerProductPrice::query()
-            ->where('customer_id', $customer->id)
-            ->where('product_id', $product->id)
-            ->value('custom_price_per_kg');
-        $categoryDiscount = $customer->categoryDiscounts()
-            ->where('product_category_id', $product->product_category_id)
-            ->value('discount_percentage');
+        $customer->unsetRelation('productPrices')->unsetRelation('categoryDiscounts');
+        $customer->load(['productPrices', 'categoryDiscounts']);
 
-        return $this->calculate(
-            $product,
-            $customPrice,
-            $categoryDiscount,
-            $customer->global_discount_percentage,
-        );
+        return $this->calculate($product, $customer);
     }
 
     public function detailsForRow(CustomerProductPrice $price): array
     {
-        $price->loadMissing(['customer.categoryDiscounts', 'product']);
-        $categoryDiscount = $price->customer->categoryDiscounts
-            ->firstWhere('product_category_id', $price->product->product_category_id)
-            ?->discount_percentage;
+        $price->loadMissing(['customer.productPrices', 'customer.categoryDiscounts', 'product']);
 
-        return $this->calculate(
-            $price->product,
-            $price->custom_price_per_kg,
-            $categoryDiscount,
-            $price->customer->global_discount_percentage,
+        return $this->calculate($price->product, $price->customer);
+    }
+
+    private function calculate(Product $product, ?Customer $customer): array
+    {
+        $restaurant = $customer?->type === CustomerType::Restaurant;
+        $listPrice = $restaurant
+            ? $product->restaurant_price_per_unit
+            : $product->base_price_per_unit;
+        $minimum = $restaurant
+            ? $product->restaurant_minimum_quantity
+            : $product->base_minimum_quantity;
+        $listSource = $restaurant ? 'restaurant' : 'base';
+
+        if ($customer === null) {
+            return $this->result($listPrice, $minimum, $listSource);
+        }
+
+        $custom = $customer->productPrices->firstWhere('product_id', $product->id);
+
+        if ($custom?->custom_price_per_unit !== null) {
+            return $this->result(
+                $custom->custom_price_per_unit,
+                $custom->custom_minimum_quantity ?? $minimum,
+                'product',
+            );
+        }
+
+        $discount = $customer->categoryDiscounts
+            ->firstWhere('product_category_id', $product->product_category_id)
+            ?->discount_percentage;
+        $source = 'category';
+
+        if ($discount === null || (float) $discount <= 0) {
+            $discount = $customer->global_discount_percentage;
+            $source = 'global';
+        }
+
+        if ($discount !== null && (float) $discount > 0) {
+            return $this->result(
+                $this->calculator->discountedPrice($listPrice, $discount),
+                $custom?->custom_minimum_quantity ?? $minimum,
+                $source,
+                $discount,
+            );
+        }
+
+        return $this->result(
+            $listPrice,
+            $custom?->custom_minimum_quantity ?? $minimum,
+            $custom?->custom_minimum_quantity !== null ? 'minimum' : $listSource,
         );
     }
 
-    private function calculate(
-        Product $product,
-        string|int|float|null $customPrice,
-        string|int|float|null $categoryDiscount,
-        string|int|float|null $globalDiscount,
+    private function result(
+        string|int|float $price,
+        string|int|float $minimum,
+        string $source,
+        string|int|float|null $discount = null,
     ): array {
-        if ($customPrice !== null) {
-            return [
-                'price' => number_format((float) $customPrice, 2, '.', ''),
-                'source' => 'product',
-                'discount_percentage' => null,
-            ];
-        }
-
-        if ($categoryDiscount !== null && (float) $categoryDiscount > 0) {
-            return [
-                'price' => $this->calculator->discountedPrice($product->price_per_kg, $categoryDiscount),
-                'source' => 'category',
-                'discount_percentage' => number_format((float) $categoryDiscount, 2, '.', ''),
-            ];
-        }
-
-        if ($globalDiscount !== null && (float) $globalDiscount > 0) {
-            return [
-                'price' => $this->calculator->discountedPrice($product->price_per_kg, $globalDiscount),
-                'source' => 'global',
-                'discount_percentage' => number_format((float) $globalDiscount, 2, '.', ''),
-            ];
-        }
-
         return [
-            'price' => $product->price_per_kg,
-            'source' => 'base',
-            'discount_percentage' => null,
+            'price' => number_format((float) $price, 2, '.', ''),
+            'minimum_quantity' => number_format((float) $minimum, 3, '.', ''),
+            'source' => $source,
+            'discount_percentage' => $discount === null ? null : number_format((float) $discount, 2, '.', ''),
         ];
     }
 
     private function applyDetails(Product $product, array $details): void
     {
+        $product->setAttribute('effective_price_per_unit', $details['price']);
         $product->setAttribute('effective_price_per_kg', $details['price']);
-        $product->setAttribute('has_personalized_price', $details['source'] !== 'base');
+        $product->setAttribute('minimum_quantity', $details['minimum_quantity']);
+        $product->setAttribute('has_personalized_price', in_array($details['source'], ['product', 'category', 'global', 'minimum'], true));
         $product->setAttribute('pricing_source', $details['source']);
         $product->setAttribute('discount_percentage', $details['discount_percentage']);
     }

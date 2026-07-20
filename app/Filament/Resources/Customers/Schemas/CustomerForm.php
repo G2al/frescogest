@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Customers\Schemas;
 
+use App\Enums\CustomerType;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -18,6 +20,11 @@ class CustomerForm
                     ->columnSpanFull()
                     ->description('Indicare la ragione sociale oppure nome e cognome.')
                     ->schema([
+                        Select::make('type')
+                            ->label('Tipo cliente')
+                            ->options(CustomerType::options())
+                            ->default(CustomerType::Private->value)
+                            ->required(),
                         TextInput::make('company_name')
                             ->label('Ragione sociale')
                             ->requiredWithoutAll(['first_name', 'last_name'])

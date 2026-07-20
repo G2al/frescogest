@@ -25,9 +25,9 @@ class CompanyResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $modelLabel = 'azienda';
+    protected static ?string $modelLabel = 'dati aziendali';
 
-    protected static ?string $pluralModelLabel = 'aziende';
+    protected static ?string $pluralModelLabel = 'dati aziendali';
 
     protected static ?string $recordTitleAttribute = 'business_name';
 
@@ -39,6 +39,11 @@ class CompanyResource extends Resource
     public static function table(Table $table): Table
     {
         return CompaniesTable::configure($table);
+    }
+
+    public static function canCreate(): bool
+    {
+        return ! Company::query()->exists();
     }
 
     public static function getPages(): array
