@@ -23,6 +23,7 @@ class OrdersTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->poll('2s')
             ->columns([
                 TextColumn::make('order_number')->label('Numero')->searchable()->sortable(),
                 TextColumn::make('customer.display_name')

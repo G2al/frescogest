@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders;
 
+use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Pages\CreateOrder;
 use App\Filament\Resources\Orders\Pages\EditOrder;
 use App\Filament\Resources\Orders\Pages\ListOrders;
@@ -31,6 +32,25 @@ class OrderResource extends Resource
     protected static ?string $pluralModelLabel = 'ordini';
 
     protected static ?string $recordTitleAttribute = 'order_number';
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::query()
+            ->where('status', OrderStatus::WhatsAppPending)
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return 'warning';
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'Ordini in trattativa WhatsApp';
+    }
 
     public static function form(Schema $schema): Schema
     {

@@ -35,6 +35,7 @@ class OrdersRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->poll('2s')
             ->recordTitleAttribute('order_number')
             ->columns([
                 TextColumn::make('order_number')->label('Numero')->searchable(),

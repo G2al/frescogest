@@ -13,6 +13,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Utilities\Get;
+use Livewire\Component;
 
 class DeliveryDocumentActions
 {
@@ -31,9 +32,11 @@ class DeliveryDocumentActions
                     DateTimePicker::make('paid_at')->label('Pagato il')->seconds(false)->visible(fn (Get $get): bool => (bool) $get('mark_as_paid'))->required(fn (Get $get): bool => (bool) $get('mark_as_paid')),
                 ])
                 ->fillForm(fn (Order $record): array => ['issued_at' => now(), 'payment_amount' => $record->total_gross, 'paid_at' => now(), 'mark_as_paid' => $record->status === OrderStatus::Paid])
-                ->action(function (Order $record, array $data): void {
+                ->action(function (Order $record, array $data, Component $livewire): void {
                     app(CreateDeliveryDocumentService::class)->create($record, auth()->user(), $data);
                     Notification::make()->success()->title('Bolla di consegna generata')->send();
+                    $url = route('admin.orders.delivery-document', $record);
+                    $livewire->js('window.open('.json_encode($url).', "_blank", "noopener,noreferrer")');
                 }),
             Action::make('downloadDeliveryDocument')
                 ->icon('heroicon-o-arrow-down-tray')->iconButton()->tooltip('Scarica bolla di consegna')->color('success')

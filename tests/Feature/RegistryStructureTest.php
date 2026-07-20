@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\OrderStatus;
 use App\Filament\Pages\BusinessReports;
 use App\Filament\Resources\Companies\CompanyResource;
 use App\Filament\Resources\CostCategories\CostCategoryResource;
@@ -82,6 +83,23 @@ class RegistryStructureTest extends TestCase
         $this->actingAs($authorizedUser, 'admin')->get('/admin')->assertOk();
         $this->actingAs($inactiveUser, 'admin')->get('/admin')->assertForbidden();
         $this->actingAs($unauthorizedUser, 'admin')->get('/admin')->assertForbidden();
+    }
+
+    public function test_order_navigation_badge_counts_only_whatsapp_orders(): void
+    {
+        $customer = Customer::factory()->create();
+
+        foreach ([OrderStatus::WhatsAppPending, OrderStatus::WhatsAppPending, OrderStatus::Confirmed] as $index => $status) {
+            Order::create([
+                'order_number' => sprintf('IPF-%06d', $index + 1),
+                'customer_id' => $customer->id,
+                'status' => $status,
+                'requested_at' => now(),
+            ]);
+        }
+
+        $this->assertSame('2', OrderResource::getNavigationBadge());
+        $this->assertSame('warning', OrderResource::getNavigationBadgeColor());
     }
 
     public function test_reference_data_is_seeded_idempotently(): void

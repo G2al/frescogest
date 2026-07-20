@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260720.6';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260720.7';
 
 const categoriesRoot = document.querySelector('#categories');
 const productsRoot = document.querySelector('#products');
@@ -78,7 +78,11 @@ async function showProductModal(slug, trigger) {
     try {
         const { data: product } = await api(`/catalog/products/${encodeURIComponent(slug)}`);
         if (currentRequest !== modalRequestId) return;
-        const price = Number(product.price_per_unit ?? product.price_per_kg).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+        const unitPrice = Number(product.price_per_unit ?? product.price_per_kg);
+        const price = unitPrice.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+        const unit = product.unit_of_measure?.symbol || 'u.';
+        const minimum = Number(product.minimum_quantity || 1);
+        const total = (unitPrice * minimum).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
         const image = product.image_url
             ? `<img src="${product.image_url}" alt="${product.name}">`
             : '<span class="product-modal-placeholder"><i data-lucide="image"></i></span>';
@@ -89,7 +93,7 @@ async function showProductModal(slug, trigger) {
                 <h2 id="product-modal-title">${product.name}</h2>
                 <p>${product.description || 'Prodotto selezionato da Il Paradiso della Frutta.'}</p>
                 <div class="product-modal-facts"><span><i data-lucide="scale"></i>Venduto al kg</span><span><i data-lucide="badge-check"></i>Qualità selezionata</span></div>
-                <div class="product-modal-price"><strong>${price}<small>/kg</small></strong>${product.has_personalized_price ? '<span class="badge">Il tuo prezzo</span>' : ''}</div>
+                <div class="product-modal-price"><div class="product-price-summary"><strong>${price}<small>/kg</small></strong><span class="product-total-preview" aria-live="polite">Totale: ${total}</span></div>${product.has_personalized_price ? '<span class="badge">Il tuo prezzo</span>' : ''}</div>
                 <div class="product-modal-purchase">
                     <label>Quantità in kg</label>
                     <div class="product-modal-controls">
@@ -98,8 +102,6 @@ async function showProductModal(slug, trigger) {
                     </div>
                 </div>
             </div>`;
-        const unit = product.unit_of_measure?.symbol || 'u.';
-        const minimum = Number(product.minimum_quantity || 1);
         const addButton = content.querySelector('.add-cart');
         const quantityInput = content.querySelector('.card-quantity');
         if (addButton) {

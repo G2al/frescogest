@@ -394,6 +394,10 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 .product-description { min-height: 4.8em; margin: 0; overflow: hidden; color: #4c625d; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; font-size: .88rem; line-height: 1.6; }
 .product-card .price-row { margin: auto 0 14px; padding-top: 18px; }
 .product-card .price { color: #007754; font-size: 1.35rem; }
+.product-price-summary { min-width: 0; display: grid; gap: 3px; }
+.product-total-preview { color: var(--brand-teal); font-size: .78rem; font-weight: 800; transition: color .2s ease,transform .2s ease; }
+.product-total-preview.is-updated { color: #12a86f; transform: translateY(-1px); }
+.product-modal-price .product-price-summary > strong { color: var(--brand-teal); font-size: 1.9rem; }
 .product-purchase { display: grid; grid-template-columns: minmax(118px,1fr) minmax(116px,1fr); gap: 10px; }
 .quantity-stepper { height: 46px; display: grid; grid-template-columns: 36px minmax(40px,1fr) 36px; align-items: center; overflow: hidden; border: 1px solid #d8e5e0; border-radius: 12px; background: #fff; }
 .qty-step { height: 100%; cursor: pointer; border: 0; color: var(--brand-teal); background: transparent; font-size: 1.2rem; transition: background .2s ease; }
@@ -644,7 +648,7 @@ html, body { touch-action: pan-y; }
     .product-modal-copy > p { font-size: .92rem; line-height: 1.5; }
     .product-modal-facts { gap: 8px 13px; margin-top: 14px; }
     .product-modal-price { padding: 17px 0 13px; }
-    .product-modal-price > strong { font-size: 1.7rem; }
+    .product-modal-price .product-price-summary > strong { font-size: 1.7rem; }
     .product-modal-close { top: 14px; right: 14px; }
     .order-card { border-radius: 19px; }
     .order-card-header, .order-card-footer { padding: 15px; }

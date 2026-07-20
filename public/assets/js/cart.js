@@ -1,6 +1,6 @@
 import { api, currentUser } from './api.js?v=20260720.5';
-import { notify, refreshIcons } from './ui.js?v=20260720.6';
-import { getStoredCart, saveStoredCart } from './cart-storage.js?v=20260720.6';
+import { notify, refreshIcons } from './ui.js?v=20260720.7';
+import { getStoredCart, saveStoredCart } from './cart-storage.js?v=20260720.7';
 
 let drawerNotes = '';
 
@@ -19,6 +19,20 @@ function quantity(value, unit) {
     }
 
     return `${Number(amount.toFixed(3)).toLocaleString('it-IT')} ${unit || 'u.'}`;
+}
+
+function updateProductTotal(input) {
+    const container = input.closest('.product-card, .product-modal-panel');
+    const button = container?.querySelector('.add-cart');
+    const preview = container?.querySelector('.product-total-preview');
+    const amount = Number(String(input.value).replace(',', '.'));
+    const unitPrice = Number(button?.dataset.price);
+
+    if (!preview || !Number.isFinite(amount) || !Number.isFinite(unitPrice)) return;
+
+    preview.textContent = `Totale: ${currency(amount * unitPrice)}`;
+    preview.classList.remove('is-updated');
+    requestAnimationFrame(() => preview.classList.add('is-updated'));
 }
 
 function escapeHtml(value) {
@@ -152,6 +166,7 @@ document.addEventListener('click', async event => {
     const step = Number(stepButton.dataset.step);
     if (step < 0 && current <= minimum) return;
     input.value = String(Math.max(minimum, Number((current + step).toFixed(3))));
+    updateProductTotal(input);
 });
 
 document.addEventListener('click', async event => {
@@ -197,6 +212,7 @@ document.addEventListener('click', async event => {
 
 document.addEventListener('input', event => {
     if (event.target.matches('#cart-drawer-notes')) drawerNotes = event.target.value;
+    if (event.target.matches('.card-quantity')) updateProductTotal(event.target);
 });
 
 document.addEventListener('keydown', event => {

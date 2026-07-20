@@ -23,19 +23,15 @@ class DeliveryDocumentController extends Controller
         return Pdf::loadView('pdf.delivery-document', [
             'document' => $document,
             'order' => $order,
-            'logo' => $this->logoData($document->sender_snapshot['logo_path'] ?? null),
+            'logo' => $this->logoData(),
         ])
             ->setPaper('a4')
             ->stream($document->document_number.'.pdf');
     }
 
-    private function logoData(?string $logoPath): ?array
+    private function logoData(): ?array
     {
-        $paths = array_filter([
-            $logoPath ? storage_path('app/public/'.$logoPath) : null,
-            $logoPath ? public_path('storage/'.$logoPath) : null,
-            public_path('assets/images/frescogest-logo.png'),
-        ]);
+        $paths = [public_path('assets/images/ilparadisodellafrutta-logo-primary.png')];
 
         foreach ($paths as $path) {
             if (! is_file($path)) {
