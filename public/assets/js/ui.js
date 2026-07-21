@@ -78,6 +78,7 @@ export async function mountLayout() {
     const header = document.querySelector('#site-header');
     if (header) {
         const catalogActive = ['/', '/index.html', '/catalog.html'].includes(location.pathname);
+        const activeCategory = catalogActive ? new URLSearchParams(location.search).get('category') || '' : '';
         const ordersActive = location.pathname === '/orders.html';
         const catalogStyleHeader = catalogActive || ordersActive;
         header.className = `site-header${catalogStyleHeader ? ' catalog-site-header' : ''}`;
@@ -88,7 +89,7 @@ export async function mountLayout() {
                 </a>
                 <nav class="nav-links" aria-label="Navigazione principale">
                     ${catalogStyleHeader
-                        ? `<a class="${catalogActive ? 'active' : ''}" href="/" ${catalogActive ? 'aria-current="page"' : ''}><span>Catalogo</span></a><a class="catalog-category-link" href="/?category=frutta"><span>Frutta</span></a><a class="catalog-category-link" href="/?category=verdura"><span>Verdura</span></a><a class="catalog-category-link" href="/?category=latticini"><span>Latticini</span></a><a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><span>I miei ordini</span></a>`
+                        ? `<a class="${catalogActive && !activeCategory ? 'active' : ''}" data-catalog-root href="/" ${catalogActive && !activeCategory ? 'aria-current="page"' : ''}><span>Catalogo</span></a><a class="catalog-category-link ${activeCategory === 'frutta' ? 'active' : ''}" data-category="frutta" href="/?category=frutta" ${activeCategory === 'frutta' ? 'aria-current="page"' : ''}><span>Frutta</span></a><a class="catalog-category-link ${activeCategory === 'verdura' ? 'active' : ''}" data-category="verdura" href="/?category=verdura" ${activeCategory === 'verdura' ? 'aria-current="page"' : ''}><span>Verdura</span></a><a class="catalog-category-link ${activeCategory === 'latticini' ? 'active' : ''}" data-category="latticini" href="/?category=latticini" ${activeCategory === 'latticini' ? 'aria-current="page"' : ''}><span>Latticini</span></a><a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><span>I miei ordini</span></a>`
                         : `<a href="/"><i data-lucide="layout-grid"></i><span>Catalogo</span></a><a href="/orders.html"><i data-lucide="receipt-text"></i><span>I miei ordini</span></a>`}
                 </nav>
                 <div class="nav-actions">

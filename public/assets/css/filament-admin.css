@@ -82,6 +82,7 @@
 }
 
 .business-report-period {
+    position: relative;
     display: grid;
     gap: .4rem;
 }
@@ -128,6 +129,103 @@
 .business-report-period select:focus {
     border-color: var(--br-primary);
     box-shadow: 0 0 0 3px rgba(0, 155, 114, .12);
+}
+
+.business-report-select {
+    position: relative;
+    min-width: 13rem;
+}
+
+.business-report-select-trigger {
+    width: 100%;
+    min-height: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .7rem .78rem .7rem .9rem;
+    border: 1px solid var(--br-border);
+    border-radius: .75rem;
+    color: var(--br-text);
+    background: var(--br-surface);
+    font: inherit;
+    font-size: .85rem;
+    font-weight: 650;
+    text-align: left;
+    box-shadow: 0 3px 10px rgba(8, 74, 62, .04);
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.business-report-select-trigger:hover,
+.business-report-select-trigger:focus-visible {
+    border-color: var(--br-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 155, 114, .12);
+}
+
+.business-report-select-trigger svg {
+    width: 1.05rem;
+    height: 1.05rem;
+    flex: 0 0 auto;
+    color: var(--br-primary);
+    transition: transform .18s ease;
+}
+
+.business-report-select-trigger svg.is-open {
+    transform: rotate(180deg);
+}
+
+.business-report-select-menu {
+    width: 100%;
+    position: absolute;
+    top: calc(100% + .45rem);
+    right: 0;
+    z-index: 50;
+    overflow: hidden;
+    padding: .35rem;
+    border: 1px solid var(--br-border);
+    border-radius: .85rem;
+    background: #fff;
+    box-shadow: 0 16px 38px rgba(7, 47, 40, .18);
+}
+
+.business-report-select-option {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: .7rem .75rem;
+    border: 0;
+    border-radius: .6rem;
+    color: #183b35;
+    background: transparent;
+    font: inherit;
+    font-size: .84rem;
+    font-weight: 650;
+    text-align: left;
+    cursor: pointer;
+}
+
+.business-report-select-option:hover,
+.business-report-select-option:focus-visible {
+    outline: none;
+    background: #edf8f3;
+}
+
+.business-report-select-option.is-selected {
+    color: #006d51;
+    background: #e4f7ef;
+}
+
+.business-report-select-option svg {
+    width: 1rem;
+    height: 1rem;
+    visibility: hidden;
+}
+
+.business-report-select-option.is-selected svg {
+    visibility: visible;
 }
 
 .business-report-loading {
@@ -336,6 +434,31 @@
     background: rgba(255, 255, 255, .045);
 }
 
+.dark .business-report-select-trigger {
+    color: var(--br-text);
+    background: rgba(255, 255, 255, .055);
+}
+
+.dark .business-report-select-menu {
+    border-color: rgba(255, 255, 255, .12);
+    background: #242120;
+    box-shadow: 0 18px 42px rgba(0, 0, 0, .4);
+}
+
+.dark .business-report-select-option {
+    color: #ecebea;
+}
+
+.dark .business-report-select-option:hover,
+.dark .business-report-select-option:focus-visible {
+    background: rgba(255, 255, 255, .07);
+}
+
+.dark .business-report-select-option.is-selected {
+    color: #79e2bd;
+    background: rgba(16, 185, 129, .14);
+}
+
 .dark .business-report-table tbody tr:hover {
     background: rgba(255, 255, 255, .03);
 }
@@ -374,7 +497,8 @@
     }
 
     .business-report-period input,
-    .business-report-period select {
+    .business-report-period select,
+    .business-report-select {
         width: 100%;
         min-width: 0;
     }

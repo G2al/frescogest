@@ -1,7 +1,9 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260721.4';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260721.5';
 
 const categoriesRoot = document.querySelector('#categories');
+const previousCategoriesButton = document.querySelector('#categories-previous');
+const nextCategoriesButton = document.querySelector('#categories-next');
 const productsRoot = document.querySelector('#products');
 const searchInput = document.querySelector('#product-search');
 const searchButton = document.querySelector('#catalog-search-button');
@@ -28,6 +30,9 @@ let categories = [];
 let requestId = 0;
 let modalRequestId = 0;
 let modalTrigger;
+let categoryDragStartX = 0;
+let categoryDragScrollLeft = 0;
+let categoryDragged = false;
 
 const state = {
     category: new URLSearchParams(location.search).get('category') || '',
@@ -179,6 +184,41 @@ function renderCategories() {
     refreshIcons(categoriesRoot);
     const selected = categories.find(category => category.slug === state.category);
     titleRoot.textContent = selected ? selected.name : 'Tutti i prodotti';
+    syncHeaderCategoryState();
+    requestAnimationFrame(() => {
+        categoriesRoot.querySelector('.category-tab.active')?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        updateCategoryCarouselControls();
+    });
+}
+
+function syncHeaderCategoryState() {
+    const catalogRootLink = document.querySelector('[data-catalog-root]');
+    const categoryLinks = document.querySelectorAll('.catalog-category-link[data-category]');
+    catalogRootLink?.classList.toggle('active', !state.category);
+    if (catalogRootLink) {
+        if (state.category) catalogRootLink.removeAttribute('aria-current');
+        else catalogRootLink.setAttribute('aria-current', 'page');
+    }
+    categoryLinks.forEach(link => {
+        const active = link.dataset.category === state.category;
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+    });
+}
+
+function updateCategoryCarouselControls() {
+    if (!categoriesRoot) return;
+    const maximum = Math.max(0, categoriesRoot.scrollWidth - categoriesRoot.clientWidth);
+    previousCategoriesButton?.toggleAttribute('disabled', categoriesRoot.scrollLeft <= 2);
+    nextCategoriesButton?.toggleAttribute('disabled', categoriesRoot.scrollLeft >= maximum - 2);
+}
+
+function scrollCategories(direction) {
+    categoriesRoot?.scrollBy({
+        left: direction * Math.max(220, categoriesRoot.clientWidth * .72),
+        behavior: 'smooth',
+    });
 }
 
 function renderFilterOptions(filters) {
@@ -383,6 +423,12 @@ async function initialize() {
 }
 
 categoriesRoot?.addEventListener('click', event => {
+    if (categoryDragged) {
+        event.preventDefault();
+        event.stopPropagation();
+        categoryDragged = false;
+        return;
+    }
     const tab = event.target.closest('.category-tab');
     if (!tab) return;
     state.category = tab.dataset.category;
@@ -392,6 +438,38 @@ categoriesRoot?.addEventListener('click', event => {
     updateUrl();
     loadProducts();
 });
+
+previousCategoriesButton?.addEventListener('click', () => scrollCategories(-1));
+nextCategoriesButton?.addEventListener('click', () => scrollCategories(1));
+categoriesRoot?.addEventListener('scroll', updateCategoryCarouselControls, { passive: true });
+window.addEventListener('resize', updateCategoryCarouselControls);
+
+categoriesRoot?.addEventListener('pointerdown', event => {
+    if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    categoryDragStartX = event.clientX;
+    categoryDragScrollLeft = categoriesRoot.scrollLeft;
+    categoryDragged = false;
+    categoriesRoot.setPointerCapture(event.pointerId);
+    categoriesRoot.classList.add('is-grabbing');
+});
+
+categoriesRoot?.addEventListener('pointermove', event => {
+    if (!categoriesRoot.hasPointerCapture(event.pointerId)) return;
+    const distance = event.clientX - categoryDragStartX;
+    if (Math.abs(distance) > 5) categoryDragged = true;
+    if (!categoryDragged) return;
+    categoriesRoot.scrollLeft = categoryDragScrollLeft - distance;
+});
+
+const finishCategoryDrag = event => {
+    if (!categoriesRoot?.hasPointerCapture(event.pointerId)) return;
+    categoriesRoot.releasePointerCapture(event.pointerId);
+    categoriesRoot.classList.remove('is-grabbing');
+    updateCategoryCarouselControls();
+};
+
+categoriesRoot?.addEventListener('pointerup', finishCategoryDrag);
+categoriesRoot?.addEventListener('pointercancel', finishCategoryDrag);
 
 let searchTimer;
 searchInput?.addEventListener('input', event => {

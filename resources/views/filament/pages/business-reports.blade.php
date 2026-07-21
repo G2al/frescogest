@@ -35,12 +35,40 @@
                 <span class="business-report-loading" wire:loading wire:target="month">Aggiornamento dati…</span>
             </div>
             <div class="business-report-period">
-                <label for="business-report-customer-type">Tipologia cliente</label>
-                <select id="business-report-customer-type" wire:model.live="customerType">
-                    @foreach ($this->customerTypeOptions() as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
+                <label id="business-report-customer-type-label">Tipologia cliente</label>
+                <div
+                    class="business-report-select"
+                    x-data="{ open: false, value: @js($customerType), options: @js($this->customerTypeOptions()) }"
+                    x-on:click.outside="open = false"
+                    x-on:keydown.escape.window="open = false"
+                >
+                    <button
+                        id="business-report-customer-type"
+                        class="business-report-select-trigger"
+                        type="button"
+                        aria-labelledby="business-report-customer-type-label business-report-customer-type"
+                        x-bind:aria-expanded="open"
+                        x-on:click="open = ! open"
+                    >
+                        <span x-text="options[value]"></span>
+                        <x-heroicon-m-chevron-down x-bind:class="{ 'is-open': open }" />
+                    </button>
+                    <div class="business-report-select-menu" role="listbox" x-cloak x-show="open" x-transition.origin.top>
+                        @foreach ($this->customerTypeOptions() as $value => $label)
+                            <button
+                                class="business-report-select-option"
+                                type="button"
+                                role="option"
+                                x-bind:class="{ 'is-selected': value === @js($value) }"
+                                x-bind:aria-selected="value === @js($value)"
+                                x-on:click="value = @js($value); open = false; $wire.set('customerType', value)"
+                            >
+                                <span>{{ $label }}</span>
+                                <x-heroicon-m-check />
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
                 <span class="business-report-loading" wire:loading wire:target="customerType">Aggiornamento dati…</span>
             </div>
         </section>
