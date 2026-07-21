@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProductCategories\Schemas;
 
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -45,7 +46,13 @@ class ProductCategoryForm
                             ->label('Immagine pubblica')
                             ->image()
                             ->disk('public')
-                            ->directory('catalog/categories'),
+                            ->directory('catalog/categories')
+                            ->imagePreviewHeight('180')
+                            ->helperText('Immagine mostrata nella card della categoria sul catalogo.'),
+                        ColorPicker::make('catalog_color')
+                            ->label('Colore della card')
+                            ->default('#eaf6ee')
+                            ->helperText('Il frontend creerà automaticamente una sfumatura chiara partendo da questo colore.'),
                         Textarea::make('description')
                             ->label('Descrizione')
                             ->rows(4)

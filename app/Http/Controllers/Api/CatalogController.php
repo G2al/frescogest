@@ -18,7 +18,12 @@ class CatalogController extends Controller
     public function categories()
     {
         return ProductCategoryResource::collection(
-            ProductCategory::query()->publicCatalog()->orderBy('sort_order')->orderBy('name')->get(),
+            ProductCategory::query()
+                ->publicCatalog()
+                ->withCount(['products' => fn (Builder $products): Builder => $products->publicCatalog()])
+                ->orderBy('sort_order')
+                ->orderBy('name')
+                ->get(),
         );
     }
 

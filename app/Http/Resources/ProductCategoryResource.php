@@ -21,6 +21,8 @@ class ProductCategoryResource extends JsonResource
             'slug' => $this->slug,
             'description' => $this->description,
             'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
+            'catalog_color' => $this->catalog_color ?: '#eaf6ee',
+            'products_count' => $this->whenCounted('products'),
         ];
     }
 }

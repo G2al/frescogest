@@ -7,6 +7,8 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\ColorColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
@@ -18,10 +20,16 @@ class ProductCategoriesTable
     {
         return $table
             ->columns([
+                ImageColumn::make('image_path')
+                    ->label('Immagine')
+                    ->disk('public')
+                    ->square(),
                 TextColumn::make('name')
                     ->label('Nome')
                     ->searchable()
                     ->sortable(),
+                ColorColumn::make('catalog_color')
+                    ->label('Colore'),
                 TextColumn::make('description')
                     ->label('Descrizione')
                     ->limit(60)

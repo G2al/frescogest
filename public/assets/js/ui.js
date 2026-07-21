@@ -79,17 +79,19 @@ export async function mountLayout() {
     if (header) {
         const catalogActive = location.pathname === '/catalog.html';
         const ordersActive = location.pathname === '/orders.html';
-        header.className = 'site-header';
+        header.className = `site-header${catalogActive ? ' catalog-site-header' : ''}`;
         header.innerHTML = `
             <div class="container nav">
                 <a class="brand" href="/" aria-label="Il Paradiso della Frutta, torna alla home">
                     <img class="brand-logo" src="/assets/images/ilparadisodellafrutta-logo-primary.png" alt="Il Paradiso della Frutta">
                 </a>
                 <nav class="nav-links" aria-label="Navigazione principale">
-                    <a class="${catalogActive ? 'active' : ''}" href="/catalog.html" ${catalogActive ? 'aria-current="page"' : ''}><i data-lucide="layout-grid"></i><span>Catalogo</span></a>
-                    <a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><i data-lucide="receipt-text"></i><span>I miei ordini</span></a>
+                    ${catalogActive
+                        ? `<a href="/"><span>Home</span></a><a class="active" href="/catalog.html" aria-current="page"><span>Catalogo</span></a><a class="catalog-category-link" href="/catalog.html?category=frutta"><span>Frutta</span></a><a class="catalog-category-link" href="/catalog.html?category=verdura"><span>Verdura</span></a><a class="catalog-category-link" href="/catalog.html?category=latticini"><span>Latticini</span></a><a href="/orders.html"><span>I miei ordini</span></a>`
+                        : `<a class="${catalogActive ? 'active' : ''}" href="/catalog.html" ${catalogActive ? 'aria-current="page"' : ''}><i data-lucide="layout-grid"></i><span>Catalogo</span></a><a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><i data-lucide="receipt-text"></i><span>I miei ordini</span></a>`}
                 </nav>
                 <div class="nav-actions">
+                    ${catalogActive ? '<label class="catalog-header-search"><span class="sr-only">Cerca prodotti</span><input type="search" placeholder="Cerca prodotti…" autocomplete="off"><i data-lucide="search"></i></label>' : ''}
                     <a class="header-cart" href="/cart.html" aria-label="Apri carrello" title="Carrello">
                         <svg class="header-cart-icon" viewBox="0 0 24 24" width="23" height="23" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57L22 6H5.12"></path></svg><span class="nav-action-label">Carrello</span><span class="badge">${cartCount()}</span>
                     </a>
@@ -99,6 +101,22 @@ export async function mountLayout() {
                 </div>
             </div>`;
         refreshIcons(header);
+        const catalogHeaderSearch = header.querySelector('.catalog-header-search input');
+        if (catalogHeaderSearch) {
+            const catalogSearch = document.querySelector('#product-search');
+            catalogHeaderSearch.value = catalogSearch?.value || new URLSearchParams(location.search).get('search') || '';
+            catalogHeaderSearch.addEventListener('input', () => {
+                if (!catalogSearch) return;
+                catalogSearch.value = catalogHeaderSearch.value;
+                catalogSearch.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+            catalogHeaderSearch.addEventListener('keydown', event => {
+                if (event.key !== 'Enter') return;
+                event.preventDefault();
+                document.querySelector('#catalog-search-button')?.click();
+                document.querySelector('#catalog-results')?.scrollIntoView({ behavior: 'smooth' });
+            });
+        }
         document.querySelector('#logout')?.addEventListener('click', async () => {
             await api('/auth/logout', { method: 'POST', body: '{}' });
             location.href = '/';

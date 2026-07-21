@@ -18,7 +18,7 @@ class CatalogTest extends TestCase
 
     public function test_catalog_exposes_only_active_products_in_public_categories(): void
     {
-        $visible = ProductCategory::create(['name' => 'Frutta', 'slug' => 'frutta', 'active' => true, 'is_public' => true]);
+        $visible = ProductCategory::create(['name' => 'Frutta', 'slug' => 'frutta', 'catalog_color' => '#e7f3df', 'active' => true, 'is_public' => true]);
         $hidden = ProductCategory::create(['name' => 'Nascosta', 'slug' => 'nascosta', 'active' => true, 'is_public' => false]);
         $tax = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
         $unit = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
@@ -28,7 +28,11 @@ class CatalogTest extends TestCase
         Product::create(array_merge($defaults, ['product_category_id' => $visible->id, 'name' => 'Non attivo', 'slug' => 'non-attivo', 'active' => false]));
 
         $this->getJson('/api/v1/catalog/categories')
-            ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.slug', 'frutta');
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.slug', 'frutta')
+            ->assertJsonPath('data.0.catalog_color', '#e7f3df')
+            ->assertJsonPath('data.0.products_count', 1);
         $this->getJson('/api/v1/catalog/products')
             ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.slug', 'mele');
         $this->getJson('/api/v1/catalog/products?category=frutta')->assertOk()->assertJsonCount(1, 'data');

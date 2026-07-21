@@ -16,6 +16,7 @@ class ProductCategory extends Model
         'slug',
         'description',
         'image_path',
+        'catalog_color',
         'is_public',
         'sort_order',
         'active',

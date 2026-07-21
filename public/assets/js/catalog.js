@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260720.11';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260721.2';
 
 const categoriesRoot = document.querySelector('#categories');
 const productsRoot = document.querySelector('#products');
@@ -50,6 +50,16 @@ const categoryIcons = {
     Legumi: 'bean',
     'Spezie ed erbe': 'sprout',
 };
+
+function escapeHtml(value) {
+    const node = document.createElement('span');
+    node.textContent = String(value ?? '');
+    return node.innerHTML;
+}
+
+function safeColor(value) {
+    return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : '#eaf6ee';
+}
 
 function ensureProductModal() {
     if (document.querySelector('#product-modal')) return;
@@ -153,9 +163,19 @@ async function showProductModal(slug, trigger) {
 }
 
 function renderCategories() {
-    const tabs = [{ name: 'Tutti', slug: '' }, ...categories];
-    categoriesRoot.innerHTML = tabs.map(category => `<button class="category-tab ${state.category === category.slug ? 'active' : ''}" type="button" data-category="${category.slug}" aria-pressed="${state.category === category.slug}"><span><i data-lucide="${category.slug ? (categoryIcons[category.name] || 'leaf') : 'layout-grid'}"></i></span><strong>${category.name}</strong></button>`).join('');
-    filterCategory.innerHTML = tabs.map(category => `<option value="${category.slug}" ${state.category === category.slug ? 'selected' : ''}>${category.slug ? category.name : 'Tutte le categorie'}</option>`).join('');
+    const totalProducts = categories.reduce((total, category) => total + Number(category.products_count || 0), 0);
+    const tabs = [{ name: 'Tutti', slug: '', catalog_color: '#e8f5ec', products_count: totalProducts }, ...categories];
+    categoriesRoot.innerHTML = tabs.map(category => {
+        const name = escapeHtml(category.name);
+        const slug = escapeHtml(category.slug);
+        const image = category.image_url
+            ? `<img src="${escapeHtml(category.image_url)}" alt="" loading="lazy">`
+            : `<span class="category-tab-fallback"><i data-lucide="${category.slug ? (categoryIcons[category.name] || 'leaf') : 'layout-grid'}"></i></span>`;
+        const productCount = Number(category.products_count || 0);
+
+        return `<button class="category-tab ${state.category === category.slug ? 'active' : ''}" style="--category-color:${safeColor(category.catalog_color)}" type="button" data-category="${slug}" aria-pressed="${state.category === category.slug}"><span class="category-tab-copy"><i data-lucide="${category.slug ? (categoryIcons[category.name] || 'leaf') : 'layout-grid'}"></i><strong>${name}</strong><small>${productCount} ${productCount === 1 ? 'prodotto' : 'prodotti'}</small></span><span class="category-tab-media">${image}</span></button>`;
+    }).join('');
+    filterCategory.innerHTML = tabs.map(category => `<option value="${escapeHtml(category.slug)}" ${state.category === category.slug ? 'selected' : ''}>${category.slug ? escapeHtml(category.name) : 'Tutte le categorie'}</option>`).join('');
     refreshIcons(categoriesRoot);
     const selected = categories.find(category => category.slug === state.category);
     titleRoot.textContent = selected ? selected.name : 'Tutti i prodotti';
