@@ -33,6 +33,7 @@ let modalTrigger;
 let categoryDragStartX = 0;
 let categoryDragScrollLeft = 0;
 let categoryDragged = false;
+let categoryDragPointerId = null;
 
 const state = {
     category: new URLSearchParams(location.search).get('category') || '',
@@ -169,8 +170,8 @@ async function showProductModal(slug, trigger) {
 
 function renderCategories() {
     const totalProducts = categories.reduce((total, category) => total + Number(category.products_count || 0), 0);
-    const tabs = [{ name: 'Tutti', slug: '', catalog_color: '#e8f5ec', products_count: totalProducts }, ...categories];
-    categoriesRoot.innerHTML = tabs.map(category => {
+    const filterTabs = [{ name: 'Tutti', slug: '', catalog_color: '#e8f5ec', products_count: totalProducts }, ...categories];
+    categoriesRoot.innerHTML = categories.map(category => {
         const name = escapeHtml(category.name);
         const slug = escapeHtml(category.slug);
         const image = category.image_url
@@ -178,9 +179,9 @@ function renderCategories() {
             : `<span class="category-tab-fallback"><i data-lucide="${category.slug ? (categoryIcons[category.name] || 'leaf') : 'layout-grid'}"></i></span>`;
         const productCount = Number(category.products_count || 0);
 
-        return `<button class="category-tab ${state.category === category.slug ? 'active' : ''}" style="--category-color:${safeColor(category.catalog_color)}" type="button" data-category="${slug}" aria-pressed="${state.category === category.slug}"><span class="category-tab-copy"><i data-lucide="${category.slug ? (categoryIcons[category.name] || 'leaf') : 'layout-grid'}"></i><strong>${name}</strong><small>${productCount} ${productCount === 1 ? 'prodotto' : 'prodotti'}</small></span><span class="category-tab-media">${image}</span></button>`;
+        return `<button class="category-tab ${state.category === category.slug ? 'active' : ''}" style="--category-color:${safeColor(category.catalog_color)}" type="button" data-category="${slug}" aria-pressed="${state.category === category.slug}" title="${state.category === category.slug ? 'Mostra tutti i prodotti' : `Mostra ${name}`}"><span class="category-tab-copy"><i data-lucide="${categoryIcons[category.name] || 'leaf'}"></i><strong>${name}</strong><small>${productCount} ${productCount === 1 ? 'prodotto' : 'prodotti'}</small></span><span class="category-tab-media">${image}</span></button>`;
     }).join('');
-    filterCategory.innerHTML = tabs.map(category => `<option value="${escapeHtml(category.slug)}" ${state.category === category.slug ? 'selected' : ''}>${category.slug ? escapeHtml(category.name) : 'Tutte le categorie'}</option>`).join('');
+    filterCategory.innerHTML = filterTabs.map(category => `<option value="${escapeHtml(category.slug)}" ${state.category === category.slug ? 'selected' : ''}>${category.slug ? escapeHtml(category.name) : 'Tutte le categorie'}</option>`).join('');
     refreshIcons(categoriesRoot);
     const selected = categories.find(category => category.slug === state.category);
     titleRoot.textContent = selected ? selected.name : 'Tutti i prodotti';
@@ -431,7 +432,7 @@ categoriesRoot?.addEventListener('click', event => {
     }
     const tab = event.target.closest('.category-tab');
     if (!tab) return;
-    state.category = tab.dataset.category;
+    state.category = state.category === tab.dataset.category ? '' : tab.dataset.category;
     state.page = 1;
     renderCategories();
     syncFilterControls();
@@ -446,30 +447,39 @@ window.addEventListener('resize', updateCategoryCarouselControls);
 
 categoriesRoot?.addEventListener('pointerdown', event => {
     if (event.pointerType !== 'mouse' || event.button !== 0) return;
+    categoryDragPointerId = event.pointerId;
     categoryDragStartX = event.clientX;
     categoryDragScrollLeft = categoriesRoot.scrollLeft;
     categoryDragged = false;
-    categoriesRoot.setPointerCapture(event.pointerId);
-    categoriesRoot.classList.add('is-grabbing');
 });
 
 categoriesRoot?.addEventListener('pointermove', event => {
-    if (!categoriesRoot.hasPointerCapture(event.pointerId)) return;
+    if (event.pointerId !== categoryDragPointerId) return;
     const distance = event.clientX - categoryDragStartX;
-    if (Math.abs(distance) > 5) categoryDragged = true;
+    if (Math.abs(distance) > 5 && !categoryDragged) {
+        categoryDragged = true;
+        categoriesRoot.setPointerCapture(event.pointerId);
+        categoriesRoot.classList.add('is-grabbing');
+    }
     if (!categoryDragged) return;
     categoriesRoot.scrollLeft = categoryDragScrollLeft - distance;
 });
 
 const finishCategoryDrag = event => {
-    if (!categoriesRoot?.hasPointerCapture(event.pointerId)) return;
-    categoriesRoot.releasePointerCapture(event.pointerId);
+    if (event.pointerId !== categoryDragPointerId) return;
+    if (categoriesRoot?.hasPointerCapture(event.pointerId)) {
+        categoriesRoot.releasePointerCapture(event.pointerId);
+    }
     categoriesRoot.classList.remove('is-grabbing');
+    categoryDragPointerId = null;
     updateCategoryCarouselControls();
 };
 
 categoriesRoot?.addEventListener('pointerup', finishCategoryDrag);
-categoriesRoot?.addEventListener('pointercancel', finishCategoryDrag);
+categoriesRoot?.addEventListener('pointercancel', event => {
+    finishCategoryDrag(event);
+    categoryDragged = false;
+});
 
 let searchTimer;
 searchInput?.addEventListener('input', event => {
