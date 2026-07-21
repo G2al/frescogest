@@ -127,4 +127,32 @@ class CatalogTest extends TestCase
         $this->actingAs($user, 'customer')->getJson('/api/v1/catalog/products/pomodori')
             ->assertOk()->assertJsonPath('data.price_per_unit', '4.50')->assertJsonPath('data.minimum_quantity', '0.500')->assertJsonPath('data.pricing_source', 'product');
     }
+
+    public function test_catalog_filters_and_sorting_use_available_product_data(): void
+    {
+        $category = ProductCategory::create(['name' => 'Frutta', 'slug' => 'frutta', 'active' => true, 'is_public' => true]);
+        $tax = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
+        $kilograms = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
+        $pieces = UnitOfMeasure::create(['name' => 'Pezzi', 'symbol' => 'pz', 'active' => true]);
+
+        Product::create(['product_category_id' => $category->id, 'tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $kilograms->id, 'name' => 'Mele', 'slug' => 'mele', 'purchase_cost_per_unit' => 1, 'markup_percentage' => 100, 'active' => true]);
+        Product::create(['product_category_id' => $category->id, 'tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $kilograms->id, 'name' => 'Pere', 'slug' => 'pere', 'purchase_cost_per_unit' => 2, 'markup_percentage' => 100, 'active' => true, 'is_seasonal' => true]);
+        Product::create(['product_category_id' => $category->id, 'tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $pieces->id, 'name' => 'Ananas', 'slug' => 'ananas', 'purchase_cost_per_unit' => 3, 'markup_percentage' => 100, 'active' => true]);
+
+        $this->getJson('/api/v1/catalog/filters')
+            ->assertOk()
+            ->assertJsonPath('data.price.min', 2)
+            ->assertJsonPath('data.price.max', 6)
+            ->assertJsonPath('data.seasonal_count', 1)
+            ->assertJsonCount(2, 'data.units');
+
+        $this->getJson("/api/v1/catalog/products?unit={$kilograms->id}&min_price=3&max_price=5&sort=price_desc")
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.slug', 'pere');
+
+        $this->getJson('/api/v1/catalog/products?min_price=5&max_price=2')
+            ->assertUnprocessable()
+            ->assertJsonPath('errors.max_price.0', 'Il prezzo massimo deve essere maggiore o uguale al prezzo minimo.');
+    }
 }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
     <title>Catalogo prodotti · Il Paradiso della Frutta</title>
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260720.10">
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260721.1">
 </head>
 <body class="catalog-page">
     <header id="site-header"></header>
@@ -36,34 +36,79 @@
         <section class="catalog-content catalog-container">
             <div class="catalog-toolbar">
                 <nav id="categories" class="category-tabs" aria-label="Categorie prodotti"></nav>
-                <div class="catalog-tools">
-                    <label class="catalog-search">
-                        <span class="sr-only">Cerca prodotto</span>
-                        <input id="product-search" type="search" placeholder="Cerca prodotto…" autocomplete="off">
-                        <i data-lucide="search"></i>
-                    </label>
-                    <button id="seasonal-filter" class="filter-button" type="button" aria-pressed="false">
-                        <i data-lucide="list-filter"></i>
-                        <span>Stagionali</span>
+                <div class="catalog-query-bar">
+                    <div class="catalog-search">
+                        <label class="sr-only" for="product-search">Cerca prodotto</label>
+                        <input id="product-search" type="search" placeholder="Cerca un prodotto…" autocomplete="off">
+                        <button id="catalog-search-button" type="button" aria-label="Cerca nel catalogo"><i data-lucide="search"></i></button>
+                    </div>
+                    <button id="open-catalog-filters" class="filter-button" type="button" aria-controls="catalog-filters" aria-expanded="false">
+                        <i data-lucide="sliders-horizontal"></i>
+                        <span>Filtri</span>
+                        <strong id="active-filter-count" class="filter-count hidden">0</strong>
                     </button>
                 </div>
             </div>
 
-            <div id="catalog-results" class="catalog-results-head">
-                <div>
-                    <span class="eyebrow">La nostra selezione</span>
-                    <h2 id="catalog-title">Tutti i prodotti</h2>
-                </div>
-                <div class="catalog-results-actions">
-                    <span id="product-count" class="result-count"></span>
-                    <div class="catalog-carousel-controls" aria-label="Navigazione prodotti">
-                        <button id="products-prev" type="button" aria-label="Prodotti precedenti"><i data-lucide="arrow-left"></i></button>
-                        <button id="products-next" type="button" aria-label="Prodotti successivi"><i data-lucide="arrow-right"></i></button>
+            <div id="catalog-filter-backdrop" class="catalog-filter-backdrop" aria-hidden="true"></div>
+            <div class="catalog-shop-layout">
+                <aside id="catalog-filters" class="catalog-filter-panel" aria-label="Filtri catalogo">
+                    <div class="catalog-filter-head">
+                        <div><span class="eyebrow">Affina la ricerca</span><h2>Filtri</h2></div>
+                        <button id="close-catalog-filters" type="button" aria-label="Chiudi filtri"><i data-lucide="x"></i></button>
                     </div>
-                </div>
+                    <form id="catalog-filter-form">
+                        <fieldset class="catalog-filter-group">
+                            <legend>Categoria</legend>
+                            <label class="catalog-filter-select"><span class="sr-only">Seleziona categoria</span><select id="filter-category" name="category"><option value="">Tutte le categorie</option></select><i data-lucide="chevron-down"></i></label>
+                        </fieldset>
+                        <fieldset class="catalog-filter-group">
+                            <legend>Fascia di prezzo</legend>
+                            <div class="catalog-price-inputs">
+                                <label><span>Da</span><span class="money-input"><b>€</b><input id="filter-min-price" name="min_price" type="number" min="0" step="0.10" inputmode="decimal" placeholder="0"></span></label>
+                                <label><span>A</span><span class="money-input"><b>€</b><input id="filter-max-price" name="max_price" type="number" min="0" step="0.10" inputmode="decimal" placeholder="Qualsiasi"></span></label>
+                            </div>
+                            <small id="catalog-price-range" class="catalog-filter-hint"></small>
+                        </fieldset>
+                        <fieldset class="catalog-filter-group">
+                            <legend>Formato di vendita</legend>
+                            <div id="unit-filters" class="unit-filter-options"><span class="catalog-filter-loading">Caricamento…</span></div>
+                        </fieldset>
+                        <fieldset class="catalog-filter-group">
+                            <legend>Caratteristiche</legend>
+                            <label class="catalog-switch-row">
+                                <span class="catalog-switch-icon"><i data-lucide="sparkles"></i></span>
+                                <span><strong>Prodotti stagionali</strong><small>Mostra la selezione del periodo</small></span>
+                                <input id="seasonal-filter" name="seasonal" type="checkbox" value="1">
+                                <i class="catalog-switch-control"></i>
+                            </label>
+                        </fieldset>
+                        <div class="catalog-filter-actions">
+                            <button class="btn btn-primary" type="submit"><i data-lucide="list-filter"></i>Applica filtri</button>
+                            <button id="reset-catalog-filters" class="catalog-filter-reset" type="button"><i data-lucide="rotate-ccw"></i>Ripristina tutto</button>
+                        </div>
+                    </form>
+                </aside>
+
+                <section class="catalog-products-column">
+                    <div id="catalog-results" class="catalog-results-head">
+                        <div>
+                            <span class="eyebrow">La nostra selezione</span>
+                            <h2 id="catalog-title">Tutti i prodotti</h2>
+                            <span id="product-count" class="result-count"></span>
+                        </div>
+                        <div class="catalog-results-actions">
+                            <label class="catalog-sort"><span>Ordina per</span><select id="catalog-sort"><option value="relevant">Più rilevanti</option><option value="name_asc">Nome A–Z</option><option value="name_desc">Nome Z–A</option><option value="price_asc">Prezzo crescente</option><option value="price_desc">Prezzo decrescente</option></select></label>
+                            <div class="catalog-carousel-controls" aria-label="Navigazione prodotti">
+                                <button id="products-prev" type="button" aria-label="Prodotti precedenti"><i data-lucide="arrow-left"></i></button>
+                                <button id="products-next" type="button" aria-label="Prodotti successivi"><i data-lucide="arrow-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <section id="products" class="catalog-grid" aria-live="polite"></section>
+                    <nav id="catalog-pagination" class="catalog-pagination hidden" aria-label="Pagine del catalogo"></nav>
+                </section>
             </div>
-            <section id="products" class="catalog-grid" aria-live="polite"></section>
-            <nav id="catalog-pagination" class="catalog-pagination hidden" aria-label="Pagine del catalogo"></nav>
         </section>
 
         <section class="catalog-services catalog-container">
@@ -74,7 +119,7 @@
         </section>
     </main>
     <footer id="site-footer" class="footer"></footer>
-    <script type="module" src="/assets/js/catalog.js?v=20260720.11"></script>
-    <script type="module" src="/assets/js/cart.js?v=20260720.10"></script>
+    <script type="module" src="/assets/js/catalog.js?v=20260721.1"></script>
+    <script type="module" src="/assets/js/cart.js?v=20260721.1"></script>
 </body>
 </html>

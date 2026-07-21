@@ -4,7 +4,21 @@ import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=2026
 const categoriesRoot = document.querySelector('#categories');
 const productsRoot = document.querySelector('#products');
 const searchInput = document.querySelector('#product-search');
+const searchButton = document.querySelector('#catalog-search-button');
 const seasonalButton = document.querySelector('#seasonal-filter');
+const filterForm = document.querySelector('#catalog-filter-form');
+const filterPanel = document.querySelector('#catalog-filters');
+const filterBackdrop = document.querySelector('#catalog-filter-backdrop');
+const openFiltersButton = document.querySelector('#open-catalog-filters');
+const closeFiltersButton = document.querySelector('#close-catalog-filters');
+const resetFiltersButton = document.querySelector('#reset-catalog-filters');
+const filterCategory = document.querySelector('#filter-category');
+const filterMinPrice = document.querySelector('#filter-min-price');
+const filterMaxPrice = document.querySelector('#filter-max-price');
+const unitFiltersRoot = document.querySelector('#unit-filters');
+const priceRangeRoot = document.querySelector('#catalog-price-range');
+const activeFilterCount = document.querySelector('#active-filter-count');
+const sortSelect = document.querySelector('#catalog-sort');
 const titleRoot = document.querySelector('#catalog-title');
 const countRoot = document.querySelector('#product-count');
 const paginationRoot = document.querySelector('#catalog-pagination');
@@ -19,6 +33,10 @@ const state = {
     category: new URLSearchParams(location.search).get('category') || '',
     search: new URLSearchParams(location.search).get('search') || '',
     seasonal: new URLSearchParams(location.search).get('seasonal') === '1',
+    unit: new URLSearchParams(location.search).get('unit') || '',
+    minPrice: new URLSearchParams(location.search).get('min_price') || '',
+    maxPrice: new URLSearchParams(location.search).get('max_price') || '',
+    sort: new URLSearchParams(location.search).get('sort') || 'relevant',
     page: Math.max(Number.parseInt(new URLSearchParams(location.search).get('page') || '1', 10) || 1, 1),
 };
 
@@ -28,6 +46,9 @@ const categoryIcons = {
     Latticini: 'milk',
     'Prodotti campani': 'map-pinned',
     'Prodotti confezionati': 'package',
+    'Frutta secca': 'nut',
+    Legumi: 'bean',
+    'Spezie ed erbe': 'sprout',
 };
 
 function ensureProductModal() {
@@ -133,10 +154,63 @@ async function showProductModal(slug, trigger) {
 
 function renderCategories() {
     const tabs = [{ name: 'Tutti', slug: '' }, ...categories];
-    categoriesRoot.innerHTML = tabs.map(category => `<button class="category-tab ${state.category === category.slug ? 'active' : ''}" type="button" data-category="${category.slug}"><i data-lucide="${category.slug ? (categoryIcons[category.name] || 'circle-dot') : 'layout-grid'}"></i>${category.name}</button>`).join('');
+    categoriesRoot.innerHTML = tabs.map(category => `<button class="category-tab ${state.category === category.slug ? 'active' : ''}" type="button" data-category="${category.slug}" aria-pressed="${state.category === category.slug}"><span><i data-lucide="${category.slug ? (categoryIcons[category.name] || 'leaf') : 'layout-grid'}"></i></span><strong>${category.name}</strong></button>`).join('');
+    filterCategory.innerHTML = tabs.map(category => `<option value="${category.slug}" ${state.category === category.slug ? 'selected' : ''}>${category.slug ? category.name : 'Tutte le categorie'}</option>`).join('');
     refreshIcons(categoriesRoot);
     const selected = categories.find(category => category.slug === state.category);
     titleRoot.textContent = selected ? selected.name : 'Tutti i prodotti';
+}
+
+function renderFilterOptions(filters) {
+    const units = filters.units || [];
+    unitFiltersRoot.innerHTML = [
+        { id: '', name: 'Tutti', symbol: '', products_count: null },
+        ...units,
+    ].map(unit => `<label class="unit-filter-option"><input type="radio" name="unit" value="${unit.id}" ${String(unit.id) === state.unit ? 'checked' : ''}><span>${unit.symbol ? `<strong>${unit.symbol}</strong><small>${unit.name}</small>` : '<strong>Tutti</strong><small>Ogni formato</small>'}</span></label>`).join('');
+
+    const minimum = Number(filters.price?.min || 0);
+    const maximum = Number(filters.price?.max || 0);
+    priceRangeRoot.textContent = maximum > 0
+        ? `Prezzi disponibili da ${minimum.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })} a ${maximum.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}`
+        : '';
+    filterMinPrice.placeholder = minimum ? String(minimum) : '0';
+    filterMaxPrice.placeholder = maximum ? String(maximum) : 'Qualsiasi';
+    refreshIcons(filterPanel);
+}
+
+function syncFilterControls() {
+    filterCategory.value = state.category;
+    filterMinPrice.value = state.minPrice;
+    filterMaxPrice.value = state.maxPrice;
+    seasonalButton.checked = state.seasonal;
+    sortSelect.value = state.sort;
+    const selectedUnit = unitFiltersRoot.querySelector(`[name="unit"][value="${CSS.escape(state.unit)}"]`);
+    if (selectedUnit) selectedUnit.checked = true;
+    updateActiveFilterCount();
+}
+
+function updateActiveFilterCount() {
+    const count = [state.category, state.unit, state.minPrice, state.maxPrice, state.seasonal ? '1' : ''].filter(Boolean).length;
+    activeFilterCount.textContent = String(count);
+    activeFilterCount.classList.toggle('hidden', count === 0);
+    openFiltersButton.classList.toggle('active', count > 0);
+}
+
+function openFilters() {
+    filterPanel.classList.add('open');
+    filterBackdrop.classList.add('open');
+    filterBackdrop.setAttribute('aria-hidden', 'false');
+    openFiltersButton.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('catalog-filters-open');
+    filterPanel.querySelector('select, input, button')?.focus();
+}
+
+function closeFilters() {
+    filterPanel.classList.remove('open');
+    filterBackdrop.classList.remove('open');
+    filterBackdrop.setAttribute('aria-hidden', 'true');
+    openFiltersButton.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('catalog-filters-open');
 }
 
 function updateUrl() {
@@ -144,6 +218,10 @@ function updateUrl() {
     if (state.category) params.set('category', state.category);
     if (state.search) params.set('search', state.search);
     if (state.seasonal) params.set('seasonal', '1');
+    if (state.unit) params.set('unit', state.unit);
+    if (state.minPrice) params.set('min_price', state.minPrice);
+    if (state.maxPrice) params.set('max_price', state.maxPrice);
+    if (state.sort !== 'relevant') params.set('sort', state.sort);
     if (state.page > 1) params.set('page', String(state.page));
     history.replaceState({}, '', `${location.pathname}${params.size ? `?${params}` : ''}`);
 }
@@ -205,6 +283,10 @@ async function loadProducts() {
     if (state.category) params.set('category', state.category);
     if (state.search) params.set('search', state.search);
     if (state.seasonal) params.set('seasonal', '1');
+    if (state.unit) params.set('unit', state.unit);
+    if (state.minPrice) params.set('min_price', state.minPrice);
+    if (state.maxPrice) params.set('max_price', state.maxPrice);
+    if (state.sort !== 'relevant') params.set('sort', state.sort);
     params.set('page', String(state.page));
 
     try {
@@ -263,12 +345,17 @@ async function initialize() {
     refreshIcons();
     productsRoot.innerHTML = skeletonCards(8);
     searchInput.value = state.search;
-    seasonalButton.classList.toggle('active', state.seasonal);
-    seasonalButton.setAttribute('aria-pressed', String(state.seasonal));
+    sortSelect.value = state.sort;
 
     try {
-        categories = (await api('/catalog/categories')).data;
+        const [categoryPayload, filterPayload] = await Promise.all([
+            api('/catalog/categories'),
+            api('/catalog/filters'),
+        ]);
+        categories = categoryPayload.data;
         renderCategories();
+        renderFilterOptions(filterPayload.data);
+        syncFilterControls();
         await loadProducts();
     } catch (error) {
         notify(error.message, 'error');
@@ -281,6 +368,7 @@ categoriesRoot?.addEventListener('click', event => {
     state.category = tab.dataset.category;
     state.page = 1;
     renderCategories();
+    syncFilterControls();
     updateUrl();
     loadProducts();
 });
@@ -296,14 +384,69 @@ searchInput?.addEventListener('input', event => {
     }, 300);
 });
 
-seasonalButton?.addEventListener('click', () => {
-    state.seasonal = !state.seasonal;
+searchButton?.addEventListener('click', () => {
+    state.search = searchInput.value.trim();
     state.page = 1;
-    seasonalButton.classList.toggle('active', state.seasonal);
-    seasonalButton.setAttribute('aria-pressed', String(state.seasonal));
     updateUrl();
     loadProducts();
 });
+
+searchInput?.addEventListener('keydown', event => {
+    if (event.key === 'Enter') searchButton.click();
+});
+
+filterForm?.addEventListener('submit', event => {
+    event.preventDefault();
+    const minimum = filterMinPrice.value.trim();
+    const maximum = filterMaxPrice.value.trim();
+
+    if (minimum && maximum && Number(maximum) < Number(minimum)) {
+        notify('Il prezzo massimo deve essere maggiore o uguale al prezzo minimo.', 'warning');
+        filterMaxPrice.focus();
+        return;
+    }
+
+    state.category = filterCategory.value;
+    state.unit = filterForm.querySelector('[name="unit"]:checked')?.value || '';
+    state.minPrice = minimum;
+    state.maxPrice = maximum;
+    state.seasonal = seasonalButton.checked;
+    state.page = 1;
+    renderCategories();
+    syncFilterControls();
+    updateUrl();
+    closeFilters();
+    loadProducts();
+});
+
+resetFiltersButton?.addEventListener('click', () => {
+    Object.assign(state, {
+        category: '',
+        search: '',
+        seasonal: false,
+        unit: '',
+        minPrice: '',
+        maxPrice: '',
+        sort: 'relevant',
+        page: 1,
+    });
+    searchInput.value = '';
+    renderCategories();
+    syncFilterControls();
+    updateUrl();
+    loadProducts();
+});
+
+sortSelect?.addEventListener('change', event => {
+    state.sort = event.target.value;
+    state.page = 1;
+    updateUrl();
+    loadProducts();
+});
+
+openFiltersButton?.addEventListener('click', openFilters);
+closeFiltersButton?.addEventListener('click', closeFilters);
+filterBackdrop?.addEventListener('click', closeFilters);
 
 previousProductsButton?.addEventListener('click', () => changePage(state.page - 1));
 nextProductsButton?.addEventListener('click', () => changePage(state.page + 1));
@@ -326,6 +469,7 @@ document.addEventListener('click', event => {
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && document.querySelector('#product-modal.open')) closeProductModal();
+    if (event.key === 'Escape' && filterPanel.classList.contains('open')) closeFilters();
 });
 
 document.addEventListener('cart:added', () => closeProductModal(false));
