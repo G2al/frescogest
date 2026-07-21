@@ -30,7 +30,10 @@ class OrderItemSnapshotService
         }
 
         $unitPrice = $pricing['price'];
-        $lineNet = $this->calculator->lineTotal($unitPrice, $data['quantity']);
+        $originalLineNet = $this->calculator->lineTotal($unitPrice, $data['quantity']);
+        $discountPercentage = (float) ($order->discount_percentage ?? 0);
+        $lineNet = $this->calculator->discountedPrice($originalLineNet, $discountPercentage);
+        $discountAmount = $this->calculator->difference($originalLineNet, $lineNet);
         $taxPercentage = $product->taxRate->percentage;
         $lineTax = $this->calculator->tax($lineNet, $taxPercentage);
         $lineGross = $this->calculator->sum([$lineNet, $lineTax]);
@@ -46,6 +49,9 @@ class OrderItemSnapshotService
             'unit_price_net' => $unitPrice,
             'tax_percentage' => $taxPercentage,
             'line_total' => $lineGross,
+            'original_line_net' => $originalLineNet,
+            'discount_percentage' => $discountPercentage,
+            'discount_amount_net' => $discountAmount,
             'line_net' => $lineNet,
             'line_tax' => $lineTax,
             'line_gross' => $lineGross,
@@ -63,14 +69,22 @@ class OrderItemSnapshotService
     public function recalculate(Order $order): void
     {
         $items = $order->items()->get();
-        $totalNet = $this->calculator->sum($items->pluck('line_net')->all());
-        $totalTax = $this->calculator->sum($items->pluck('line_tax')->all());
+        $subtotalNet = $this->calculator->sum($items->pluck('original_line_net')->all());
+        $discountAmount = $this->calculator->sum($items->pluck('discount_amount_net')->all());
+        $productsNet = $this->calculator->sum($items->pluck('line_net')->all());
+        $shippingNet = $order->shipping_amount_net ?? 0;
+        $shippingTax = $order->shipping_tax ?? 0;
+        $totalNet = $this->calculator->sum([$productsNet, $shippingNet]);
+        $productsTax = $this->calculator->sum($items->pluck('line_tax')->all());
+        $totalTax = $this->calculator->sum([$productsTax, $shippingTax]);
         $totalGross = $this->calculator->sum([$totalNet, $totalTax]);
         $purchaseCost = $this->calculator->sum($items->pluck('purchase_cost_net')->all());
         $margin = $this->calculator->difference($totalNet, $purchaseCost);
 
         $data = [
             'total_amount' => $totalGross,
+            'subtotal_net' => $subtotalNet,
+            'discount_amount_net' => $discountAmount,
             'total_net' => $totalNet,
             'total_tax' => $totalTax,
             'total_gross' => $totalGross,
@@ -88,6 +102,10 @@ class OrderItemSnapshotService
         if ($order->deliveryDocument()->exists()) {
             $order->deliveryDocument()->update([
                 'items_snapshot' => $this->documentSnapshots->items($order->setRelation('items', $items)),
+                'subtotal_net' => $subtotalNet,
+                'discount_percentage' => $order->discount_percentage,
+                'discount_amount_net' => $discountAmount,
+                'shipping_amount_net' => $shippingNet,
                 'total_net' => $totalNet,
                 'total_tax' => $totalTax,
                 'total_gross' => $totalGross,

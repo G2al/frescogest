@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Tables;
 
+use App\Enums\CustomerType;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\Actions\DeliveryDocumentActions;
 use App\Filament\Resources\Orders\Actions\OrderBulkActions;
@@ -43,6 +44,7 @@ class OrdersTable
                     ->placeholder('—'),
                 TextColumn::make('items_count')->label('Righe')->counts('items'),
                 TextColumn::make('total_net')->label('Netto')->money('EUR')->sortable(),
+                TextColumn::make('discount_percentage')->label('Sconto')->suffix('%')->toggleable()->sortable(),
                 TextColumn::make('total_gross')->label('Totale IVA incl.')->money('EUR')->sortable(),
                 TextColumn::make('gross_margin')->label('Margine')->money('EUR')->sortable(),
                 TextColumn::make('requested_at')->label('Richiesto il')->dateTime('d/m/Y H:i')->sortable(),
@@ -50,6 +52,10 @@ class OrdersTable
             ])
             ->filters([
                 SelectFilter::make('status')->label('Stato')->options(OrderStatus::options()),
+                SelectFilter::make('customer_type')
+                    ->label('Tipo cliente')
+                    ->options(CustomerType::options())
+                    ->query(fn (Builder $query, array $data): Builder => $query->when($data['value'] ?? null, fn (Builder $orders, $type): Builder => $orders->whereHas('customer', fn (Builder $customers): Builder => $customers->where('type', $type)))),
                 TernaryFilter::make('paid_at')
                     ->label('Pagamento')
                     ->trueLabel('Pagati')

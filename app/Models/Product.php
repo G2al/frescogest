@@ -27,6 +27,7 @@ class Product extends Model
         'price_per_kg',
         'purchase_cost_per_unit',
         'markup_percentage',
+        'restaurant_markup_percentage',
         'base_price_per_unit',
         'restaurant_price_per_unit',
         'base_minimum_quantity',
@@ -88,6 +89,7 @@ class Product extends Model
             'price_per_kg' => 'decimal:2',
             'purchase_cost_per_unit' => 'decimal:4',
             'markup_percentage' => 'decimal:2',
+            'restaurant_markup_percentage' => 'decimal:2',
             'base_price_per_unit' => 'decimal:4',
             'restaurant_price_per_unit' => 'decimal:4',
             'base_minimum_quantity' => 'decimal:3',
@@ -98,14 +100,25 @@ class Product extends Model
     protected static function booted(): void
     {
         static::saving(function (Product $product): void {
-            $prices = app(ProductListPriceCalculator::class)->calculate(
-                $product->purchase_cost_per_unit,
-                $product->markup_percentage,
-            );
+            $calculator = app(ProductListPriceCalculator::class);
 
-            $product->base_price_per_unit = $prices['base_price'];
-            $product->restaurant_price_per_unit = $prices['restaurant_price'];
-            $product->price_per_kg = $prices['base_price'];
+            if (! $product->exists && ! array_key_exists('restaurant_markup_percentage', $product->getAttributes())) {
+                $product->restaurant_markup_percentage = $product->markup_percentage ?? 0;
+            }
+
+            if ($product->isDirty('base_price_per_unit') && ! $product->isDirty('markup_percentage')) {
+                $product->markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->base_price_per_unit);
+            } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('markup_percentage') || ! $product->exists) {
+                $product->base_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->markup_percentage);
+            }
+
+            if ($product->isDirty('restaurant_price_per_unit') && ! $product->isDirty('restaurant_markup_percentage')) {
+                $product->restaurant_markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->restaurant_price_per_unit);
+            } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('restaurant_markup_percentage') || ! $product->exists) {
+                $product->restaurant_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->restaurant_markup_percentage ?? $product->markup_percentage);
+            }
+
+            $product->price_per_kg = $product->base_price_per_unit;
             $product->is_public = $product->active;
         });
     }

@@ -49,6 +49,12 @@ class OrderForm
                             ->label('Totale IVA inclusa')
                             ->prefix('€')
                             ->disabled(),
+                        TextInput::make('subtotal_net')->label('Subtotale netto')->prefix('€')->disabled(),
+                        TextInput::make('discount_percentage')->label('Sconto applicato')->suffix('%')->disabled(),
+                        TextInput::make('discount_amount_net')->label('Sconto netto')->prefix('€')->disabled(),
+                        TextInput::make('shipping_amount_net')->label('Consegna netta')->prefix('€')->disabled(),
+                        TextInput::make('total_tax')->label('IVA totale')->prefix('€')->disabled(),
+                        TextInput::make('total_net')->label('Totale netto')->prefix('€')->disabled(),
                     ])
                     ->columns(2),
                 Section::make('Consegna')

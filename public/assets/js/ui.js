@@ -77,18 +77,19 @@ export async function mountLayout() {
     const user = await currentUser();
     const header = document.querySelector('#site-header');
     if (header) {
-        const catalogActive = location.pathname === '/catalog.html';
+        const catalogActive = ['/', '/index.html', '/catalog.html'].includes(location.pathname);
         const ordersActive = location.pathname === '/orders.html';
-        header.className = `site-header${catalogActive ? ' catalog-site-header' : ''}`;
+        const catalogStyleHeader = catalogActive || ordersActive;
+        header.className = `site-header${catalogStyleHeader ? ' catalog-site-header' : ''}`;
         header.innerHTML = `
             <div class="container nav">
                 <a class="brand" href="/" aria-label="Il Paradiso della Frutta, torna alla home">
                     <img class="brand-logo" src="/assets/images/ilparadisodellafrutta-logo-primary.png" alt="Il Paradiso della Frutta">
                 </a>
                 <nav class="nav-links" aria-label="Navigazione principale">
-                    ${catalogActive
-                        ? `<a href="/"><span>Home</span></a><a class="active" href="/catalog.html" aria-current="page"><span>Catalogo</span></a><a class="catalog-category-link" href="/catalog.html?category=frutta"><span>Frutta</span></a><a class="catalog-category-link" href="/catalog.html?category=verdura"><span>Verdura</span></a><a class="catalog-category-link" href="/catalog.html?category=latticini"><span>Latticini</span></a><a href="/orders.html"><span>I miei ordini</span></a>`
-                        : `<a class="${catalogActive ? 'active' : ''}" href="/catalog.html" ${catalogActive ? 'aria-current="page"' : ''}><i data-lucide="layout-grid"></i><span>Catalogo</span></a><a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><i data-lucide="receipt-text"></i><span>I miei ordini</span></a>`}
+                    ${catalogStyleHeader
+                        ? `<a class="${catalogActive ? 'active' : ''}" href="/" ${catalogActive ? 'aria-current="page"' : ''}><span>Catalogo</span></a><a class="catalog-category-link" href="/?category=frutta"><span>Frutta</span></a><a class="catalog-category-link" href="/?category=verdura"><span>Verdura</span></a><a class="catalog-category-link" href="/?category=latticini"><span>Latticini</span></a><a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><span>I miei ordini</span></a>`
+                        : `<a href="/"><i data-lucide="layout-grid"></i><span>Catalogo</span></a><a href="/orders.html"><i data-lucide="receipt-text"></i><span>I miei ordini</span></a>`}
                 </nav>
                 <div class="nav-actions">
                     ${catalogActive ? '<label class="catalog-header-search"><span class="sr-only">Cerca prodotti</span><input type="search" placeholder="Cerca prodotti…" autocomplete="off"><i data-lucide="search"></i></label>' : ''}
@@ -136,7 +137,7 @@ export async function mountLayout() {
                     <h2>Esplora</h2>
                     <nav aria-label="Navigazione piè di pagina">
                         <a href="/">Home</a>
-                        <a href="/catalog.html">Catalogo</a>
+                        <a href="/">Catalogo</a>
                         <a href="/orders.html">I miei ordini</a>
                         <a href="${user ? '/profile.html' : '/login.html'}">${user ? 'Il mio profilo' : 'Accedi'}</a>
                     </nav>

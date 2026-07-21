@@ -14,6 +14,7 @@
         .number { color: #07845f; font-weight: bold; font-size: 14px; }
         .parties { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
         .parties td { width: 50%; border: 1px solid #cde1da; padding: 12px; vertical-align: top; }
+        .payment { margin: -7px 0 14px; padding: 8px 10px; border: 1px solid #d7e7e1; background: #f6fbf8; }
         .label { color: #07845f; font-size: 9px; font-weight: bold; letter-spacing: .6px; text-transform: uppercase; }
         .party { margin-top: 6px; font-size: 14px; font-weight: bold; }
         table.items { width: 100%; border-collapse: collapse; }
@@ -42,10 +43,12 @@
     <td><div class="label">Ricevente</div><div class="party">{{ $document->recipient_snapshot['display_name'] }}</div></td>
 </tr></table>
 
+<div class="payment"><strong>Pagamento:</strong> {{ $document->payment_method_snapshot ?: 'Da concordare' }}</div>
+
 <table class="items">
     <thead><tr><th>Prodotto</th><th>Quantità</th><th class="right">Prezzo netto</th><th class="right">IVA</th><th class="right">Totale netto</th><th class="right">Totale IVA incl.</th></tr></thead>
     <tbody>@foreach ($document->items_snapshot as $item)<tr>
-        <td><strong>{{ $item['name'] }}</strong></td>
+        <td><strong>{{ $item['name'] }}</strong>@if ((float) ($item['discount_percentage'] ?? 0) > 0)<br><span class="label">Sconto {{ number_format((float) $item['discount_percentage'], 2, ',', '.') }}% (-€ {{ number_format((float) $item['discount_amount_net'], 2, ',', '.') }})</span>@endif</td>
         <td>{{ rtrim(rtrim(number_format((float) $item['quantity'], 3, ',', '.'), '0'), ',') }} {{ $item['unit_symbol'] }}</td>
         <td class="right">€ {{ number_format((float) $item['unit_price_net'], 2, ',', '.') }}/{{ $item['unit_symbol'] }}</td>
         <td class="right">{{ number_format((float) $item['tax_percentage'], 2, ',', '.') }}%</td>
@@ -55,6 +58,9 @@
 </table>
 
 <table class="totals">
+    <tr><td>Subtotale netto</td><td class="right">€ {{ number_format((float) $document->subtotal_net, 2, ',', '.') }}</td></tr>
+    @if ((float) $document->discount_amount_net > 0)<tr><td>Sconto {{ number_format((float) $document->discount_percentage, 2, ',', '.') }}%</td><td class="right">- € {{ number_format((float) $document->discount_amount_net, 2, ',', '.') }}</td></tr>@endif
+    @if ((float) $document->shipping_amount_net > 0)<tr><td>Consegna netta</td><td class="right">€ {{ number_format((float) $document->shipping_amount_net, 2, ',', '.') }}</td></tr>@endif
     <tr><td>Totale netto</td><td class="right">€ {{ number_format((float) $document->total_net, 2, ',', '.') }}</td></tr>
     <tr><td>IVA</td><td class="right">€ {{ number_format((float) $document->total_tax, 2, ',', '.') }}</td></tr>
     <tr><td>Totale IVA inclusa</td><td class="right">€ {{ number_format((float) $document->total_gross, 2, ',', '.') }}</td></tr>

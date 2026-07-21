@@ -35,6 +35,7 @@ Route::prefix('api/v1')->group(function (): void {
         Route::get('profile', [ProfileController::class, 'show']);
         Route::patch('profile', [ProfileController::class, 'update']);
         Route::get('orders', [OrderController::class, 'index']);
+        Route::get('orders/commercial-terms', [OrderController::class, 'commercialTerms']);
         Route::post('orders', [OrderController::class, 'store'])->middleware('throttle:20,1');
         Route::get('orders/{orderNumber}', [OrderController::class, 'show']);
     });

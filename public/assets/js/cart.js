@@ -1,8 +1,9 @@
 import { api, currentUser } from './api.js?v=20260720.5';
-import { notify, refreshIcons } from './ui.js?v=20260721.2';
+import { notify, refreshIcons } from './ui.js?v=20260721.4';
 import { getStoredCart, saveStoredCart } from './cart-storage.js?v=20260720.7';
 
 let drawerNotes = '';
+let commercialTerms;
 
 export function getCart() { return getStoredCart(); }
 export function saveCart(cart) { saveStoredCart(cart); }
@@ -128,10 +129,32 @@ function renderCartDrawer() {
 
     const total = cart.reduce((sum, item) => sum + (item.quantity * item.price_per_kg), 0);
     footer.innerHTML = cart.length
-        ? `<label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span><strong>${currency(total)}</strong></div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
+        ? `<div class="commercial-terms-slot">${commercialTermsMarkup()}</div><label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span><strong>${currency(total)}</strong></div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
         : '<button class="btn btn-primary cart-drawer-continue" type="button"><i data-lucide="arrow-left"></i>Continua nel catalogo</button>';
     updateCartBadges();
     refreshIcons(document.querySelector('#cart-drawer'));
+}
+
+function commercialTermsMarkup() {
+    if (!commercialTerms) return '';
+    const shippingTax = Number(commercialTerms.shipping_tax_percentage || 0);
+    const shippingGross = Number(commercialTerms.shipping_fee_net) * (1 + shippingTax / 100);
+
+    return `<div class="commercial-terms"><i data-lucide="truck"></i><div><strong>Condizioni per il tuo ordine</strong><span>Spesa minima ${currency(commercialTerms.minimum_order_gross)} · consegna ${currency(shippingGross)} · gratuita da ${currency(commercialTerms.free_shipping_threshold_gross)}</span></div></div>`;
+}
+
+async function loadCommercialTerms() {
+    if (!await currentUser()) return;
+
+    try {
+        commercialTerms = (await api('/orders/commercial-terms')).data;
+        document.querySelectorAll('.commercial-terms-slot').forEach(node => { node.innerHTML = commercialTermsMarkup(); });
+        const form = document.querySelector('#order-form');
+        if (form && !form.querySelector('.commercial-terms-slot')) {
+            form.insertAdjacentHTML('afterbegin', `<div class="commercial-terms-slot">${commercialTermsMarkup()}</div>`);
+        }
+        refreshIcons();
+    } catch {}
 }
 
 export function openCartDrawer() {
@@ -361,3 +384,4 @@ document.querySelector('#order-form')?.addEventListener('submit', async event =>
     await submitOrder(event.target.customer_notes.value, event.target.querySelector('button[type=submit]'));
 });
 renderCart();
+loadCommercialTerms();

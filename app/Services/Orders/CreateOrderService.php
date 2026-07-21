@@ -11,7 +11,10 @@ use Illuminate\Validation\ValidationException;
 
 class CreateOrderService
 {
-    public function __construct(private readonly OrderItemSnapshotService $snapshots) {}
+    public function __construct(
+        private readonly OrderItemSnapshotService $snapshots,
+        private readonly CommercialRuleService $commercialRules,
+    ) {}
 
     public function create(User $user, array $data): Order
     {
@@ -29,6 +32,10 @@ class CreateOrderService
                 'status' => OrderStatus::WhatsAppPending,
                 'requested_at' => now(),
                 'customer_notes' => $data['customer_notes'] ?? null,
+                'delivery_address' => $customer->delivery_address ?: $customer->billing_address,
+                'delivery_city' => $customer->city,
+                'delivery_postal_code' => $customer->postal_code,
+                'delivery_province' => $customer->province,
             ]);
             $order->update(['order_number' => 'IPF-'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT)]);
 
@@ -39,6 +46,7 @@ class CreateOrderService
                 ], $order));
             }
 
+            $this->commercialRules->apply($order);
             $this->snapshots->recalculate($order);
 
             return $order->load(['customer', 'items.product']);

@@ -47,6 +47,8 @@ class CreateDeliveryDocumentService
                 $this->payments->record($order, $data);
             }
 
+            $order->load('paymentMethod');
+
             return DeliveryDocument::query()->create([
                 'order_id' => $order->id,
                 'created_by' => $creator->id,
@@ -58,6 +60,11 @@ class CreateDeliveryDocumentService
                 'recipient_snapshot' => ['display_name' => $order->customer->display_name],
                 'destination_snapshot' => [],
                 'items_snapshot' => $this->snapshots->items($order),
+                'subtotal_net' => $order->subtotal_net ?? $order->total_net,
+                'discount_percentage' => $order->discount_percentage ?? 0,
+                'discount_amount_net' => $order->discount_amount_net ?? 0,
+                'shipping_amount_net' => $order->shipping_amount_net ?? 0,
+                'payment_method_snapshot' => $order->paymentMethod?->name,
                 'total_net' => $order->total_net,
                 'total_tax' => $order->total_tax,
                 'total_gross' => $order->total_gross,

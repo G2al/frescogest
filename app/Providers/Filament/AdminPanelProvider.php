@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\CustomerTypeRevenueChart;
 use App\Filament\Widgets\FinancialOverview;
 use App\Filament\Widgets\MonthlyPerformanceChart;
 use Filament\Http\Middleware\Authenticate;
@@ -70,6 +71,7 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
                 FinancialOverview::class,
                 MonthlyPerformanceChart::class,
+                CustomerTypeRevenueChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,

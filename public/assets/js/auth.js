@@ -1,5 +1,5 @@
 import { api, currentUser } from './api.js?v=20260720.5';
-import { notify, refreshIcons } from './ui.js?v=20260720.5';
+import { notify, refreshIcons } from './ui.js?v=20260721.4';
 
 const form = document.querySelector('form[data-endpoint]');
 const customerTypes = [...(form?.querySelectorAll('[name="type"]') ?? [])];
@@ -204,7 +204,7 @@ if (form) {
                 : 'Accesso effettuato. Bentornato!';
             showFormMessage(success, 'success');
             notify(success, 'success');
-            const next = new URLSearchParams(location.search).get('next') || '/catalog.html';
+            const next = new URLSearchParams(location.search).get('next') || '/';
             setTimeout(() => { location.href = next; }, 650);
         } catch (error) {
             const message = errorSummary(error);
@@ -223,6 +223,6 @@ if (new URLSearchParams(location.search).has('reset')) {
 
 if (document.body.dataset.guestOnly === 'true') {
     currentUser()
-        .then(user => { if (user) location.href = '/catalog.html'; })
+        .then(user => { if (user) location.href = '/'; })
         .catch(() => notify('Impossibile verificare la sessione.', 'error'));
 }

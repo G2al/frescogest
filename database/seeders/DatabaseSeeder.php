@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             TaxRateSeeder::class,
             UnitOfMeasureSeeder::class,
             PaymentMethodSeeder::class,
+            CommercialRuleSeeder::class,
             ProductSeeder::class,
             CostCategorySeeder::class,
             CustomerPriceListSeeder::class,

@@ -302,5 +302,6 @@ class RegistryStructureTest extends TestCase
         }
 
         $this->get(BusinessReports::getUrl())->assertOk();
+        $this->get('/admin')->assertOk();
     }
 }

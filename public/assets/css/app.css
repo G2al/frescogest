@@ -324,6 +324,21 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
     .process-card img { width: 122%; }
 }
 
+.commercial-terms {
+    display: grid;
+    gap: 7px;
+    margin: 12px 0;
+    padding: 13px 14px;
+    border: 1px solid rgba(0, 112, 80, .14);
+    border-radius: 14px;
+    color: #315d51;
+    background: #f1faf6;
+    font-size: .78rem;
+    line-height: 1.45;
+}
+
+.commercial-terms strong { color: #075b45; }
+
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .catalog-page { background: #f3f8f6; }
 .catalog-container { width: min(1400px, calc(100% - 48px)); margin-inline: auto; }
@@ -990,4 +1005,20 @@ html, body { touch-action: pan-y; }
     .catalog-page .category-tabs { grid-auto-columns: 174px; gap: 8px; }
     .catalog-page .category-tab { min-height: 94px; grid-template-columns: minmax(0,1fr) 64px; padding: 11px 7px 11px 13px; }
     .catalog-page .category-tab > .category-tab-media { width: 64px; height: 64px; }
+    .catalog-page .catalog-products-column .catalog-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; overflow: visible; scroll-snap-type: none; }
+    .catalog-page .catalog-grid .product-card { min-width: 0; width: auto; border-radius: 15px; }
+    .catalog-page .catalog-grid .product-media { height: 145px; padding: 8px; }
+    .catalog-page .catalog-grid .card-body { padding: 11px; }
+    .catalog-page .catalog-grid .product-category,
+    .catalog-page .catalog-grid .product-description,
+    .catalog-page .catalog-grid .quality-seal { display: none; }
+    .catalog-page .catalog-grid h3 { min-height: 38px; margin: 0 0 7px; font-size: .84rem; line-height: 1.28; }
+    .catalog-page .catalog-grid .price-row { align-items: flex-start; }
+    .catalog-page .catalog-grid .price { font-size: .96rem; }
+    .catalog-page .catalog-grid .product-total-preview { font-size: .62rem; }
+    .catalog-page .catalog-grid .product-purchase { display: grid; gap: 7px; }
+    .catalog-page .catalog-grid .quantity-stepper { width: 100%; }
+    .catalog-page .catalog-grid .product-purchase { grid-template-columns: minmax(0,1fr) 42px; align-items: stretch; }
+    .catalog-page .catalog-grid .catalog-add-button { width: 42px; min-width: 42px; min-height: 40px; padding: 0; }
+    .catalog-page .catalog-grid .catalog-add-button span { display: none !important; }
 }

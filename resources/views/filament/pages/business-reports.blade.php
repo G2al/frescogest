@@ -3,6 +3,9 @@
         $summary = $this->summary();
         $cards = [
             ['Ricavi netti', $summary['revenue'], 'Ordini pagati: '.$summary['ordersCount'], 'heroicon-o-banknotes', 'is-green'],
+            ['Ricavi IVA inclusa', $summary['grossRevenue'], 'Totale realmente incassato', 'heroicon-o-currency-euro', 'is-green'],
+            ['IVA sulle vendite', $summary['tax'], 'IVA complessiva del periodo', 'heroicon-o-receipt-percent', 'is-red'],
+            ['Sconti concessi', $summary['discounts'], 'Riduzione netta applicata in bolla', 'heroicon-o-tag', 'is-violet'],
             ['Food cost netto', $summary['costOfGoods'], 'Costo della merce venduta', 'heroicon-o-shopping-bag', 'is-blue'],
             ['Margine lordo', $summary['grossMargin'], number_format($summary['marginPercentage'], 1, ',', '.').'% sui ricavi', 'heroicon-o-arrow-trending-up', 'is-amber'],
             ['Costi extra', $summary['extraCosts'], 'Movimenti registrati nel mese', 'heroicon-o-receipt-percent', 'is-violet'],
@@ -11,6 +14,7 @@
         $products = $this->products();
         $categories = $this->categories();
         $customers = $this->customers();
+        $taxBreakdown = $this->taxBreakdown();
     @endphp
 
     <div class="business-report">
@@ -30,6 +34,15 @@
                 <input id="business-report-month" type="month" wire:model.live="month">
                 <span class="business-report-loading" wire:loading wire:target="month">Aggiornamento dati…</span>
             </div>
+            <div class="business-report-period">
+                <label for="business-report-customer-type">Tipologia cliente</label>
+                <select id="business-report-customer-type" wire:model.live="customerType">
+                    @foreach ($this->customerTypeOptions() as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+                <span class="business-report-loading" wire:loading wire:target="customerType">Aggiornamento dati…</span>
+            </div>
         </section>
 
         <section class="business-report-cards" aria-label="Riepilogo economico">
@@ -48,6 +61,24 @@
         </section>
 
         <div class="business-report-grid">
+            <section class="business-report-section is-wide">
+                <header class="business-report-section-heading">
+                    <span class="business-report-section-icon"><x-heroicon-o-receipt-percent /></span>
+                    <div><h2>Riepilogo IVA</h2><p>Imponibile, IVA e totale suddivisi per aliquota.</p></div>
+                </header>
+                <div class="business-report-table-wrap">
+                    <table class="business-report-table">
+                        <thead><tr><th>Aliquota</th><th class="is-number">Imponibile</th><th class="is-number">IVA</th><th class="is-number">Totale IVA inclusa</th></tr></thead>
+                        <tbody>
+                            @forelse ($taxBreakdown as $row)
+                                <tr><td class="is-name">IVA {{ number_format($row->tax_percentage, 2, ',', '.') }}%</td><td class="is-number">€ {{ number_format($row->taxable, 2, ',', '.') }}</td><td class="is-number"><strong>€ {{ number_format($row->tax, 2, ',', '.') }}</strong></td><td class="is-number">€ {{ number_format($row->gross, 2, ',', '.') }}</td></tr>
+                            @empty
+                                <tr><td colspan="4" class="business-report-empty">Nessun dato IVA nel periodo.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
             <section class="business-report-section is-wide">
                 <header class="business-report-section-heading">
                     <span class="business-report-section-icon"><x-heroicon-o-cube /></span>

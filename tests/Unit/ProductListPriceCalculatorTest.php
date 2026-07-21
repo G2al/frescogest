@@ -21,4 +21,13 @@ class ProductListPriceCalculatorTest extends TestCase
             'restaurant_price' => 7.5,
         ], $calculator->calculate(5, 50));
     }
+
+    public function test_markup_is_calculated_from_a_manually_entered_price(): void
+    {
+        $calculator = app(ProductListPriceCalculator::class);
+
+        $this->assertSame(80.0, $calculator->markupFromPrice(25, 45));
+        $this->assertSame(40.0, $calculator->markupFromPrice(25, 35));
+        $this->assertSame(0.0, $calculator->markupFromPrice(0, 45));
+    }
 }

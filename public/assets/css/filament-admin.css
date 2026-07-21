@@ -94,7 +94,8 @@
     text-transform: uppercase;
 }
 
-.business-report-period input {
+.business-report-period input,
+.business-report-period select {
     min-width: 13rem;
     padding: .72rem .85rem;
     border: 1px solid var(--br-border);
@@ -108,7 +109,23 @@
     box-shadow: 0 3px 10px rgba(8, 74, 62, .04);
 }
 
-.business-report-period input:focus {
+.business-report-period select {
+    padding-right: 2.7rem;
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--br-primary) 50%), linear-gradient(135deg, var(--br-primary) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 50%, calc(100% - 12px) 50%;
+    background-repeat: no-repeat;
+    background-size: 6px 6px, 6px 6px;
+    cursor: pointer;
+}
+
+.business-report-period select option {
+    color: #102f2b;
+    background: #fff;
+}
+
+.business-report-period input:focus,
+.business-report-period select:focus {
     border-color: var(--br-primary);
     box-shadow: 0 0 0 3px rgba(0, 155, 114, .12);
 }
@@ -313,6 +330,7 @@
 }
 
 .dark .business-report-period input,
+.dark .business-report-period select,
 .dark .business-report-table th {
     color: var(--br-text);
     background: rgba(255, 255, 255, .045);
@@ -355,7 +373,8 @@
         flex-direction: column;
     }
 
-    .business-report-period input {
+    .business-report-period input,
+    .business-report-period select {
         width: 100%;
         min-width: 0;
     }

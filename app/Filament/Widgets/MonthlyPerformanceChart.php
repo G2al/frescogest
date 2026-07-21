@@ -11,6 +11,12 @@ class MonthlyPerformanceChart extends ChartWidget
 {
     protected ?string $heading = 'Andamento economico ultimi 12 mesi';
 
+    protected ?string $description = 'Confronto mensile tra ricavi netti, margine lordo e risultato dopo i costi extra.';
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected ?string $maxHeight = '390px';
+
     protected function getData(): array
     {
         $periods = collect(range(11, 0))->map(fn (int $monthsAgo) => now()->startOfMonth()->subMonths($monthsAgo))
@@ -28,9 +34,9 @@ class MonthlyPerformanceChart extends ChartWidget
 
         return [
             'datasets' => [
-                ['label' => 'Ricavi netti', 'data' => $data->pluck('revenue'), 'borderColor' => '#07845f', 'backgroundColor' => '#07845f33'],
-                ['label' => 'Margine lordo', 'data' => $data->pluck('margin'), 'borderColor' => '#0ea5e9', 'backgroundColor' => '#0ea5e933'],
-                ['label' => 'Risultato reale', 'data' => $data->pluck('result'), 'borderColor' => '#f59e0b', 'backgroundColor' => '#f59e0b33'],
+                ['label' => 'Ricavi netti', 'data' => $data->pluck('revenue'), 'backgroundColor' => '#07845f'],
+                ['label' => 'Margine lordo', 'data' => $data->pluck('margin'), 'backgroundColor' => '#0ea5e9'],
+                ['label' => 'Risultato reale', 'data' => $data->pluck('result'), 'backgroundColor' => '#f59e0b'],
             ],
             'labels' => $periods->map(fn ($period) => $period->translatedFormat('M Y')),
         ];
@@ -38,6 +44,19 @@ class MonthlyPerformanceChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'line';
+        return 'bar';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+            'plugins' => ['legend' => ['position' => 'bottom']],
+            'scales' => [
+                'x' => ['grid' => ['display' => false]],
+                'y' => ['beginAtZero' => true],
+            ],
+        ];
     }
 }
