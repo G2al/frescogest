@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { refreshIcons } from './ui.js?v=20260722.3';
+import { refreshIcons } from './ui.js?v=20260722.4';
 
 const productsRoot = document.querySelector('#featured-products');
 const previousButton = document.querySelector('#featured-prev');

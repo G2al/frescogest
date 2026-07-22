@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260722.3';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260722.4';
 
 const categoriesRoot = document.querySelector('#categories');
 const previousCategoriesButton = document.querySelector('#categories-previous');
@@ -206,6 +206,15 @@ function syncHeaderCategoryState() {
         if (active) link.setAttribute('aria-current', 'page');
         else link.removeAttribute('aria-current');
     });
+}
+
+function selectCategory(category, toggleCurrent = false) {
+    state.category = toggleCurrent && state.category === category ? '' : category;
+    state.page = 1;
+    renderCategories();
+    syncFilterControls();
+    updateUrl();
+    loadProducts();
 }
 
 function updateCategoryCarouselControls() {
@@ -432,12 +441,16 @@ categoriesRoot?.addEventListener('click', event => {
     }
     const tab = event.target.closest('.category-tab');
     if (!tab) return;
-    state.category = state.category === tab.dataset.category ? '' : tab.dataset.category;
-    state.page = 1;
-    renderCategories();
-    syncFilterControls();
-    updateUrl();
-    loadProducts();
+    selectCategory(tab.dataset.category, true);
+});
+
+document.addEventListener('click', event => {
+    const link = event.target.closest('.catalog-category-link[data-category], [data-catalog-root]');
+    if (!link || !productsRoot) return;
+
+    event.preventDefault();
+    selectCategory(link.dataset.category || '');
+    document.querySelector('#catalog-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 previousCategoriesButton?.addEventListener('click', () => scrollCategories(-1));
