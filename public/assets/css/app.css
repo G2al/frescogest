@@ -981,7 +981,7 @@ html, body { touch-action: pan-y; }
 .catalog-page .category-tab > .category-tab-copy { width: auto; height: auto; display: grid; grid-template-columns: 1fr; align-content: center; justify-items: start; gap: 5px; padding: 0; border-radius: 0; color: #174c3d; background: none; }
 .catalog-page .category-tab.active > .category-tab-copy { color: #075b45; background: none; box-shadow: none; }
 .catalog-page .category-tab-copy svg { width: 25px; height: 25px; margin-bottom: 5px; stroke-width: 1.8; }
-.catalog-page .category-tab-copy strong { max-width: 112px; overflow: hidden; font-size: .96rem; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap; }
+.catalog-page .category-tab-copy strong { max-width: 112px; min-height: 2.3em; display: flex; align-items: center; overflow: visible; font-size: .96rem; line-height: 1.15; overflow-wrap: anywhere; text-overflow: clip; white-space: normal; }
 .catalog-page .category-tab-copy small { color: #74847e; font-size: .7rem; font-weight: 650; white-space: nowrap; }
 .catalog-page .category-tab > .category-tab-media { width: 112px; height: 108px; display: grid; place-items: end center; align-self: end; overflow: visible; border-radius: 0; color: #28795d; background: none; }
 .catalog-page .category-tab-media img { width: 118%; height: 118%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 9px 7px rgba(33,71,54,.16)); transform: translate(4px,9px); }
@@ -1027,7 +1027,7 @@ html, body { touch-action: pan-y; }
     .catalog-page .category-tabs { grid-auto-columns: 190px; gap: 8px; }
     .catalog-page .category-tab { min-height: 104px; grid-template-columns: minmax(82px,1fr) 82px; padding: 11px 5px 8px 13px; }
     .catalog-page .category-tab-copy svg { width: 21px; height: 21px; margin-bottom: 2px; }
-    .catalog-page .category-tab-copy strong { max-width: 95px; font-size: .84rem; }
+    .catalog-page .category-tab-copy strong { max-width: 95px; min-height: 2.3em; font-size: .84rem; }
     .catalog-page .category-tab-copy small { font-size: .64rem; }
     .catalog-page .category-tab > .category-tab-media { width: 82px; height: 83px; }
     .catalog-page .category-tab-fallback { width: 66px; height: 66px; }
