@@ -990,8 +990,7 @@ html, body { touch-action: pan-y; }
 
 @media (max-width: 900px) {
     .catalog-site-header .catalog-header-search { display: none; }
-    .catalog-site-header .nav-links a:first-child { display: none; }
-    .catalog-site-header .nav-links { margin-left: auto; }
+    .catalog-site-header .nav-links { margin-inline: auto; }
     .catalog-page .catalog-hero { min-height: 620px; }
     .catalog-hero-centered { min-height: 620px; }
     .catalog-page .catalog-hero-copy { padding-top: 40px; }
@@ -1003,8 +1002,9 @@ html, body { touch-action: pan-y; }
 @media (max-width: 600px) {
     .catalog-site-header .nav { min-height: auto; }
     .catalog-site-header .brand-logo { width: 86px; height: 82px; }
-    .catalog-site-header .nav-links { width: 100%; order: 3; justify-content: center; margin: 0; border-top: 1px solid rgba(0,112,96,.09); }
-    .catalog-site-header .nav-links a { min-height: 48px; }
+    .catalog-site-header .nav-links { width: 100%; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); order: 3; gap: 7px; justify-content: center; margin: 0; padding-top: 8px; border-top: 1px solid rgba(0,112,96,.09); }
+    .catalog-site-header .nav-links a { width: 100%; min-height: 44px; justify-content: center; padding: 8px 12px; border-radius: 12px; }
+    .catalog-page .catalog-site-header .nav-links [data-catalog-root] { color: var(--brand-teal); background: #eaf6f1; }
     .catalog-page .catalog-hero { min-height: 590px; }
     .catalog-hero-centered { min-height: 590px; }
     .catalog-page .catalog-hero-copy { padding: 34px 4px 0; }
