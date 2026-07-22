@@ -47,25 +47,15 @@ function fieldContainer(field) {
 function showFieldErrors(errors) {
     let firstInvalidField = null;
 
-    Object.entries(errors).forEach(([name, messages]) => {
+    Object.keys(errors).forEach(name => {
         const fields = [...form.querySelectorAll(`[name="${CSS.escape(name)}"]`)];
         if (!fields.length) return;
 
         const field = fields[0];
-        const container = fieldContainer(field);
-        const message = readableError(Array.isArray(messages) ? messages[0] : messages);
-        const error = document.createElement('small');
-        const errorId = `${name}-error`;
-        error.id = errorId;
-        error.className = 'field-error';
-        error.setAttribute('role', 'alert');
-        error.textContent = message;
-        container?.append(error);
 
         fields.forEach(input => {
             input.classList.add('is-invalid');
             input.setAttribute('aria-invalid', 'true');
-            input.setAttribute('aria-describedby', errorId);
         });
 
         firstInvalidField ||= field;
@@ -75,6 +65,29 @@ function showFieldErrors(errors) {
         firstInvalidField.focus({ preventScroll: true });
         fieldContainer(firstInvalidField)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+}
+
+function updatePasswordConfirmation() {
+    const password = form?.querySelector('[name="password"]');
+    const confirmation = form?.querySelector('[name="password_confirmation"]');
+    const meter = confirmation?.closest('.field')?.querySelector('.password-meter');
+    const hint = confirmation?.closest('.field')?.querySelector('.password-hint');
+    if (!password || !confirmation || !meter || !hint) return;
+
+    hint.classList.remove('is-error', 'is-success');
+
+    if (!confirmation.value) {
+        meter.style.setProperty('--password-score', '0%');
+        meter.dataset.level = 'weak';
+        hint.textContent = 'Ripeti la password scelta';
+        return;
+    }
+
+    const matches = confirmation.value === password.value;
+    meter.style.setProperty('--password-score', '100%');
+    meter.dataset.level = matches ? 'strong' : 'error';
+    hint.classList.add(matches ? 'is-success' : 'is-error');
+    hint.textContent = matches ? 'Le password coincidono' : 'Le password non coincidono';
 }
 
 function errorSummary(error) {
@@ -152,9 +165,14 @@ document.querySelectorAll('[data-generate-password]').forEach(button => {
 });
 
 form?.querySelectorAll('[name="password"]').forEach(input => {
-    input.addEventListener('input', () => updatePasswordMeter(input));
+    input.addEventListener('input', () => {
+        updatePasswordMeter(input);
+        updatePasswordConfirmation();
+    });
     updatePasswordMeter(input);
 });
+form?.querySelector('[name="password_confirmation"]')?.addEventListener('input', updatePasswordConfirmation);
+updatePasswordConfirmation();
 
 customerTypes.forEach(type => type.addEventListener('change', updateRegistrationFields));
 updateRegistrationFields();
@@ -187,14 +205,13 @@ if (form) {
             if (form.dataset.endpoint === '/auth/forgot-password') {
                 const success = 'Se l’indirizzo esiste, riceverai le istruzioni per reimpostare la password.';
                 showFormMessage(success, 'success');
-                notify(success, 'success');
                 submitButton.disabled = false;
                 submitButton.classList.remove('is-loading');
                 return;
             }
 
             if (form.dataset.endpoint === '/auth/reset-password') {
-                notify('Password aggiornata correttamente.', 'success');
+                showFormMessage('Password aggiornata correttamente.', 'success');
                 setTimeout(() => { location.href = '/login.html?reset=1'; }, 650);
                 return;
             }
@@ -203,14 +220,12 @@ if (form) {
                 ? 'Registrazione completata. Benvenuto!'
                 : 'Accesso effettuato. Bentornato!';
             showFormMessage(success, 'success');
-            notify(success, 'success');
             const next = new URLSearchParams(location.search).get('next') || '/';
             setTimeout(() => { location.href = next; }, 650);
         } catch (error) {
             const message = errorSummary(error);
             showFieldErrors(error.errors || {});
             showFormMessage(message);
-            notify(message, 'error');
             submitButton.disabled = false;
             submitButton.classList.remove('is-loading');
         }

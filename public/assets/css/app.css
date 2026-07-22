@@ -757,6 +757,8 @@ html, body { touch-action: pan-y; }
 .account-type-option > input:checked + .account-type-card .account-type-check { opacity: 1; transform: scale(1); }
 .account-type-option > input:focus-visible + .account-type-card { outline: 3px solid rgba(0,112,96,.18); outline-offset: 2px; }
 .password-label { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.auth-password-field { grid-template-rows: auto 50px auto; align-content: start; }
+.password-label, .password-label-spacer { min-height: 22px; }
 .password-label button { padding: 0; cursor: pointer; border: 0; color: var(--brand-teal); background: transparent; font: inherit; font-size: .72rem; font-weight: 800; }
 .password-control { position: relative; }
 .password-control input { padding-right: 52px; }
@@ -767,7 +769,11 @@ html, body { touch-action: pan-y; }
 .password-meter span { width: var(--password-score,0%); height: 100%; display: block; border-radius: inherit; background: #d09827; transition: width .3s ease,background .3s ease; }
 .password-meter[data-level="good"] span { background: #49a66f; }
 .password-meter[data-level="strong"] span { background: linear-gradient(90deg,#149460,#29bf75); }
+.password-meter[data-level="error"] span { background: #cf3f46; }
+.password-feedback { min-height: 30px; display: grid; align-content: start; gap: 4px; }
 .password-hint { min-height: 17px; color: var(--muted); font-size: .7rem; }
+.password-hint.is-error { color: #b12f35; font-weight: 750; }
+.password-hint.is-success { color: #13734c; font-weight: 750; }
 .form-message { min-height: 0; display: none; align-items: flex-start; gap: 9px; margin: 16px 0; padding: 13px 15px; border: 1px solid transparent; border-radius: 12px; font-size: .86rem; font-weight: 700; }
 .form-message:not(:empty) { display: flex; }
 .form-message svg { width: 19px; height: 19px; flex: 0 0 auto; }
