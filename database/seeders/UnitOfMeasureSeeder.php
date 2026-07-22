@@ -17,6 +17,10 @@ class UnitOfMeasureSeeder extends Seeder
             ['name' => 'Vaschette', 'symbol' => 'vaschetta'],
             ['name' => 'Cestini', 'symbol' => 'cestino'],
             ['name' => 'Casse', 'symbol' => 'cassa'],
+            ['name' => 'Confezioni', 'symbol' => 'conf'],
+            ['name' => 'Cartoni', 'symbol' => 'cartone'],
+            ['name' => 'Coppie', 'symbol' => 'coppia'],
+            ['name' => 'File', 'symbol' => 'fila'],
         ] as $unit) {
             UnitOfMeasure::updateOrCreate(
                 ['symbol' => $unit['symbol']],

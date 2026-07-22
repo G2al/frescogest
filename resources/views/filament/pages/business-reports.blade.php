@@ -5,6 +5,8 @@
             ['Ricavi netti', $summary['revenue'], 'Ordini pagati: '.$summary['ordersCount'], 'heroicon-o-banknotes', 'is-green'],
             ['Ricavi IVA inclusa', $summary['grossRevenue'], 'Totale realmente incassato', 'heroicon-o-currency-euro', 'is-green'],
             ['IVA sulle vendite', $summary['tax'], 'IVA complessiva del periodo', 'heroicon-o-receipt-percent', 'is-red'],
+            ['IVA sugli acquisti', $summary['purchaseTax'], 'IVA compresa nei costi della merce', 'heroicon-o-arrow-down-tray', 'is-blue'],
+            ['Saldo IVA', $summary['vatBalance'], 'IVA vendite meno IVA acquisti', 'heroicon-o-scale', $summary['vatBalance'] >= 0 ? 'is-amber' : 'is-green'],
             ['Sconti concessi', $summary['discounts'], 'Riduzione netta applicata in bolla', 'heroicon-o-tag', 'is-violet'],
             ['Food cost netto', $summary['costOfGoods'], 'Costo della merce venduta', 'heroicon-o-shopping-bag', 'is-blue'],
             ['Margine lordo', $summary['grossMargin'], number_format($summary['marginPercentage'], 1, ',', '.').'% sui ricavi', 'heroicon-o-arrow-trending-up', 'is-amber'],
@@ -92,16 +94,16 @@
             <section class="business-report-section is-wide">
                 <header class="business-report-section-heading">
                     <span class="business-report-section-icon"><x-heroicon-o-receipt-percent /></span>
-                    <div><h2>Riepilogo IVA</h2><p>Imponibile, IVA e totale suddivisi per aliquota.</p></div>
+                    <div><h2>Riepilogo IVA</h2><p>IVA sulle vendite, IVA compresa negli acquisti e relativo saldo, suddivisi per aliquota.</p></div>
                 </header>
                 <div class="business-report-table-wrap">
                     <table class="business-report-table">
-                        <thead><tr><th>Aliquota</th><th class="is-number">Imponibile</th><th class="is-number">IVA</th><th class="is-number">Totale IVA inclusa</th></tr></thead>
+                        <thead><tr><th>Aliquota</th><th class="is-number">Vendite nette</th><th class="is-number">IVA vendite</th><th class="is-number">Acquisti netti</th><th class="is-number">IVA acquisti</th><th class="is-number">Saldo IVA</th><th class="is-number">Vendite IVA inclusa</th></tr></thead>
                         <tbody>
                             @forelse ($taxBreakdown as $row)
-                                <tr><td class="is-name">IVA {{ number_format($row->tax_percentage, 2, ',', '.') }}%</td><td class="is-number">€ {{ number_format($row->taxable, 2, ',', '.') }}</td><td class="is-number"><strong>€ {{ number_format($row->tax, 2, ',', '.') }}</strong></td><td class="is-number">€ {{ number_format($row->gross, 2, ',', '.') }}</td></tr>
+                                <tr><td class="is-name">IVA {{ number_format($row->tax_percentage, 2, ',', '.') }}%</td><td class="is-number">€ {{ number_format($row->taxable, 2, ',', '.') }}</td><td class="is-number"><strong>€ {{ number_format($row->tax, 2, ',', '.') }}</strong></td><td class="is-number">€ {{ number_format($row->purchase_taxable, 2, ',', '.') }}</td><td class="is-number">€ {{ number_format($row->purchase_tax, 2, ',', '.') }}</td><td class="is-number"><strong>€ {{ number_format($row->vat_balance, 2, ',', '.') }}</strong></td><td class="is-number">€ {{ number_format($row->gross, 2, ',', '.') }}</td></tr>
                             @empty
-                                <tr><td colspan="4" class="business-report-empty">Nessun dato IVA nel periodo.</td></tr>
+                                <tr><td colspan="7" class="business-report-empty">Nessun dato IVA nel periodo.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

@@ -45,9 +45,10 @@ class ProductsTable
                     ->label('Costo netto')
                     ->money('EUR')
                     ->sortable(),
-                TextColumn::make('purchase_cost_gross')
+                TextColumn::make('purchase_cost_per_unit_gross')
                     ->label('Costo IVA incl.')
-                    ->money('EUR'),
+                    ->money('EUR')
+                    ->sortable(),
                 TextColumn::make('base_price_per_unit')
                     ->label('Listino base')
                     ->money('EUR')

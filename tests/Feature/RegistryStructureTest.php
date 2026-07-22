@@ -131,11 +131,11 @@ class RegistryStructureTest extends TestCase
         $this->seed($seeders);
         $this->seed($seeders);
 
-        $this->assertDatabaseCount('product_categories', 5);
+        $this->assertDatabaseCount('product_categories', 8);
         $this->assertDatabaseCount('tax_rates', 3);
-        $this->assertDatabaseCount('unit_of_measures', 7);
+        $this->assertDatabaseCount('unit_of_measures', 11);
         $this->assertDatabaseCount('payment_methods', 2);
-        $this->assertDatabaseCount('products', 153);
+        $this->assertDatabaseCount('products', 213);
         $this->assertDatabaseHas('payment_methods', ['name' => 'Contanti']);
         $this->assertDatabaseHas('payment_methods', ['name' => 'Bonifico']);
     }
@@ -146,9 +146,9 @@ class RegistryStructureTest extends TestCase
 
         $this->assertDatabaseCount('companies', 1);
         $this->assertDatabaseCount('customers', 50);
-        $this->assertDatabaseCount('products', 153);
-        $this->assertDatabaseCount('customer_product_prices', 7650);
-        $this->assertDatabaseHas('products', ['name' => 'Mozzarella di bufala campana']);
+        $this->assertDatabaseCount('products', 213);
+        $this->assertDatabaseCount('customer_product_prices', 10650);
+        $this->assertDatabaseHas('products', ['name' => 'Mozzarella da 125 g']);
         $this->assertDatabaseHas('products', ['name' => 'Mele Fuji']);
 
         foreach ([

@@ -6,6 +6,7 @@ use App\Enums\CustomerType;
 use App\Enums\OrderStatus;
 use App\Models\CostMovement;
 use App\Models\Order;
+use App\Models\OrderItem;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
@@ -43,12 +44,14 @@ class BusinessReports extends Page
         $revenue = (float) (clone $orders)->sum('total_net');
         $grossRevenue = (float) (clone $orders)->sum('total_gross');
         $tax = (float) (clone $orders)->sum('total_tax');
+        $purchaseTax = (float) $this->paidOrderItems($year, $month)->sum('purchase_cost_tax');
         $discounts = (float) (clone $orders)->sum('discount_amount_net');
         $costOfGoods = (float) (clone $orders)->sum('total_purchase_cost_net');
         $extraCosts = (float) CostMovement::query()->whereYear('movement_date', $year)->whereMonth('movement_date', $month)->sum('amount');
         $grossMargin = $revenue - $costOfGoods;
 
-        return compact('revenue', 'grossRevenue', 'tax', 'discounts', 'costOfGoods', 'extraCosts', 'grossMargin') + [
+        return compact('revenue', 'grossRevenue', 'tax', 'purchaseTax', 'discounts', 'costOfGoods', 'extraCosts', 'grossMargin') + [
+            'vatBalance' => $tax - $purchaseTax,
             'netResult' => $grossMargin - $extraCosts,
             'marginPercentage' => $revenue > 0 ? $grossMargin / $revenue * 100 : 0,
             'ordersCount' => (clone $orders)->count(),
@@ -101,7 +104,7 @@ class BusinessReports extends Page
             ->whereYear('orders.paid_at', $year)
             ->whereMonth('orders.paid_at', $month)
             ->when($this->customerType !== 'all', fn ($query) => $query->where('customers.type', $this->customerType))
-            ->selectRaw('order_items.tax_percentage, SUM(order_items.line_net) as taxable, SUM(order_items.line_tax) as tax, SUM(order_items.line_gross) as gross')
+            ->selectRaw('order_items.tax_percentage, SUM(order_items.line_net) as taxable, SUM(order_items.line_tax) as tax, SUM(order_items.line_gross) as gross, SUM(order_items.purchase_cost_net) as purchase_taxable, SUM(order_items.purchase_cost_tax) as purchase_tax, SUM(order_items.purchase_cost_gross) as purchase_gross')
             ->groupBy('order_items.tax_percentage')
             ->orderBy('order_items.tax_percentage')
             ->get();
@@ -113,7 +116,7 @@ class BusinessReports extends Page
             ->whereMonth('orders.paid_at', $month)
             ->where('orders.shipping_amount_net', '>', 0)
             ->when($this->customerType !== 'all', fn ($query) => $query->where('customers.type', $this->customerType))
-            ->selectRaw('orders.shipping_tax_percentage as tax_percentage, SUM(orders.shipping_amount_net) as taxable, SUM(orders.shipping_tax) as tax, SUM(orders.shipping_amount_net + orders.shipping_tax) as gross')
+            ->selectRaw('orders.shipping_tax_percentage as tax_percentage, SUM(orders.shipping_amount_net) as taxable, SUM(orders.shipping_tax) as tax, SUM(orders.shipping_amount_net + orders.shipping_tax) as gross, 0 as purchase_taxable, 0 as purchase_tax, 0 as purchase_gross')
             ->groupBy('orders.shipping_tax_percentage')
             ->get();
 
@@ -125,6 +128,10 @@ class BusinessReports extends Page
                     'taxable' => $rows->sum('taxable'),
                     'tax' => $rows->sum('tax'),
                     'gross' => $rows->sum('gross'),
+                    'purchase_taxable' => $rows->sum('purchase_taxable'),
+                    'purchase_tax' => $rows->sum('purchase_tax'),
+                    'purchase_gross' => $rows->sum('purchase_gross'),
+                    'vat_balance' => $rows->sum('tax') - $rows->sum('purchase_tax'),
                 ];
             })->values();
     }
@@ -141,6 +148,17 @@ class BusinessReports extends Page
             ->whereYear('paid_at', $year)
             ->whereMonth('paid_at', $month)
             ->when($this->customerType !== 'all', fn ($query) => $query->whereHas('customer', fn ($customers) => $customers->where('type', $this->customerType)));
+    }
+
+    private function paidOrderItems(int $year, int $month)
+    {
+        return OrderItem::query()
+            ->whereHas('order', function ($orders) use ($year, $month): void {
+                $orders->where('status', OrderStatus::Paid)
+                    ->whereYear('paid_at', $year)
+                    ->whereMonth('paid_at', $month)
+                    ->when($this->customerType !== 'all', fn ($query) => $query->whereHas('customer', fn ($customers) => $customers->where('type', $this->customerType)));
+            });
     }
 
     private function period(): array

@@ -38,8 +38,8 @@ class OrderItemSnapshotService
         $lineTax = $this->calculator->tax($lineNet, $taxPercentage);
         $lineGross = $this->calculator->sum([$lineNet, $lineTax]);
         $purchaseCost = $this->calculator->lineTotal($product->purchase_cost_per_unit, $data['quantity']);
-        $purchaseTax = $this->calculator->tax($purchaseCost, $taxPercentage);
-        $purchaseGross = $this->calculator->sum([$purchaseCost, $purchaseTax]);
+        $purchaseGross = $this->calculator->lineTotal($product->purchase_cost_per_unit_gross, $data['quantity']);
+        $purchaseTax = $this->calculator->difference($purchaseGross, $purchaseCost);
         $margin = $this->calculator->difference($lineNet, $purchaseCost);
 
         return [

@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Models\TaxRate;
 use App\Services\Pricing\ProductListPriceCalculator;
+use App\Services\Pricing\PurchaseCostCalculator;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -27,11 +29,15 @@ class ProductForm
                     TextInput::make('slug')->label('Slug')->required()->unique(ignoreRecord: true)->maxLength(255),
                     TextInput::make('code')->label('Codice')->maxLength(255),
                     Toggle::make('active')->label('Attivo')->default(true),
+                    TextInput::make('purchase_cost_per_unit_gross')
+                        ->label('Costo di acquisto IVA inclusa')
+                        ->helperText('Inserisci il costo realmente pagato, già comprensivo di IVA, per ogni unità selezionata.')
+                        ->numeric()->minValue(0)->step(0.0001)->prefix('€')->required()->live(debounce: 500)
+                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateNetCostAndPrices($get, $set)),
                     TextInput::make('purchase_cost_per_unit')
                         ->label('Costo di acquisto netto')
-                        ->helperText('Costo senza IVA per ogni kg, cassa, pezzo o altra unità selezionata.')
-                        ->numeric()->minValue(0)->step(0.0001)->prefix('€')->required()->live(debounce: 500)
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updatePricesFromMarkups($get, $set)),
+                        ->helperText('Calcolato automaticamente scorporando l’IVA dal costo pagato.')
+                        ->numeric()->prefix('€')->disabled()->dehydrated(false),
                     Textarea::make('description')->label('Descrizione')->rows(3)->columnSpanFull(),
                     Textarea::make('notes')->label('Note')->rows(3)->columnSpanFull(),
                     Textarea::make('public_description')->label('Descrizione pubblica')->rows(3)->columnSpanFull(),
@@ -80,21 +86,42 @@ class ProductForm
                 ->columnSpanFull()
                 ->schema([
                     Select::make('product_category_id')->label('Categoria')->relationship('productCategory', 'name')->searchable()->preload()->required(),
-                    Select::make('tax_rate_id')->label('Aliquota IVA')->relationship('taxRate', 'name')->searchable()->preload()->required(),
+                    Select::make('tax_rate_id')->label('Aliquota IVA')->relationship('taxRate', 'name')->searchable()->preload()->required()->live()
+                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateNetCostAndPrices($get, $set)),
                     Select::make('default_unit_of_measure_id')->label('Unità di misura predefinita')->relationship('defaultUnitOfMeasure', 'name')->searchable()->preload()->required(),
                 ])->columns(2),
         ]);
     }
 
-    private static function updatePricesFromMarkups(Get $get, Set $set): void
+    private static function updatePricesFromMarkups(Get $get, Set $set, string|int|float|null $purchaseCost = null): void
     {
-        self::updatePriceFromMarkup($get, $set, 'markup_percentage', 'base_price_per_unit');
-        self::updatePriceFromMarkup($get, $set, 'restaurant_markup_percentage', 'restaurant_price_per_unit');
+        self::updatePriceFromMarkup($get, $set, 'markup_percentage', 'base_price_per_unit', $purchaseCost);
+        self::updatePriceFromMarkup($get, $set, 'restaurant_markup_percentage', 'restaurant_price_per_unit', $purchaseCost);
     }
 
-    private static function updatePriceFromMarkup(Get $get, Set $set, string $markupField, string $priceField): void
+    private static function updateNetCostAndPrices(Get $get, Set $set): void
     {
-        $price = app(ProductListPriceCalculator::class)->priceFromMarkup($get('purchase_cost_per_unit'), $get($markupField));
+        $percentage = TaxRate::query()->whereKey($get('tax_rate_id'))->value('percentage') ?? 0;
+        $netCost = app(PurchaseCostCalculator::class)->netFromGross(
+            $get('purchase_cost_per_unit_gross'),
+            $percentage,
+        );
+
+        $set('purchase_cost_per_unit', number_format($netCost, 4, '.', ''));
+        self::updatePricesFromMarkups($get, $set, $netCost);
+    }
+
+    private static function updatePriceFromMarkup(
+        Get $get,
+        Set $set,
+        string $markupField,
+        string $priceField,
+        string|int|float|null $purchaseCost = null,
+    ): void {
+        $price = app(ProductListPriceCalculator::class)->priceFromMarkup(
+            $purchaseCost ?? $get('purchase_cost_per_unit'),
+            $get($markupField),
+        );
         $set($priceField, number_format($price, 2, '.', ''));
     }
 

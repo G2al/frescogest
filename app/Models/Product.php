@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\Pricing\ProductListPriceCalculator;
+use App\Services\Pricing\PurchaseCostCalculator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,7 @@ class Product extends Model
         'public_description',
         'price_per_kg',
         'purchase_cost_per_unit',
+        'purchase_cost_per_unit_gross',
         'markup_percentage',
         'restaurant_markup_percentage',
         'base_price_per_unit',
@@ -75,9 +77,7 @@ class Product extends Model
 
     public function getPurchaseCostGrossAttribute(): string
     {
-        $percentage = (float) ($this->taxRate?->percentage ?? 0);
-
-        return number_format((float) $this->purchase_cost_per_unit * (1 + ($percentage / 100)), 2, '.', '');
+        return number_format((float) $this->purchase_cost_per_unit_gross, 2, '.', '');
     }
 
     protected function casts(): array
@@ -88,6 +88,7 @@ class Product extends Model
             'is_seasonal' => 'boolean',
             'price_per_kg' => 'decimal:2',
             'purchase_cost_per_unit' => 'decimal:4',
+            'purchase_cost_per_unit_gross' => 'decimal:4',
             'markup_percentage' => 'decimal:2',
             'restaurant_markup_percentage' => 'decimal:2',
             'base_price_per_unit' => 'decimal:4',
@@ -101,6 +102,21 @@ class Product extends Model
     {
         static::saving(function (Product $product): void {
             $calculator = app(ProductListPriceCalculator::class);
+            $purchaseCosts = app(PurchaseCostCalculator::class);
+            $taxPercentage = (float) (TaxRate::query()->whereKey($product->tax_rate_id)->value('percentage') ?? 0);
+            $hasGrossCost = array_key_exists('purchase_cost_per_unit_gross', $product->getAttributes());
+
+            if ($product->isDirty('purchase_cost_per_unit_gross') || ($product->isDirty('tax_rate_id') && $hasGrossCost)) {
+                $product->purchase_cost_per_unit = $purchaseCosts->netFromGross(
+                    $product->purchase_cost_per_unit_gross,
+                    $taxPercentage,
+                );
+            } elseif ($product->isDirty('purchase_cost_per_unit') || (! $product->exists && ! $hasGrossCost)) {
+                $product->purchase_cost_per_unit_gross = $purchaseCosts->grossFromNet(
+                    $product->purchase_cost_per_unit,
+                    $taxPercentage,
+                );
+            }
 
             if (! $product->exists && ! array_key_exists('restaurant_markup_percentage', $product->getAttributes())) {
                 $product->restaurant_markup_percentage = $product->markup_percentage ?? 0;

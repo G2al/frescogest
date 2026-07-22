@@ -16,6 +16,9 @@ class ProductCategorySeeder extends Seeder
             ['name' => 'Latticini', 'description' => 'Formaggi freschi, stagionati e specialità casearie.', 'catalog_color' => '#fff1d8'],
             ['name' => 'Prodotti campani', 'description' => 'Eccellenze alimentari e specialità tipiche della Campania.', 'catalog_color' => '#f8e6d8'],
             ['name' => 'Prodotti confezionati', 'description' => 'Prodotti alimentari confezionati per la dispensa professionale.', 'catalog_color' => '#eee6f7'],
+            ['name' => 'Dolci campani', 'description' => 'Dolci tradizionali campani in confezioni pronte alla vendita.', 'catalog_color' => '#f8e5eb'],
+            ['name' => 'Prodotti pizzerie', 'description' => 'Latticini e ingredienti professionali dedicati alle pizzerie.', 'catalog_color' => '#e7f3df'],
+            ['name' => 'Materiali di consumo', 'description' => 'Confezioni e materiali di supporto per attività professionali.', 'catalog_color' => '#e8edf3'],
         ] as $sortOrder => $category) {
             ProductCategory::updateOrCreate(
                 ['name' => $category['name']],

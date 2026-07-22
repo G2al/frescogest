@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api;
 
 use App\Enums\OrderStatus;
+use App\Filament\Pages\BusinessReports;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Order;
@@ -102,6 +103,46 @@ class OrderTest extends TestCase
             'total_tax' => 0.39,
             'total_gross' => 10.25,
         ]);
+    }
+
+    public function test_purchase_cost_is_entered_gross_while_customer_price_remains_net(): void
+    {
+        [$user, $product] = $this->customerAndProduct();
+        $taxRate = TaxRate::query()->whereKey($product->tax_rate_id)->firstOrFail();
+        $taxRate->update(['name' => 'IVA 10%', 'percentage' => 10]);
+        $product->update([
+            'purchase_cost_per_unit_gross' => 6.60,
+            'base_price_per_unit' => 9,
+            'restaurant_price_per_unit' => 9,
+        ]);
+
+        $this->assertSame('6.6000', $product->fresh()->purchase_cost_per_unit_gross);
+        $this->assertSame('6.0000', $product->fresh()->purchase_cost_per_unit);
+
+        $this->actingAs($user, 'customer')->postJson('/api/v1/orders', [
+            'items' => [['product_id' => $product->id, 'quantity' => 1]],
+        ])->assertCreated();
+
+        $order = Order::query()->firstOrFail();
+        $item = $order->items()->firstOrFail();
+
+        $this->assertSame('9.0000', $item->unit_price_net);
+        $this->assertSame('0.90', $item->line_tax);
+        $this->assertSame('9.90', $item->line_gross);
+        $this->assertSame('6.00', $item->purchase_cost_net);
+        $this->assertSame('0.60', $item->purchase_cost_tax);
+        $this->assertSame('6.60', $item->purchase_cost_gross);
+        $this->assertSame('3.00', $item->margin_amount);
+
+        $order->update(['status' => OrderStatus::Paid, 'paid_at' => now()]);
+        $reports = app(BusinessReports::class);
+        $reports->mount();
+        $summary = $reports->summary();
+
+        $this->assertSame(0.9, $summary['tax']);
+        $this->assertSame(0.6, $summary['purchaseTax']);
+        $this->assertSame(0.3, round($summary['vatBalance'], 2));
+        $this->assertSame(3.0, $summary['grossMargin']);
     }
 
     public function test_order_status_updates_manage_the_confirmed_and_whatsapp_states(): void
