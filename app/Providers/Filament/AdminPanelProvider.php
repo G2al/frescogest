@@ -32,10 +32,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->authGuard('admin')
             ->login()
-            ->brandLogo(asset('assets/images/ilparadisodellafrutta-logo-primary.png'))
-            ->darkModeBrandLogo(asset('assets/images/ilparadisodellafrutta-logo-white.png'))
+            ->brandLogo(asset('assets/images/new-logo-primary.png'))
+            ->darkModeBrandLogo(asset('assets/images/new-logo-white.png'))
             ->brandLogoHeight('5.75rem')
-            ->favicon(asset('assets/images/favicon.png'))
+            ->favicon(asset('assets/images/icona-web.png'))
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => view('filament.admin-login-branding')->render(),

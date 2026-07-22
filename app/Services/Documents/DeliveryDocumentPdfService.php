@@ -17,7 +17,7 @@ class DeliveryDocumentPdfService
 
     private function logoData(): ?array
     {
-        $path = public_path('assets/images/ilparadisodellafrutta-logo-primary.png');
+        $path = public_path('assets/images/new-logo-primary.png');
 
         if (! is_file($path)) {
             return null;

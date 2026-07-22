@@ -26,7 +26,11 @@ class ProductForm
                 ->schema([
                     TextInput::make('name')->label('Nome')->required()->live(onBlur: true)
                         ->afterStateUpdated(fn (?string $state, Set $set) => $set('slug', Str::slug((string) $state)))->maxLength(255),
-                    TextInput::make('slug')->label('Slug')->required()->unique(ignoreRecord: true)->maxLength(255),
+                    TextInput::make('slug')
+                        ->label('Slug')
+                        ->helperText('Facoltativo: se lasciato vuoto viene generato automaticamente dal nome.')
+                        ->unique(ignoreRecord: true)
+                        ->maxLength(255),
                     TextInput::make('code')->label('Codice')->maxLength(255),
                     Toggle::make('active')->label('Attivo')->default(true),
                     TextInput::make('purchase_cost_per_unit_gross')

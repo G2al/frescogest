@@ -99,7 +99,7 @@ export async function mountLayout() {
         const favicon = document.createElement('link');
         favicon.rel = 'icon';
         favicon.type = 'image/png';
-        favicon.href = '/assets/images/favicon.png';
+        favicon.href = '/assets/images/icona-web.png';
         document.head.append(favicon);
     }
     const user = await currentUser();
@@ -113,7 +113,7 @@ export async function mountLayout() {
         header.innerHTML = `
             <div class="container nav">
                 <a class="brand" href="/" aria-label="Il Paradiso della Frutta, torna alla home">
-                    <img class="brand-logo" src="/assets/images/ilparadisodellafrutta-logo-primary.png" alt="Il Paradiso della Frutta">
+                    <img class="brand-logo" src="/assets/images/new-logo-primary.png" alt="Il Paradiso della Frutta">
                 </a>
                 <nav class="nav-links" aria-label="Navigazione principale">
                     ${catalogStyleHeader
@@ -158,7 +158,7 @@ export async function mountLayout() {
             <div class="container footer-content">
                 <div class="footer-brand-column">
                     <a href="/" aria-label="Il Paradiso della Frutta, torna alla home">
-                        <img class="footer-logo" src="/assets/images/ilparadisodellafrutta-logo-white.png" alt="Il Paradiso della Frutta">
+                        <img class="footer-logo" src="/assets/images/new-logo-white.png" alt="Il Paradiso della Frutta">
                     </a>
                     <p>Prodotti freschi selezionati ogni giorno per privati e ristoratori.</p>
                 </div>

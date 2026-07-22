@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260722.4';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260722.5';
 
 const categoriesRoot = document.querySelector('#categories');
 const previousCategoriesButton = document.querySelector('#categories-previous');
@@ -34,6 +34,8 @@ let categoryDragStartX = 0;
 let categoryDragScrollLeft = 0;
 let categoryDragged = false;
 let categoryDragPointerId = null;
+let catalogSnapshot = '';
+let categoriesSnapshot = '';
 
 const state = {
     category: new URLSearchParams(location.search).get('category') || '',
@@ -345,10 +347,12 @@ function renderPagination(meta) {
     refreshIcons(paginationRoot);
 }
 
-async function loadProducts() {
+async function loadProducts({ silent = false } = {}) {
     const currentRequest = ++requestId;
-    productsRoot.innerHTML = skeletonCards(8);
-    countRoot.textContent = 'Caricamento…';
+    if (!silent) {
+        productsRoot.innerHTML = skeletonCards(8);
+        countRoot.textContent = 'Caricamento…';
+    }
     const params = new URLSearchParams();
     if (state.category) params.set('category', state.category);
     if (state.search) params.set('search', state.search);
@@ -362,6 +366,9 @@ async function loadProducts() {
     try {
         const payload = await api(`/catalog/products${params.size ? `?${params}` : ''}`);
         if (currentRequest !== requestId) return;
+        const nextSnapshot = JSON.stringify(payload);
+        if (silent && nextSnapshot === catalogSnapshot) return;
+        catalogSnapshot = nextSnapshot;
         productsRoot.innerHTML = payload.data.length
             ? payload.data.map(productCard).join('')
             : '<div class="empty catalog-empty">Nessun prodotto corrisponde alla ricerca.</div>';
@@ -396,6 +403,7 @@ async function loadProducts() {
         renderPagination(payload.meta);
     } catch (error) {
         if (currentRequest !== requestId) return;
+        if (silent) return;
         productsRoot.innerHTML = '<div class="empty catalog-empty">Impossibile caricare il catalogo.</div>';
         countRoot.textContent = '';
         paginationRoot.classList.add('hidden');
@@ -423,12 +431,32 @@ async function initialize() {
             api('/catalog/filters'),
         ]);
         categories = categoryPayload.data;
+        categoriesSnapshot = JSON.stringify(categories);
         renderCategories();
         renderFilterOptions(filterPayload.data);
         syncFilterControls();
         await loadProducts();
     } catch (error) {
         notify(error.message, 'error');
+    }
+}
+
+async function refreshCatalogSilently() {
+    if (document.visibilityState !== 'visible' || document.body.classList.contains('product-modal-open')) return;
+
+    try {
+        const categoryPayload = await api('/catalog/categories');
+        const nextCategoriesSnapshot = JSON.stringify(categoryPayload.data);
+
+        if (nextCategoriesSnapshot !== categoriesSnapshot) {
+            categories = categoryPayload.data;
+            categoriesSnapshot = nextCategoriesSnapshot;
+            renderCategories();
+        }
+
+        await loadProducts({ silent: true });
+    } catch {
+        // The next polling cycle will retry without interrupting the customer.
     }
 }
 
@@ -596,3 +624,4 @@ document.addEventListener('keydown', event => {
 document.addEventListener('cart:added', () => closeProductModal(false));
 
 initialize();
+window.setInterval(refreshCatalogSilently, 15000);

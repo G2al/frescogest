@@ -79,6 +79,8 @@ class ProductsTable
                 TrashedFilter::make()
                     ->label('Eliminati'),
             ])
+            ->paginationPageOptions([10, 25, 50, 100, 'all'])
+            ->defaultPaginationPageOption('all')
             ->defaultSort('name')
             ->recordActions([
                 EditAction::make(),

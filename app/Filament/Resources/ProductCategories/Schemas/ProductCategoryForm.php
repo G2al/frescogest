@@ -29,7 +29,7 @@ class ProductCategoryForm
                             ->maxLength(255),
                         TextInput::make('slug')
                             ->label('Slug')
-                            ->required()
+                            ->helperText('Facoltativo: se lasciato vuoto viene generato automaticamente dal nome.')
                             ->unique(ignoreRecord: true)
                             ->maxLength(255),
                         Toggle::make('active')

@@ -57,7 +57,7 @@ class StoreOpeningHoursTest extends TestCase
             ->assertHeader('Cache-Control', 'must-revalidate, no-cache, no-store, private')
             ->assertSee('Il negozio è temporaneamente chiuso')
             ->assertSee('11:30')
-            ->assertSee('/assets/images/ilparadisodellafrutta-logo-primary.png', false)
+            ->assertSee('/assets/images/new-logo-primary.png', false)
             ->assertDontSee('__REOPENING_AT__')
             ->assertDontSee('__SERVER_TIME__');
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasGeneratedSlug;
 use App\Services\Pricing\ProductListPriceCalculator;
 use App\Services\Pricing\PurchaseCostCalculator;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasGeneratedSlug, SoftDeletes;
 
     protected $fillable = [
         'product_category_id',

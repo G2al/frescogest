@@ -46,13 +46,13 @@
 <div class="payment"><strong>Pagamento:</strong> {{ $document->payment_method_snapshot ?: 'Da concordare' }}</div>
 
 <table class="items">
-    <thead><tr><th>Prodotto</th><th>Quantità</th><th class="right">Prezzo netto</th><th class="right">IVA</th><th class="right">Totale netto</th><th class="right">Totale IVA incl.</th></tr></thead>
+    <thead><tr><th>Prodotto</th><th>Quantità</th><th class="right">Prezzo netto</th><th class="right">Totale netto</th><th class="right">IVA</th><th class="right">Totale IVA incl.</th></tr></thead>
     <tbody>@foreach ($document->items_snapshot as $item)<tr>
         <td><strong>{{ $item['name'] }}</strong>@if ((float) ($item['discount_percentage'] ?? 0) > 0)<br><span class="label">Sconto {{ number_format((float) $item['discount_percentage'], 2, ',', '.') }}% (-€ {{ number_format((float) $item['discount_amount_net'], 2, ',', '.') }})</span>@endif</td>
         <td>{{ rtrim(rtrim(number_format((float) $item['quantity'], 3, ',', '.'), '0'), ',') }} {{ $item['unit_symbol'] }}</td>
         <td class="right">€ {{ number_format((float) $item['unit_price_net'], 2, ',', '.') }}/{{ $item['unit_symbol'] }}</td>
-        <td class="right">{{ number_format((float) $item['tax_percentage'], 2, ',', '.') }}%</td>
         <td class="right">€ {{ number_format((float) $item['line_net'], 2, ',', '.') }}</td>
+        <td class="right">{{ number_format((float) $item['tax_percentage'], 2, ',', '.') }}%</td>
         <td class="right">€ {{ number_format((float) $item['line_gross'], 2, ',', '.') }}</td>
     </tr>@endforeach</tbody>
 </table>

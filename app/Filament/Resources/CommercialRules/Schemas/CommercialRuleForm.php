@@ -23,7 +23,6 @@ class CommercialRuleForm
                 TextInput::make('free_shipping_threshold_gross')->label('Consegna gratuita da')->numeric()->minValue(0)->prefix('€'),
                 TextInput::make('shipping_fee_net')->label('Costo consegna netto')->numeric()->minValue(0)->prefix('€')->required(),
                 Select::make('shipping_tax_rate_id')->label('IVA consegna')->relationship('shippingTaxRate', 'name')->searchable()->preload(),
-                TextInput::make('priority')->label('Priorità')->numeric()->default(0)->required(),
                 Toggle::make('active')->label('Attiva')->default(true),
             ])->columns(2),
         ]);

@@ -25,7 +25,7 @@ class CommercialRulesTable
             IconColumn::make('active')->label('Attiva')->boolean(),
         ])->filters([
             SelectFilter::make('customer_type')->label('Tipo cliente')->options(CustomerType::options()),
-        ])->defaultSort('priority', 'desc')->recordActions([
+        ])->defaultSort('name')->recordActions([
             EditAction::make(),
         ])->toolbarActions([
             BulkActionGroup::make([DeleteBulkAction::make()]),
