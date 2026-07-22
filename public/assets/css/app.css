@@ -931,7 +931,7 @@ html, body { touch-action: pan-y; }
 .catalog-site-header .brand-logo { width: 128px; height: 76px; }
 .catalog-site-header .nav-links { gap: 30px; margin-inline: auto 10px; }
 .catalog-site-header .nav-links a { min-height: 54px; position: relative; color: #173f38; font-size: .82rem; font-weight: 850; }
-.catalog-site-header .nav-links a::after { height: 2px; content: ''; position: absolute; right: 0; bottom: 0; left: 0; border-radius: 99px; background: var(--brand-teal); transform: scaleX(0); transition: transform .2s ease; }
+.catalog-page .catalog-site-header .nav-links a::after { height: 2px; content: ''; position: absolute; right: 4px; bottom: 18px; left: 4px; border-radius: 99px; background: var(--brand-teal); transform: scaleX(0); transition: transform .2s ease; }
 .catalog-site-header .nav-links a:hover::after,
 .catalog-site-header .nav-links a.active::after { transform: scaleX(1); }
 .catalog-site-header .catalog-header-search { width: 220px; height: 44px; display: flex; align-items: center; position: relative; }
@@ -1009,6 +1009,7 @@ html, body { touch-action: pan-y; }
     .catalog-site-header .brand-logo { width: 86px; height: 82px; }
     .catalog-site-header .nav-links { width: 100%; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); order: 3; gap: 7px; justify-content: center; margin: 0; padding-top: 8px; border-top: 1px solid rgba(0,112,96,.09); }
     .catalog-site-header .nav-links a { width: 100%; min-height: 44px; justify-content: center; padding: 8px 12px; border-radius: 12px; }
+    .catalog-page .catalog-site-header .nav-links a::after { display: none; }
     .catalog-page .catalog-site-header .nav-links [data-catalog-root] { color: var(--brand-teal); background: #eaf6f1; }
     .catalog-page .catalog-hero { min-height: 590px; }
     .catalog-hero-centered { min-height: 590px; }
