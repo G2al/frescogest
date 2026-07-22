@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             UnitOfMeasureSeeder::class,
             PaymentMethodSeeder::class,
             CommercialRuleSeeder::class,
+            StoreClosureScheduleSeeder::class,
             ProductSeeder::class,
             CostCategorySeeder::class,
             CustomerPriceListSeeder::class,

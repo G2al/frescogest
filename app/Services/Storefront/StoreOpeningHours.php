@@ -2,44 +2,42 @@
 
 namespace App\Services\Storefront;
 
+use App\Enums\StoreClosureType;
+use App\Models\StoreClosureSchedule;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
+use Illuminate\Support\Facades\Schema;
 
 class StoreOpeningHours
 {
     public function isClosed(?DateTimeInterface $dateTime = null): bool
     {
-        if (! config('storefront.daily_closure.enabled')) {
-            return false;
-        }
-
-        $now = $this->now($dateTime);
-        [$startsAt, $endsAt] = $this->periodContainingOrFollowing($now);
-
-        return $now->greaterThanOrEqualTo($startsAt) && $now->lessThan($endsAt);
+        return $this->status($dateTime)['is_closed'];
     }
 
-    /**
-     * @return array{is_closed: bool, server_time: string, closes_at: string, reopens_at: string}
-     */
     public function status(?DateTimeInterface $dateTime = null): array
     {
         $now = $this->now($dateTime);
-        [$startsAt, $endsAt] = $this->periodContainingOrFollowing($now);
-        $isClosed = config('storefront.daily_closure.enabled')
-            && $now->greaterThanOrEqualTo($startsAt)
-            && $now->lessThan($endsAt);
 
-        if (! $isClosed && $now->greaterThanOrEqualTo($endsAt)) {
-            $startsAt = $startsAt->addDay();
-            $endsAt = $endsAt->addDay();
+        if (! config('storefront.daily_closure.enabled') || ! Schema::hasTable('store_closure_schedules')) {
+            return $this->openStatus($now);
         }
 
+        $periods = $this->closurePeriods($now);
+        $current = collect($periods)->first(
+            fn (array $period): bool => $now->greaterThanOrEqualTo($period['starts_at'])
+                && $now->lessThan($period['ends_at'])
+        );
+        $next = $current ?? collect($periods)->first(
+            fn (array $period): bool => $period['starts_at']->greaterThan($now)
+        );
+
         return [
-            'is_closed' => $isClosed,
+            'is_closed' => $current !== null,
             'server_time' => $now->toIso8601String(),
-            'closes_at' => $startsAt->toIso8601String(),
-            'reopens_at' => $endsAt->toIso8601String(),
+            'closes_at' => $next ? $next['starts_at']->toIso8601String() : null,
+            'reopens_at' => $next ? $next['ends_at']->toIso8601String() : null,
+            'message' => $current['message'] ?? null,
         ];
     }
 
@@ -52,39 +50,99 @@ class StoreOpeningHours
             : CarbonImmutable::now($timezone);
     }
 
-    /**
-     * @return array{CarbonImmutable, CarbonImmutable}
-     */
-    private function periodContainingOrFollowing(CarbonImmutable $now): array
+    private function closurePeriods(CarbonImmutable $now): array
     {
-        $startsAt = $this->atConfiguredTime($now, (string) config('storefront.daily_closure.starts_at', '10:00'));
-        $endsAt = $this->atConfiguredTime($now, (string) config('storefront.daily_closure.ends_at', '11:30'));
+        $periods = [];
+
+        StoreClosureSchedule::query()
+            ->where('active', true)
+            ->get()
+            ->each(function (StoreClosureSchedule $schedule) use (&$periods, $now): void {
+                if ($schedule->type === StoreClosureType::SpecificDate && $schedule->closure_date) {
+                    $periods[] = $this->periodForDate($schedule, $schedule->closure_date->toImmutable());
+
+                    return;
+                }
+
+                if ($schedule->type !== StoreClosureType::Recurring) {
+                    return;
+                }
+
+                $weekdays = array_map('intval', $schedule->weekdays ?? []);
+                $date = $now->subDay()->startOfDay();
+
+                for ($offset = 0; $offset <= 8; $offset++) {
+                    $candidate = $date->addDays($offset);
+
+                    if (in_array($candidate->dayOfWeekIso, $weekdays, true)) {
+                        $periods[] = $this->periodForDate($schedule, $candidate);
+                    }
+                }
+            });
+
+        usort(
+            $periods,
+            fn (array $left, array $right): int => $left['starts_at']->getTimestamp() <=> $right['starts_at']->getTimestamp(),
+        );
+
+        return $this->mergeOverlappingPeriods($periods);
+    }
+
+    private function periodForDate(StoreClosureSchedule $schedule, CarbonImmutable $date): array
+    {
+        $startsAt = $this->atTime($date, $schedule->starts_at);
+        $endsAt = $this->atTime($date, $schedule->ends_at);
 
         if ($endsAt->lessThanOrEqualTo($startsAt)) {
             $endsAt = $endsAt->addDay();
-
-            if ($now->lessThan($startsAt) && $now->lessThan($endsAt->subDay())) {
-                $startsAt = $startsAt->subDay();
-                $endsAt = $endsAt->subDay();
-            }
         }
 
-        return [$startsAt, $endsAt];
+        return [
+            'starts_at' => $startsAt,
+            'ends_at' => $endsAt,
+            'message' => $schedule->message,
+        ];
     }
 
-    private function atConfiguredTime(CarbonImmutable $date, string $time): CarbonImmutable
+    private function atTime(CarbonImmutable $date, string $time): CarbonImmutable
     {
-        if (! preg_match('/^(?<hour>\d{1,2}):(?<minute>\d{2})$/', $time, $matches)) {
-            throw new \InvalidArgumentException("Invalid store closure time [{$time}].");
+        return CarbonImmutable::parse(
+            $date->format('Y-m-d').' '.substr($time, 0, 8),
+            $date->getTimezone(),
+        );
+    }
+
+    private function mergeOverlappingPeriods(array $periods): array
+    {
+        $merged = [];
+
+        foreach ($periods as $period) {
+            $lastIndex = array_key_last($merged);
+
+            if ($lastIndex === null || $period['starts_at']->greaterThan($merged[$lastIndex]['ends_at'])) {
+                $merged[] = $period;
+
+                continue;
+            }
+
+            if ($period['ends_at']->greaterThan($merged[$lastIndex]['ends_at'])) {
+                $merged[$lastIndex]['ends_at'] = $period['ends_at'];
+            }
+
+            $merged[$lastIndex]['message'] ??= $period['message'];
         }
 
-        $hour = (int) $matches['hour'];
-        $minute = (int) $matches['minute'];
+        return $merged;
+    }
 
-        if ($hour > 23 || $minute > 59) {
-            throw new \InvalidArgumentException("Invalid store closure time [{$time}].");
-        }
-
-        return $date->startOfDay()->setTime($hour, $minute);
+    private function openStatus(CarbonImmutable $now): array
+    {
+        return [
+            'is_closed' => false,
+            'server_time' => $now->toIso8601String(),
+            'closes_at' => null,
+            'reopens_at' => null,
+            'message' => null,
+        ];
     }
 }

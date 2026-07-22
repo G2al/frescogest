@@ -20,8 +20,11 @@ async function watchStoreStatus() {
             return;
         }
 
-        const millisecondsUntilClosure = new Date(status.closes_at).getTime() - new Date(status.server_time).getTime();
-        const nextCheck = Math.min(60000, Math.max(1000, millisecondsUntilClosure + 250));
+        const closureTime = status.closes_at ? new Date(status.closes_at).getTime() : Number.NaN;
+        const millisecondsUntilClosure = closureTime - new Date(status.server_time).getTime();
+        const nextCheck = Number.isFinite(millisecondsUntilClosure)
+            ? Math.min(60000, Math.max(1000, millisecondsUntilClosure + 250))
+            : 60000;
         storeStatusTimer = window.setTimeout(watchStoreStatus, nextCheck);
     } catch {
         storeStatusTimer = window.setTimeout(watchStoreStatus, 30000);

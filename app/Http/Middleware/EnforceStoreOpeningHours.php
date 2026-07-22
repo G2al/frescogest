@@ -26,7 +26,7 @@ class EnforceStoreOpeningHours
 
         if ($request->expectsJson() || $request->is('api/*')) {
             return response()->json([
-                'message' => 'Il negozio è temporaneamente chiuso per l’aggiornamento quotidiano di prezzi e disponibilità.',
+                'message' => $status['message'] ?: 'Il negozio è temporaneamente chiuso per l’aggiornamento quotidiano di prezzi e disponibilità.',
                 'data' => $status,
             ], Response::HTTP_SERVICE_UNAVAILABLE, [
                 'Cache-Control' => 'no-store, private',
@@ -36,7 +36,7 @@ class EnforceStoreOpeningHours
 
         $html = file_get_contents(resource_path('storefront/store-closed.html'));
         $html = str_replace(
-            ['__CLOSURE_START__', '__REOPENING_AT__', '__SERVER_TIME__', '__REOPENING_TIME__'],
+            ['__CLOSURE_START__', '__REOPENING_AT__', '__SERVER_TIME__', '__REOPENING_TIME__', '__CLOSURE_MESSAGE__'],
             [
                 json_encode($status['closes_at']),
                 json_encode($status['reopens_at']),
@@ -44,6 +44,7 @@ class EnforceStoreOpeningHours
                 CarbonImmutable::parse($status['reopens_at'])
                     ->setTimezone((string) config('storefront.daily_closure.timezone'))
                     ->format('H:i'),
+                e($status['message'] ?: 'Antonio sta verificando il carico del giorno e aggiornando prezzi e disponibilità.'),
             ],
             $html,
         );

@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Enums\StoreClosureType;
+use App\Models\StoreClosureSchedule;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,8 +19,15 @@ class StoreOpeningHoursTest extends TestCase
         config([
             'storefront.daily_closure.enabled' => true,
             'storefront.daily_closure.timezone' => 'Europe/Rome',
-            'storefront.daily_closure.starts_at' => '10:00',
-            'storefront.daily_closure.ends_at' => '11:30',
+        ]);
+
+        StoreClosureSchedule::query()->create([
+            'name' => 'Aggiornamento quotidiano',
+            'type' => StoreClosureType::Recurring,
+            'weekdays' => array_keys(StoreClosureSchedule::weekdayOptions()),
+            'starts_at' => '10:00',
+            'ends_at' => '11:30',
+            'active' => true,
         ]);
     }
 
@@ -79,5 +88,57 @@ class StoreOpeningHoursTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.is_closed', false)
             ->assertJsonPath('data.closes_at', '2026-07-23T10:00:00+02:00');
+    }
+
+    public function test_a_specific_date_closure_is_applied_without_changing_configuration(): void
+    {
+        StoreClosureSchedule::query()->where('type', StoreClosureType::Recurring)->update(['active' => false]);
+        StoreClosureSchedule::query()->create([
+            'name' => 'Chiusura straordinaria',
+            'type' => StoreClosureType::SpecificDate,
+            'closure_date' => '2026-07-24',
+            'starts_at' => '15:00',
+            'ends_at' => '16:00',
+            'message' => 'Chiusura straordinaria del negozio.',
+            'active' => true,
+        ]);
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-24 15:30:00', 'Europe/Rome'));
+
+        $this->getJson('/api/v1/store/status')
+            ->assertOk()
+            ->assertJsonPath('data.is_closed', true)
+            ->assertJsonPath('data.reopens_at', '2026-07-24T16:00:00+02:00')
+            ->assertJsonPath('data.message', 'Chiusura straordinaria del negozio.');
+    }
+
+    public function test_a_disabled_schedule_does_not_close_the_storefront(): void
+    {
+        StoreClosureSchedule::query()->update(['active' => false]);
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-22 10:30:00', 'Europe/Rome'));
+
+        $this->get('/index.html')->assertOk();
+        $this->getJson('/api/v1/store/status')
+            ->assertOk()
+            ->assertJsonPath('data.is_closed', false)
+            ->assertJsonPath('data.closes_at', null);
+    }
+
+    public function test_a_recurring_closure_can_continue_after_midnight(): void
+    {
+        StoreClosureSchedule::query()->delete();
+        StoreClosureSchedule::query()->create([
+            'name' => 'Chiusura notturna',
+            'type' => StoreClosureType::Recurring,
+            'weekdays' => [3],
+            'starts_at' => '23:30',
+            'ends_at' => '01:00',
+            'active' => true,
+        ]);
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-23 00:30:00', 'Europe/Rome'));
+
+        $this->getJson('/api/v1/store/status')
+            ->assertOk()
+            ->assertJsonPath('data.is_closed', true)
+            ->assertJsonPath('data.reopens_at', '2026-07-23T01:00:00+02:00');
     }
 }

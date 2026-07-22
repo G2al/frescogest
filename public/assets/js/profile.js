@@ -1,5 +1,5 @@
 import { api, currentUser } from './api.js?v=20260720.5';
-import { notify } from './ui.js?v=20260722.2';
+import { notify } from './ui.js?v=20260722.3';
 
 async function loadProfile() {
     if (!document.querySelector('#profile-form')) return;
