@@ -211,7 +211,7 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
     .hero { padding-top: 50px; }
     .hero-card::before { font-size: 7rem; }
     .nav { gap: 10px; }
-    .nav-actions .account-label { display: none; }
+    .nav-actions .account-label { display: inline-flex; }
     .brand-logo { width: 145px; }
     .form-shell { padding: 22px; }
     .product-purchase { grid-template-columns: 1fr; }
@@ -552,6 +552,11 @@ html, body { touch-action: pan-y; }
     .header-cart, .nav-actions .header-cart, .catalog-page .header-cart { width: 72px !important; min-width: 72px !important; max-width: 72px !important; min-height: 44px; display: inline-grid !important; grid-template-columns: 23px 22px !important; flex: 0 0 72px !important; gap: 7px; padding: 0 9px !important; font-size: inherit; }
     .nav-actions .header-register, .catalog-page .header-register { display: inline-flex; border-color: var(--green); }
     .nav-actions .nav-action-label { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .nav-actions .account-label, .catalog-page .nav-actions .account-label { width: clamp(64px,21vw,90px); min-width: 64px; max-width: 90px; display: inline-flex; flex: 0 1 clamp(64px,21vw,90px); justify-content: center; gap: 5px; padding: 0 7px; }
+    .nav-actions .header-login, .catalog-page .nav-actions .header-login { width: 82px; min-width: 82px; display: inline-flex; flex: 0 0 82px; justify-content: center; gap: 6px; padding: 0 9px; }
+    .nav-actions .account-label .nav-action-label,
+    .nav-actions .header-login .nav-action-label { width: auto; height: auto; position: static; display: block; overflow: hidden; padding: 0; clip: auto; font-size: .72rem; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-actions .account-label svg, .nav-actions .header-login svg { width: 18px; height: 18px; flex: 0 0 18px; }
     .nav-actions svg { width: 21px; height: 21px; }
     .site-header .header-cart-icon { width: 23px !important; min-width: 23px !important; max-width: 23px !important; height: 23px !important; flex: 0 0 23px !important; stroke-width: 2 !important; }
     .header-cart .badge, .catalog-page .header-cart .badge { min-width: 22px; padding: 2px 6px; justify-content: center; font-size: .72rem; }
@@ -1000,7 +1005,7 @@ html, body { touch-action: pan-y; }
 }
 
 @media (max-width: 600px) {
-    .catalog-site-header .nav { min-height: auto; }
+    .catalog-site-header .nav { min-height: auto; grid-template-columns: minmax(82px,1fr) auto; gap-inline: 6px; }
     .catalog-site-header .brand-logo { width: 86px; height: 82px; }
     .catalog-site-header .nav-links { width: 100%; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); order: 3; gap: 7px; justify-content: center; margin: 0; padding-top: 8px; border-top: 1px solid rgba(0,112,96,.09); }
     .catalog-site-header .nav-links a { width: 100%; min-height: 44px; justify-content: center; padding: 8px 12px; border-radius: 12px; }

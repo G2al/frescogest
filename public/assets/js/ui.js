@@ -99,7 +99,7 @@ export async function mountLayout() {
                     </a>
                     ${user
                         ? `<a class="btn btn-link account-label" href="/profile.html" aria-label="Apri profilo" title="${user.name}"><i data-lucide="circle-user-round"></i><span class="nav-action-label">${user.name}</span></a><button class="btn btn-link header-logout" id="logout" aria-label="Esci" title="Esci"><i data-lucide="log-out"></i><span class="nav-action-label">Esci</span></button>`
-                        : `<a class="btn btn-link header-login" href="/login.html" aria-label="Accedi" title="Accedi"><i data-lucide="log-in"></i><span class="nav-action-label">Accedi</span></a><a class="btn btn-primary header-register" href="/register.html" aria-label="Registrati" title="Registrati"><i data-lucide="user-plus"></i><span class="nav-action-label">Registrati</span></a>`}
+                        : `<a class="btn btn-link header-login" href="/login.html" aria-label="Accedi" title="Accedi"><i data-lucide="log-in"></i><span class="nav-action-label">Accedi</span></a>`}
                 </div>
             </div>`;
         refreshIcons(header);
