@@ -1,5 +1,5 @@
 import { api, currentUser } from './api.js?v=20260720.5';
-import { notify, refreshIcons } from './ui.js?v=20260721.4';
+import { notify, refreshIcons } from './ui.js?v=20260722.2';
 
 const form = document.querySelector('form[data-endpoint]');
 const customerTypes = [...(form?.querySelectorAll('[name="type"]') ?? [])];

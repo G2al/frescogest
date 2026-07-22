@@ -2,6 +2,31 @@ import { api, currentUser } from './api.js?v=20260720.5';
 import { storedCartCount } from './cart-storage.js?v=20260720.5';
 
 let iconLibraryPromise;
+let storeStatusTimer;
+
+async function watchStoreStatus() {
+    window.clearTimeout(storeStatusTimer);
+
+    try {
+        const response = await fetch('/api/v1/store/status', {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { Accept: 'application/json' },
+        });
+        const status = (await response.json()).data;
+
+        if (status.is_closed) {
+            window.location.reload();
+            return;
+        }
+
+        const millisecondsUntilClosure = new Date(status.closes_at).getTime() - new Date(status.server_time).getTime();
+        const nextCheck = Math.min(60000, Math.max(1000, millisecondsUntilClosure + 250));
+        storeStatusTimer = window.setTimeout(watchStoreStatus, nextCheck);
+    } catch {
+        storeStatusTimer = window.setTimeout(watchStoreStatus, 30000);
+    }
+}
 
 export function refreshIcons(root = document) {
     const render = () => window.lucide?.createIcons({ icons: window.lucide.icons, root, attrs: { 'aria-hidden': 'true' } });
@@ -181,4 +206,5 @@ export function skeletonCards(count = 6) {
     return Array.from({ length: count }, () => '<article class="card skeleton-card"><div class="skeleton skeleton-image"></div><div class="card-body"><div class="skeleton skeleton-line short"></div><div class="skeleton skeleton-line"></div><div class="skeleton skeleton-line"></div></div></article>').join('');
 }
 
+watchStoreStatus();
 mountLayout().catch(() => {});

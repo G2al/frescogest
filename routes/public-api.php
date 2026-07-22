@@ -7,7 +7,7 @@ use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('api/v1')->group(function (): void {
+Route::prefix('api/v1')->middleware('store.open')->group(function (): void {
     Route::get('csrf-token', fn () => response()->json([
         'data' => ['csrf_token' => csrf_token()],
     ]));

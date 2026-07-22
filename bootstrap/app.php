@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnforceStoreOpeningHours;
 use App\Http\Middleware\EnsureUserHasCustomer;
 use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'customer' => EnsureUserHasCustomer::class,
+            'store.open' => EnforceStoreOpeningHours::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

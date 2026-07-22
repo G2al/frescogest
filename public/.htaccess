@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # Route storefront HTML pages through Laravel so opening hours are enforced.
+    RewriteRule ^(?:cart|catalog|forgot-password|index|login|orders|product|profile|register|reset-password|whatsapp)\.html$ index.php [L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
