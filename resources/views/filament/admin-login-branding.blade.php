@@ -1,1 +1,1 @@
-<link rel="stylesheet" href="{{ asset('assets/css/filament-admin.css') }}?v=20260723.1">
+<link rel="stylesheet" href="{{ asset('assets/css/filament-admin.css') }}?v=20260723.2">

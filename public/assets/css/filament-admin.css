@@ -531,16 +531,29 @@
     }
 }
 
-/* Cerino Store final brand sizing */
+/* Cerino Store brand sizing */
 .fi-logo {
     width: auto !important;
-    min-width: 10rem;
-    max-width: 15rem !important;
+    min-width: 0 !important;
+    max-width: 8.5rem !important;
+    height: 3rem !important;
     object-fit: contain;
 }
 
 .fi-simple-header .fi-logo {
-    width: 18rem !important;
-    max-width: 82vw !important;
-    height: 9rem !important;
+    width: 10rem !important;
+    max-width: 58vw !important;
+    height: 4rem !important;
+}
+
+@media (max-width: 640px) {
+    .fi-logo {
+        max-width: 7.5rem !important;
+        height: 2.65rem !important;
+    }
+
+    .fi-simple-header .fi-logo {
+        width: 8.5rem !important;
+        height: 3.5rem !important;
+    }
 }

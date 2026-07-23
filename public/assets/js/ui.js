@@ -117,7 +117,7 @@ export async function mountLayout() {
                     <a class="header-cart" href="/cart.html" aria-label="Apri carrello"><i data-lucide="shopping-bag"></i><span class="nav-action-label">Carrello</span><span class="badge">${cartCount()}</span></a>
                     ${user
                         ? `<a class="btn btn-link account-label" href="/profile.html" aria-label="Account di ${user.name}"><i data-lucide="circle-user-round"></i><span class="nav-action-label">${user.name}</span></a><button class="btn btn-link header-logout" id="logout" aria-label="Esci"><i data-lucide="log-out"></i><span class="nav-action-label">Esci</span></button>`
-                        : '<a class="btn btn-link header-login" href="/login.html"><i data-lucide="log-in"></i><span class="nav-action-label">Accedi</span></a><a class="btn header-register" href="/register.html">Registrati</a>'}
+                        : '<a class="btn btn-link header-login" href="/login.html"><i data-lucide="circle-user-round"></i><span class="nav-action-label">Accedi</span></a><a class="btn header-register" href="/register.html">Registrati</a>'}
                 </div>
             </div>`;
 

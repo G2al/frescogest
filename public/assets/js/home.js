@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { refreshIcons, variantPickerMarkup } from './ui.js?v=20260723.3';
+import { refreshIcons, variantPickerMarkup } from './ui.js?v=20260723.5';
 import './cart.js?v=20260723.3';
 
 const productsRoot = document.querySelector('#featured-products');

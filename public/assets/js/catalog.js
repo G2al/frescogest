@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards, variantPickerMarkup } from './ui.js?v=20260723.4';
+import { notify, productCard, refreshIcons, skeletonCards, variantPickerMarkup } from './ui.js?v=20260723.5';
 
 const categoriesRoot = document.querySelector('#categories');
 const previousCategoriesButton = document.querySelector('#categories-previous');

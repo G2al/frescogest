@@ -1,0 +1,344 @@
+.fashion-announcement,
+.catalog-site-header .fashion-announcement {
+    min-height: 38px;
+    font-size: .65rem;
+}
+
+.cerino-home .fashion-header .brand,
+.catalog-page .fashion-header .brand,
+.catalog-site-header .brand {
+    width: 156px;
+    height: 58px;
+    overflow: visible;
+    flex-basis: 156px;
+}
+
+.cerino-home .fashion-header .brand-logo,
+.catalog-page .fashion-header .brand-logo,
+.catalog-site-header .brand-logo {
+    width: 152px;
+    max-width: 100%;
+    height: 52px;
+    position: static;
+    object-fit: contain;
+    object-position: left center;
+    transform: none;
+}
+
+.auth-editorial-brand {
+    width: 190px;
+    height: 64px;
+    overflow: visible;
+}
+
+.auth-editorial-brand img {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    position: static;
+    object-fit: contain;
+    object-position: left center;
+    transform: none;
+}
+
+.footer-brand-column > a {
+    width: 180px;
+    height: 66px;
+    overflow: visible;
+}
+
+.footer .footer-logo {
+    width: 176px;
+    max-width: 100%;
+    height: 62px;
+    max-height: 62px;
+    position: static;
+    object-fit: contain;
+    object-position: left center;
+    transform: none;
+}
+
+@media (max-width: 900px) {
+    .cerino-home .fashion-header .nav,
+    .catalog-page .fashion-header .nav,
+    .catalog-site-header .nav {
+        width: calc(100% - 24px);
+        min-height: 62px;
+        display: grid;
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 10px;
+        padding-inline: 0;
+    }
+
+    .cerino-home .fashion-header .brand,
+    .catalog-page .fashion-header .brand,
+    .catalog-site-header .brand {
+        width: 112px;
+        height: 54px;
+        flex-basis: 112px;
+    }
+
+    .cerino-home .fashion-header .brand-logo,
+    .catalog-page .fashion-header .brand-logo,
+    .catalog-site-header .brand-logo {
+        width: 108px;
+        height: 48px;
+    }
+
+    .cerino-home .fashion-header .nav-actions,
+    .catalog-page .fashion-header .nav-actions,
+    .catalog-site-header .nav-actions {
+        display: flex;
+        justify-self: end;
+        gap: 4px;
+    }
+
+    .cerino-home .fashion-header .nav-links,
+    .catalog-page .fashion-header .nav-links,
+    .catalog-site-header .nav-links {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0;
+        margin: 0;
+        padding: 0;
+    }
+
+    .cerino-home .fashion-header .nav-links a,
+    .catalog-page .fashion-header .nav-links a,
+    .catalog-site-header .nav-links a {
+        min-height: 40px;
+        display: grid;
+        padding: 0 4px;
+        font-size: .56rem;
+        letter-spacing: .08em;
+        place-items: center;
+    }
+
+    .cerino-home .fashion-header .header-login,
+    .catalog-page .fashion-header .header-login,
+    .catalog-site-header .header-login {
+        width: auto;
+        min-width: 76px;
+        display: inline-flex;
+        gap: 6px;
+    }
+
+    .cerino-home .fashion-header .header-login .nav-action-label,
+    .catalog-page .fashion-header .header-login .nav-action-label,
+    .catalog-site-header .header-login .nav-action-label {
+        width: auto;
+        height: auto;
+        position: static;
+        display: inline;
+        overflow: visible;
+        clip: auto;
+        font-size: .68rem;
+    }
+
+    .cerino-home .fashion-header .header-register,
+    .catalog-page .fashion-header .header-register,
+    .catalog-site-header .header-register {
+        display: inline-flex;
+        min-width: auto;
+        margin-left: 0;
+        padding-inline: 10px;
+        font-size: .62rem;
+    }
+
+    .footer .footer-content {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 34px 24px;
+        padding-block: 46px 34px;
+    }
+
+    .footer-brand-column {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .fashion-announcement,
+    .catalog-site-header .fashion-announcement {
+        min-height: 34px;
+        font-size: .55rem;
+    }
+
+    .cerino-home .fashion-header .nav,
+    .catalog-page .fashion-header .nav,
+    .catalog-site-header .nav {
+        grid-template-columns: 92px minmax(0, 1fr);
+    }
+
+    .cerino-home .fashion-header .brand,
+    .catalog-page .fashion-header .brand,
+    .catalog-site-header .brand {
+        width: 92px;
+        height: 48px;
+        flex-basis: 92px;
+    }
+
+    .cerino-home .fashion-header .brand-logo,
+    .catalog-page .fashion-header .brand-logo,
+    .catalog-site-header .brand-logo {
+        width: 88px;
+        height: 44px;
+    }
+
+    .auth-editorial {
+        min-height: 190px;
+        padding: 22px;
+    }
+
+    .auth-editorial-brand {
+        width: 132px;
+        height: 46px;
+    }
+
+    .auth-layout .auth-form,
+    .auth-layout .auth-form-register {
+        padding: 28px 20px 36px;
+    }
+
+    .auth-layout .auth-brand {
+        display: flex;
+        width: 124px;
+        height: 44px;
+        margin: 0 auto 22px;
+    }
+
+    .fashion-products .featured-product {
+        min-width: calc(100vw - 48px);
+        max-width: calc(100vw - 48px);
+    }
+
+    .fashion-products .featured-product-image {
+        height: auto;
+        aspect-ratio: 4 / 5;
+    }
+
+    .fashion-products .featured-product-image img,
+    .catalog-grid .product-media img {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        object-fit: cover;
+    }
+
+    .catalog-products-column .catalog-grid,
+    .catalog-page .catalog-products-column .catalog-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .catalog-grid .product-card {
+        min-width: 0;
+        border-radius: 12px;
+    }
+
+    .catalog-grid .product-media {
+        height: auto;
+        aspect-ratio: 4 / 5;
+        margin: 6px 6px 0;
+    }
+
+    .catalog-grid .product-card-body {
+        min-width: 0;
+        padding: 11px 9px 10px;
+    }
+
+    .catalog-grid .product-category,
+    .catalog-grid .product-description {
+        display: none;
+    }
+
+    .catalog-grid .product-card h3 {
+        min-height: 2.4em;
+        font-size: .8rem;
+        line-height: 1.2;
+    }
+
+    .catalog-grid .product-card .variant-color-option {
+        width: 24px;
+        height: 24px;
+    }
+
+    .catalog-grid .product-card .variant-size-option {
+        min-width: 27px;
+        height: 25px;
+        padding-inline: 5px;
+    }
+
+    .catalog-grid .product-purchase {
+        grid-template-columns: minmax(0, 1fr) 40px;
+        gap: 5px;
+    }
+
+    .catalog-grid .quantity-stepper {
+        height: 38px;
+        grid-template-columns: 28px minmax(26px, 1fr) 28px;
+    }
+
+    .catalog-grid .catalog-add-button {
+        width: 40px;
+        min-width: 40px;
+        height: 38px;
+        padding: 0;
+    }
+
+    .catalog-grid .catalog-add-button span {
+        display: none;
+    }
+
+    .footer .footer-content {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px 18px;
+        padding-block: 38px 26px;
+    }
+
+    .footer-brand-column > a {
+        width: 138px;
+        height: 50px;
+    }
+
+    .footer .footer-logo {
+        width: 134px;
+        height: 48px;
+    }
+
+    .footer-column {
+        min-width: 0;
+        font-size: .74rem;
+    }
+
+    .footer-column a,
+    .footer-column > span {
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 390px) {
+    .cerino-home .fashion-header .nav,
+    .catalog-page .fashion-header .nav,
+    .catalog-site-header .nav {
+        grid-template-columns: 78px minmax(0, 1fr);
+    }
+
+    .cerino-home .fashion-header .brand,
+    .catalog-page .fashion-header .brand,
+    .catalog-site-header .brand {
+        width: 78px;
+        flex-basis: 78px;
+    }
+
+    .cerino-home .fashion-header .brand-logo,
+    .catalog-page .fashion-header .brand-logo,
+    .catalog-site-header .brand-logo {
+        width: 76px;
+    }
+
+    .footer .footer-content {
+        grid-template-columns: 1fr;
+    }
+}

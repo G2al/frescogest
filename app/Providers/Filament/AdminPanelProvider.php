@@ -28,10 +28,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->authGuard('admin')
             ->login()
-            ->brandLogo(asset('assets/images/cerino-logo-primary.png?v=20260723.2'))
-            ->darkModeBrandLogo(asset('assets/images/cerino-logo-white.png?v=20260723.2'))
-            ->brandLogoHeight('5.75rem')
-            ->favicon(asset('assets/images/cerino-favicon.png?v=20260723.2'))
+            ->brandLogo(asset('assets/images/cerino-logo-primary.png?v=20260723.3'))
+            ->darkModeBrandLogo(asset('assets/images/cerino-logo-white.png?v=20260723.3'))
+            ->brandLogoHeight('3rem')
+            ->favicon(asset('assets/images/cerino-favicon.png?v=20260723.3'))
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => view('filament.admin-login-branding')->render(),
