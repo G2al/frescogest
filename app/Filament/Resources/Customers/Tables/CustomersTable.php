@@ -2,14 +2,11 @@
 
 namespace App\Filament\Resources\Customers\Tables;
 
+use App\Filament\Resources\Customers\Actions\CustomerBulkActions;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -52,8 +49,6 @@ class CustomersTable
                     ->placeholder('Tutti')
                     ->trueLabel('Attivi')
                     ->falseLabel('Non attivi'),
-                TrashedFilter::make()
-                    ->label('Eliminati'),
             ])
             ->defaultSort('company_name')
             ->recordActions([
@@ -61,9 +56,7 @@ class CustomersTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    CustomerBulkActions::delete(),
                 ]),
             ]);
     }

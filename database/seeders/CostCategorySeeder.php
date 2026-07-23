@@ -9,7 +9,7 @@ class CostCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['Carburante', 'Assicurazione', 'Cibo', 'Casello', 'Manutenzione auto'] as $name) {
+        foreach (['Affitto', 'Utenze', 'Spedizioni', 'Packaging', 'Marketing', 'Forniture'] as $name) {
             CostCategory::query()->updateOrCreate(['name' => $name], ['is_monthly' => false, 'active' => true]);
         }
 

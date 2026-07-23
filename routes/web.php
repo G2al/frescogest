@@ -20,9 +20,8 @@ Route::get('/api/v1/store/status', fn (StoreOpeningHours $openingHours) => respo
 
 Route::middleware('store.open')->group(function (): void {
     Route::redirect('/', '/index.html');
-    Route::redirect('/catalog.html', '/index.html');
     Route::get('/{page}', StorefrontPageController::class)
-        ->where('page', 'cart\.html|forgot-password\.html|index\.html|login\.html|orders\.html|product\.html|profile\.html|register\.html|reset-password\.html|whatsapp\.html');
+        ->where('page', 'cart\.html|catalog\.html|forgot-password\.html|index\.html|login\.html|orders\.html|product\.html|profile\.html|register\.html|reset-password\.html|whatsapp\.html');
 });
 
 require __DIR__.'/public-api.php';

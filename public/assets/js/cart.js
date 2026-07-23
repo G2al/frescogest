@@ -1,5 +1,5 @@
 import { api, currentUser } from './api.js?v=20260720.5';
-import { notify, refreshIcons } from './ui.js?v=20260722.5';
+import { notify, refreshIcons } from './ui.js?v=20260723.2';
 import { getStoredCart, saveStoredCart } from './cart-storage.js?v=20260720.7';
 
 let drawerNotes = '';
@@ -23,7 +23,7 @@ function quantity(value, unit) {
 }
 
 function updateProductTotal(input) {
-    const container = input.closest('.product-card, .product-modal-panel');
+    const container = input.closest('.product-card, .featured-product, .product-modal-panel');
     const button = container?.querySelector('.add-cart');
     const preview = container?.querySelector('.product-total-preview');
     const amount = Number(String(input.value).replace(',', '.'));
@@ -42,7 +42,7 @@ function minimumQuantityMessage(minimum, unit = 'u.') {
 }
 
 function quantityDetails(input) {
-    const container = input.closest('.product-card, .product-modal-panel');
+    const container = input.closest('.product-card, .featured-product, .product-modal-panel');
     const button = container?.querySelector('.add-cart');
 
     return {
@@ -81,6 +81,56 @@ function escapeHtml(value) {
     return element.innerHTML;
 }
 
+function selectVariant(picker, axis, value) {
+    const select = picker.querySelector('.card-variant');
+    if (!select) return;
+
+    const variants = [...select.options].map(option => ({
+        color: option.dataset.color || '',
+        id: option.value,
+        size: option.dataset.size || '',
+    }));
+    const selectedOption = select.selectedOptions[0] || select.options[0];
+    let selectedColor = selectedOption?.dataset.color || '';
+    let selectedSize = selectedOption?.dataset.size || '';
+
+    if (axis === 'color') {
+        selectedColor = value;
+        const compatible = variants.find(variant => variant.color === selectedColor && variant.size === selectedSize)
+            || variants.find(variant => variant.color === selectedColor);
+        selectedSize = compatible?.size || '';
+    } else {
+        selectedSize = value;
+        const compatible = variants.find(variant => variant.size === selectedSize && variant.color === selectedColor)
+            || variants.find(variant => variant.size === selectedSize);
+        selectedColor = compatible?.color || '';
+    }
+
+    const selected = variants.find(variant => variant.color === selectedColor && variant.size === selectedSize)
+        || variants.find(variant => axis === 'color' ? variant.color === selectedColor : variant.size === selectedSize)
+        || variants[0];
+    if (!selected) return;
+
+    select.value = selected.id;
+    picker.dataset.variantAxis = axis;
+    picker.querySelector('.variant-selected-color')?.replaceChildren(document.createTextNode(selected.color));
+    picker.querySelectorAll('.variant-color-option').forEach(button => {
+        const active = button.dataset.color === selected.color;
+        const compatible = axis !== 'size' || variants.some(variant => variant.size === selected.size && variant.color === button.dataset.color);
+        button.classList.toggle('active', active);
+        button.disabled = !compatible;
+        button.setAttribute('aria-pressed', String(active));
+    });
+    picker.querySelectorAll('.variant-size-option').forEach(button => {
+        const active = button.dataset.size === selected.size;
+        const compatible = axis !== 'color' || variants.some(variant => variant.color === selected.color && variant.size === button.dataset.size);
+        button.classList.toggle('active', active);
+        button.disabled = !compatible;
+        button.setAttribute('aria-pressed', String(active));
+    });
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
 function updateCartBadges() {
     document.querySelectorAll('.header-cart .badge').forEach(badge => {
         badge.textContent = getCart().length;
@@ -113,7 +163,8 @@ function renderCartDrawer() {
             <a class="cart-drawer-thumb" href="/product.html?slug=${encodeURIComponent(item.slug)}">${item.image_url ? `<img src="${item.image_url}" alt="${item.name}">` : '<span>🥬</span>'}</a>
             <div class="cart-drawer-item-copy">
                 <a href="/product.html?slug=${encodeURIComponent(item.slug)}"><strong>${item.name}</strong></a>
-                <span>${currency(item.price_per_kg)}/${item.unit || 'u.'}</span>
+                ${item.variant_label ? `<small>${escapeHtml(item.variant_label)}</small>` : ''}
+                <span>${currency(item.price_per_kg)}</span>
                 <div class="cart-drawer-item-actions">
                     <div class="drawer-quantity" aria-label="Quantità in chilogrammi">
                         <button class="drawer-qty-step" type="button" data-index="${index}" data-step="-1" aria-label="Diminuisci quantità"><i data-lucide="minus"></i></button>
@@ -129,7 +180,7 @@ function renderCartDrawer() {
 
     const total = cart.reduce((sum, item) => sum + (item.quantity * item.price_per_kg), 0);
     footer.innerHTML = cart.length
-        ? `<div class="commercial-terms-slot">${commercialTermsMarkup()}</div><label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span><strong>${currency(total)}</strong></div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
+        ? `<div class="commercial-terms-slot">${commercialTermsMarkup()}</div><label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Cerino Store</span><textarea id="cart-drawer-notes" rows="2" placeholder="Taglia, colore, spedizione o altre richieste">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span><strong>${currency(total)}</strong></div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
         : '<button class="btn btn-primary cart-drawer-continue" type="button"><i data-lucide="arrow-left"></i>Continua nel catalogo</button>';
     updateCartBadges();
     refreshIcons(document.querySelector('#cart-drawer'));
@@ -192,14 +243,18 @@ export async function addToCart(product, quantity = 1) {
         return false;
     }
     const cart = getCart();
-    const existing = cart.find(item => item.product_id === Number(product.id));
+    if (!product.product_variant_id) {
+        notify('Seleziona taglia e colore prima di aggiungere il prodotto.', 'warning');
+        return false;
+    }
+    const existing = cart.find(item => item.product_id === Number(product.id) && item.product_variant_id === Number(product.product_variant_id));
     if (existing) {
         existing.quantity = Number((existing.quantity + parsedQuantity).toFixed(3));
         existing.price_per_kg = Number(product.price_per_kg);
         existing.image_url = product.image_url || existing.image_url;
         existing.slug = product.slug || existing.slug;
     }
-    else cart.push({ product_id: Number(product.id), name: product.name, slug: product.slug, image_url: product.image_url || null, price_per_kg: Number(product.price_per_kg), minimum_quantity: minimum, unit: product.unit || 'u.', quantity: parsedQuantity });
+    else cart.push({ product_id: Number(product.id), product_variant_id: Number(product.product_variant_id), variant_label: product.variant_label || '', name: product.name, slug: product.slug, image_url: product.image_url || null, price_per_kg: Number(product.price_per_kg), minimum_quantity: minimum, unit: product.unit || 'pz', quantity: parsedQuantity });
     saveCart(cart);
     notify('Prodotto aggiunto al carrello.', 'success');
     document.dispatchEvent(new CustomEvent('cart:added', { detail: { productId: Number(product.id) } }));
@@ -208,14 +263,27 @@ export async function addToCart(product, quantity = 1) {
 }
 
 document.addEventListener('click', async event => {
+    const color = event.target.closest('.variant-color-option');
+    if (color) {
+        selectVariant(color.closest('.variant-picker'), 'color', color.dataset.color);
+        return;
+    }
+
+    const size = event.target.closest('.variant-size-option');
+    if (size) {
+        selectVariant(size.closest('.variant-picker'), 'size', size.dataset.size);
+        return;
+    }
+
     const button = event.target.closest('.add-cart');
     if (!button) return;
-    const input = button.closest('.product-card, .product-modal-panel')?.querySelector('.card-quantity');
+    const input = button.closest('.product-card, .featured-product, .product-modal-panel')?.querySelector('.card-quantity');
+    const variant = button.closest('.product-card, .featured-product, .product-modal-panel')?.querySelector('.card-variant');
     if (input) normalizeProductQuantity(input, true);
     const quantity = input?.value || 1;
     button.classList.add('is-loading');
     button.disabled = true;
-    await addToCart({ id: button.dataset.id, name: button.dataset.name, slug: button.dataset.slug, price_per_kg: button.dataset.price, image_url: button.dataset.image, minimum_quantity: button.dataset.minimum, unit: button.dataset.unit }, quantity);
+    await addToCart({ id: button.dataset.id, name: button.dataset.name, slug: button.dataset.slug, price_per_kg: button.dataset.price, image_url: button.dataset.image, minimum_quantity: button.dataset.minimum, unit: button.dataset.unit, product_variant_id: variant?.value, variant_label: variant?.selectedOptions[0]?.textContent || '' }, quantity);
     button.classList.remove('is-loading');
     button.disabled = false;
 });
@@ -301,7 +369,7 @@ async function renderCart() {
     const root = document.querySelector('#cart');
     if (!root) return;
     const cart = getCart();
-    root.innerHTML = cart.length ? cart.map((item, index) => `<div class="cart-row reveal"><a class="cart-thumb" href="/product.html?slug=${encodeURIComponent(item.slug)}">${item.image_url ? `<img src="${item.image_url}" alt="">` : '<span>🥬</span>'}</a><div class="cart-product"><h3>${item.name}</h3><span>${Number(item.price_per_kg).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}/kg</span></div><div class="cart-controls"><label>Quantità (kg)<input class="quantity cart-quantity" type="number" step="1" inputmode="decimal" value="${item.quantity}" data-index="${index}" title="Usa le frecce per variare di 1 kg oppure scrivi una quantità decimale"></label><strong class="line-total">${(item.quantity * item.price_per_kg).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}</strong><button class="btn btn-link remove-cart" data-index="${index}">Rimuovi</button></div></div>`).join('') : '<div class="empty">Il carrello è vuoto. Esplora il catalogo per aggiungere prodotti.</div>';
+    root.innerHTML = cart.length ? cart.map((item, index) => `<div class="cart-row reveal"><a class="cart-thumb" href="/product.html?slug=${encodeURIComponent(item.slug)}">${item.image_url ? `<img src="${item.image_url}" alt="">` : '<span><i data-lucide="shirt"></i></span>'}</a><div class="cart-product"><h3>${item.name}</h3>${item.variant_label ? `<small>${escapeHtml(item.variant_label)}</small>` : ''}<span>${Number(item.price_per_kg).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}</span></div><div class="cart-controls"><label>Quantità<input class="quantity cart-quantity" type="number" step="1" inputmode="numeric" value="${item.quantity}" data-index="${index}"></label><strong class="line-total">${(item.quantity * item.price_per_kg).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' })}</strong><button class="btn btn-link remove-cart" data-index="${index}">Rimuovi</button></div></div>`).join('') : '<div class="empty">Il carrello è vuoto. Esplora il catalogo per aggiungere prodotti.</div>';
     root.querySelectorAll('.cart-row').forEach((row, index) => {
         const item = cart[index];
         const unit = item.unit || 'u.';
@@ -366,7 +434,7 @@ async function submitOrder(customerNotes, button) {
         return;
     }
     try {
-        const payload = await api('/orders', { method: 'POST', body: JSON.stringify({ customer_notes: customerNotes || null, items: getCart().map(({ product_id, quantity }) => ({ product_id, quantity })) }) });
+        const payload = await api('/orders', { method: 'POST', body: JSON.stringify({ customer_notes: customerNotes || null, items: getCart().map(({ product_id, product_variant_id, quantity }) => ({ product_id, product_variant_id, quantity })) }) });
         saveCart([]);
         drawerNotes = '';
         updateCartBadges();

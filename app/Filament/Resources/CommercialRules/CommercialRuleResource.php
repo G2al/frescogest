@@ -17,6 +17,8 @@ use UnitEnum;
 
 class CommercialRuleResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $model = CommercialRule::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTruck;

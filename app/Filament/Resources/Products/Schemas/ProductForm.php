@@ -3,9 +3,10 @@
 namespace App\Filament\Resources\Products\Schemas;
 
 use App\Models\TaxRate;
+use App\Models\UnitOfMeasure;
 use App\Services\Pricing\ProductListPriceCalculator;
-use App\Services\Pricing\PurchaseCostCalculator;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -21,117 +22,108 @@ class ProductForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Dati prodotto')
+            Section::make('Articolo')
                 ->columnSpanFull()
                 ->schema([
-                    TextInput::make('name')->label('Nome')->required()->live(onBlur: true)
-                        ->afterStateUpdated(fn (?string $state, Set $set) => $set('slug', Str::slug((string) $state)))->maxLength(255),
-                    TextInput::make('slug')
-                        ->label('Slug')
-                        ->helperText('Facoltativo: se lasciato vuoto viene generato automaticamente dal nome.')
+                    TextInput::make('name')
+                        ->label('Nome')
+                        ->required()
+                        ->live(onBlur: true)
+                        ->afterStateUpdated(fn (?string $state, Set $set) => $set('slug', Str::slug((string) $state)))
+                        ->maxLength(255),
+                    TextInput::make('code')
+                        ->label('Codice articolo')
+                        ->required()
                         ->unique(ignoreRecord: true)
                         ->maxLength(255),
-                    TextInput::make('code')->label('Codice')->maxLength(255),
-                    Toggle::make('active')->label('Attivo')->default(true),
+                    TextInput::make('brand')
+                        ->label('Marca')
+                        ->maxLength(255),
+                    Select::make('product_category_id')
+                        ->label('Categoria')
+                        ->relationship('productCategory', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+                    Toggle::make('active')
+                        ->label('Disponibile')
+                        ->default(true),
+                    Hidden::make('slug'),
+                    Hidden::make('tax_rate_id')
+                        ->default(fn () => TaxRate::query()->where('percentage', 0)->value('id')),
+                    Hidden::make('default_unit_of_measure_id')
+                        ->default(fn () => UnitOfMeasure::query()->where('symbol', 'pz')->value('id')),
+                ])
+                ->columns(2),
+            Section::make('Prezzi')
+                ->description('I prezzi sono riferiti al singolo capo e sono mostrati come importi finali.')
+                ->columnSpanFull()
+                ->schema([
                     TextInput::make('purchase_cost_per_unit_gross')
-                        ->label('Costo di acquisto IVA inclusa')
-                        ->helperText('Inserisci il costo realmente pagato, già comprensivo di IVA, per ogni unità selezionata.')
-                        ->numeric()->minValue(0)->step(0.0001)->prefix('€')->required()->live(debounce: 500)
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateNetCostAndPrices($get, $set)),
-                    TextInput::make('purchase_cost_per_unit')
-                        ->label('Costo di acquisto netto')
-                        ->helperText('Calcolato automaticamente scorporando l’IVA dal costo pagato.')
-                        ->numeric()->prefix('€')->disabled()->dehydrated(false),
-                    Textarea::make('description')->label('Descrizione')->rows(3)->columnSpanFull(),
-                    Textarea::make('notes')->label('Note')->rows(3)->columnSpanFull(),
-                    Textarea::make('public_description')->label('Descrizione pubblica')->rows(3)->columnSpanFull(),
-                    FileUpload::make('image_path')->label('Immagine pubblica')->image()->disk('public')->visibility('public')
-                        ->directory('catalog/products')->previewable()->openable()->downloadable()->imagePreviewHeight('250')->columnSpanFull(),
-                ])->columns(2),
-            Section::make('Listino privati')
-                ->description('Prezzo unitario e quantità minima applicati ai clienti privati.')
-                ->columnSpanFull()
-                ->schema([
-                    TextInput::make('markup_percentage')
-                        ->label('Ricarico privati sul costo')
-                        ->helperText('Modificando il ricarico viene aggiornato automaticamente il prezzo privati.')
-                        ->numeric()->minValue(0)->maxValue(10000)->step(0.01)->suffix('%')->default(100)->required()->live(debounce: 500)
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updatePriceFromMarkup($get, $set, 'markup_percentage', 'base_price_per_unit')),
+                        ->label('Costo di acquisto')
+                        ->numeric()
+                        ->minValue(0)
+                        ->step(0.01)
+                        ->prefix('€')
+                        ->required()
+                        ->live(debounce: 400)
+                        ->afterStateUpdated(fn (Get $get, Set $set) => self::syncPricing($get, $set)),
                     TextInput::make('base_price_per_unit')
-                        ->label('Prezzo privati netto')
-                        ->helperText('Puoi inserirlo manualmente: il ricarico verrà ricalcolato automaticamente.')
-                        ->numeric()->minValue(0)->step(0.01)->prefix('€')->required()->live(debounce: 500)
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateMarkupFromPrice($get, $set, 'base_price_per_unit', 'markup_percentage')),
-                    TextInput::make('base_minimum_quantity')
-                        ->label('Quantità minima privati')
-                        ->helperText('Quantità minima acquistabile espressa nell’unità di misura selezionata.')
-                        ->numeric()->minValue(0.001)->step(0.001)->required(),
-                ])->columns(3),
-            Section::make('Listino ristoratori')
-                ->description('Prezzo unitario e quantità minima applicati ai clienti ristoratori.')
+                        ->label('Prezzo di vendita')
+                        ->numeric()
+                        ->minValue(0)
+                        ->step(0.01)
+                        ->prefix('€')
+                        ->required()
+                        ->live(debounce: 400)
+                        ->afterStateUpdated(fn (Get $get, Set $set) => self::syncPricing($get, $set)),
+                    Hidden::make('purchase_cost_per_unit'),
+                    Hidden::make('markup_percentage'),
+                    Hidden::make('restaurant_markup_percentage'),
+                    Hidden::make('restaurant_price_per_unit'),
+                    Hidden::make('price_per_kg'),
+                    Hidden::make('base_minimum_quantity')->default(1),
+                    Hidden::make('restaurant_minimum_quantity')->default(1),
+                    Hidden::make('is_public')->default(true),
+                    Hidden::make('is_seasonal')->default(false),
+                    Hidden::make('sort_order')->default(0),
+                ])
+                ->columns(2),
+            Section::make('Presentazione')
                 ->columnSpanFull()
                 ->schema([
-                    TextInput::make('restaurant_markup_percentage')
-                        ->label('Ricarico ristoratori sul costo')
-                        ->helperText('È indipendente dal ricarico privati e aggiorna solo il prezzo ristoratori.')
-                        ->numeric()->minValue(0)->maxValue(10000)->step(0.01)->suffix('%')->default(100)->required()->live(debounce: 500)
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updatePriceFromMarkup($get, $set, 'restaurant_markup_percentage', 'restaurant_price_per_unit')),
-                    TextInput::make('restaurant_price_per_unit')
-                        ->label('Prezzo ristoratori netto')
-                        ->helperText('Puoi inserirlo manualmente senza vincoli rispetto al prezzo privati.')
-                        ->numeric()->minValue(0)->step(0.01)->prefix('€')->required()->live(debounce: 500)
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateMarkupFromPrice($get, $set, 'restaurant_price_per_unit', 'restaurant_markup_percentage')),
-                    TextInput::make('restaurant_minimum_quantity')
-                        ->label('Quantità minima ristoratori')
-                        ->helperText('Quantità minima acquistabile da un ristoratore nell’unità selezionata.')
-                        ->numeric()->minValue(0.001)->step(0.001)->required(),
-                ])->columns(3),
-            Section::make('Classificazione')
-                ->columnSpanFull()
-                ->schema([
-                    Select::make('product_category_id')->label('Categoria')->relationship('productCategory', 'name')->searchable()->preload()->required(),
-                    Select::make('tax_rate_id')->label('Aliquota IVA')->relationship('taxRate', 'name')->searchable()->preload()->required()->live()
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateNetCostAndPrices($get, $set)),
-                    Select::make('default_unit_of_measure_id')->label('Unità di misura predefinita')->relationship('defaultUnitOfMeasure', 'name')->searchable()->preload()->required(),
-                ])->columns(2),
+                    Textarea::make('description')
+                        ->label('Descrizione')
+                        ->rows(4)
+                        ->columnSpanFull(),
+                    Textarea::make('notes')
+                        ->label('Note interne')
+                        ->rows(3)
+                        ->columnSpanFull(),
+                    FileUpload::make('image_path')
+                        ->label('Immagine')
+                        ->image()
+                        ->disk('public')
+                        ->visibility('public')
+                        ->directory('catalog/products')
+                        ->previewable()
+                        ->openable()
+                        ->imagePreviewHeight('280')
+                        ->columnSpanFull(),
+                ]),
         ]);
     }
 
-    private static function updatePricesFromMarkups(Get $get, Set $set, string|int|float|null $purchaseCost = null): void
+    private static function syncPricing(Get $get, Set $set): void
     {
-        self::updatePriceFromMarkup($get, $set, 'markup_percentage', 'base_price_per_unit', $purchaseCost);
-        self::updatePriceFromMarkup($get, $set, 'restaurant_markup_percentage', 'restaurant_price_per_unit', $purchaseCost);
-    }
+        $purchaseCost = (float) $get('purchase_cost_per_unit_gross');
+        $sellingPrice = (float) $get('base_price_per_unit');
+        $markup = app(ProductListPriceCalculator::class)->markupFromPrice($purchaseCost, $sellingPrice);
 
-    private static function updateNetCostAndPrices(Get $get, Set $set): void
-    {
-        $percentage = TaxRate::query()->whereKey($get('tax_rate_id'))->value('percentage') ?? 0;
-        $netCost = app(PurchaseCostCalculator::class)->netFromGross(
-            $get('purchase_cost_per_unit_gross'),
-            $percentage,
-        );
-
-        $set('purchase_cost_per_unit', number_format($netCost, 4, '.', ''));
-        self::updatePricesFromMarkups($get, $set, $netCost);
-    }
-
-    private static function updatePriceFromMarkup(
-        Get $get,
-        Set $set,
-        string $markupField,
-        string $priceField,
-        string|int|float|null $purchaseCost = null,
-    ): void {
-        $price = app(ProductListPriceCalculator::class)->priceFromMarkup(
-            $purchaseCost ?? $get('purchase_cost_per_unit'),
-            $get($markupField),
-        );
-        $set($priceField, number_format($price, 2, '.', ''));
-    }
-
-    private static function updateMarkupFromPrice(Get $get, Set $set, string $priceField, string $markupField): void
-    {
-        $markup = app(ProductListPriceCalculator::class)->markupFromPrice($get('purchase_cost_per_unit'), $get($priceField));
-        $set($markupField, number_format($markup, 2, '.', ''));
+        $set('purchase_cost_per_unit', number_format($purchaseCost, 4, '.', ''));
+        $set('markup_percentage', number_format($markup, 2, '.', ''));
+        $set('restaurant_markup_percentage', number_format($markup, 2, '.', ''));
+        $set('restaurant_price_per_unit', number_format($sellingPrice, 4, '.', ''));
+        $set('price_per_kg', number_format($sellingPrice, 2, '.', ''));
     }
 }

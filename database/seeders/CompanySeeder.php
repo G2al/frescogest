@@ -10,16 +10,16 @@ class CompanySeeder extends Seeder
     public function run(): void
     {
         Company::query()->updateOrCreate(
-            ['vat_number' => '02396610186'],
+            ['business_name' => 'Cerino Store'],
             [
-                'business_name' => 'Il Paradiso della Frutta di Castaldo Mariarosaria',
+                'vat_number' => null,
                 'tax_code' => null,
-                'email' => null,
-                'phone' => null,
-                'address' => 'Via dei Caduti Genovesi, 8',
-                'city' => 'Bornasco',
-                'postal_code' => null,
-                'province' => 'PV',
+                'email' => 'admin@cerinostore.it',
+                'phone' => '3240994144',
+                'address' => 'Viale Colucci, 49',
+                'city' => 'Lusciano',
+                'postal_code' => '81030',
+                'province' => 'CE',
                 'iban' => null,
                 'logo_path' => null,
                 'active' => true,

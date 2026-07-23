@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('companies', function (Blueprint $table) {
             $table->id();
             $table->string('business_name');
-            $table->string('vat_number');
+            $table->string('vat_number')->nullable();
             $table->string('tax_code')->nullable();
             $table->string('email')->nullable();
             $table->string('phone')->nullable();

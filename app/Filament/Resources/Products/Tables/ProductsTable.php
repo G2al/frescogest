@@ -22,65 +22,28 @@ class ProductsTable
     {
         return $table
             ->columns([
-                TextColumn::make('name')
-                    ->label('Nome')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('code')
-                    ->label('Codice')
-                    ->searchable()
-                    ->sortable()
-                    ->toggleable(),
-                TextColumn::make('productCategory.name')
-                    ->label('Categoria')
-                    ->searchable()
-                    ->sortable(),
-                TextColumn::make('taxRate.name')
-                    ->label('Aliquota IVA')
-                    ->sortable(),
-                TextColumn::make('defaultUnitOfMeasure.symbol')
-                    ->label('Unità')
-                    ->sortable(),
-                TextColumn::make('purchase_cost_per_unit')
-                    ->label('Costo netto')
-                    ->money('EUR')
-                    ->sortable(),
-                TextColumn::make('purchase_cost_per_unit_gross')
-                    ->label('Costo IVA incl.')
-                    ->money('EUR')
-                    ->sortable(),
-                TextColumn::make('base_price_per_unit')
-                    ->label('Listino base')
-                    ->money('EUR')
-                    ->sortable(),
-                TextColumn::make('markup_percentage')
-                    ->label('Ricarico')
-                    ->suffix('%')
-                    ->sortable(),
-                TextColumn::make('restaurant_price_per_unit')
-                    ->label('Listino ristoratori')
-                    ->money('EUR')
-                    ->sortable(),
-                ToggleColumn::make('active')
-                    ->label('Attivo')
-                    ->sortable(),
+                TextColumn::make('name')->label('Articolo')->searchable()->sortable(),
+                TextColumn::make('code')->label('Codice')->searchable()->sortable(),
+                TextColumn::make('brand')->label('Marca')->searchable()->toggleable(),
+                TextColumn::make('productCategory.name')->label('Categoria')->sortable(),
+                TextColumn::make('variants_count')->label('Varianti')->counts('variants')->sortable(),
+                TextColumn::make('purchase_cost_per_unit_gross')->label('Costo')->money('EUR')->sortable(),
+                TextColumn::make('base_price_per_unit')->label('Prezzo')->money('EUR')->sortable(),
+                ToggleColumn::make('active')->label('Disponibile')->sortable(),
             ])
             ->filters([
                 TernaryFilter::make('active')
-                    ->label('Stato')
+                    ->label('Disponibilità')
                     ->placeholder('Tutti')
-                    ->trueLabel('Attivi')
-                    ->falseLabel('Non attivi'),
+                    ->trueLabel('Disponibili')
+                    ->falseLabel('Non disponibili'),
                 SelectFilter::make('product_category_id')
                     ->label('Categoria')
                     ->relationship('productCategory', 'name')
                     ->searchable()
                     ->preload(),
-                TrashedFilter::make()
-                    ->label('Eliminati'),
+                TrashedFilter::make()->label('Eliminati'),
             ])
-            ->paginationPageOptions([10, 25, 50, 100, 'all'])
-            ->defaultPaginationPageOption('all')
             ->defaultSort('name')
             ->recordActions([
                 EditAction::make(),
@@ -88,17 +51,15 @@ class ProductsTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     BulkAction::make('activate')
-                        ->label('Attiva selezionati')
+                        ->label('Rendi disponibili')
                         ->icon('heroicon-o-eye')
                         ->color('success')
-                        ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['active' => true]))
                         ->deselectRecordsAfterCompletion(),
                     BulkAction::make('deactivate')
-                        ->label('Disattiva selezionati')
+                        ->label('Rendi non disponibili')
                         ->icon('heroicon-o-eye-slash')
                         ->color('warning')
-                        ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['active' => false]))
                         ->deselectRecordsAfterCompletion(),
                     DeleteBulkAction::make(),

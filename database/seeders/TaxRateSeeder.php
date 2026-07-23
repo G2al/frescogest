@@ -10,9 +10,7 @@ class TaxRateSeeder extends Seeder
     public function run(): void
     {
         foreach ([
-            ['name' => 'IVA 4%', 'percentage' => 4],
-            ['name' => 'IVA 10%', 'percentage' => 10],
-            ['name' => 'IVA 22%', 'percentage' => 22],
+            ['name' => 'Prezzo finale', 'percentage' => 0],
         ] as $taxRate) {
             TaxRate::updateOrCreate(
                 ['percentage' => $taxRate['percentage']],

@@ -23,7 +23,7 @@ class CompanyForm
                             ->maxLength(255),
                         TextInput::make('vat_number')
                             ->label('Partita IVA')
-                            ->required()
+                            ->helperText('Da compilare quando sarà disponibile.')
                             ->maxLength(255),
                         TextInput::make('tax_code')
                             ->label('Codice fiscale')

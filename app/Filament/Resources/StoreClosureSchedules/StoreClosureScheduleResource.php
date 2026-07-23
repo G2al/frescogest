@@ -17,6 +17,8 @@ use UnitEnum;
 
 class StoreClosureScheduleResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $model = StoreClosureSchedule::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;

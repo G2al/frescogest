@@ -23,6 +23,7 @@ class Product extends Model
         'name',
         'slug',
         'code',
+        'brand',
         'description',
         'image_path',
         'public_description',
@@ -60,6 +61,11 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
     }
 
     public function customerPrices(): HasMany
@@ -123,13 +129,13 @@ class Product extends Model
                 $product->restaurant_markup_percentage = $product->markup_percentage ?? 0;
             }
 
-            if ($product->isDirty('base_price_per_unit') && ! $product->isDirty('markup_percentage')) {
+            if ($product->isDirty('base_price_per_unit')) {
                 $product->markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->base_price_per_unit);
             } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('markup_percentage') || ! $product->exists) {
                 $product->base_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->markup_percentage);
             }
 
-            if ($product->isDirty('restaurant_price_per_unit') && ! $product->isDirty('restaurant_markup_percentage')) {
+            if ($product->isDirty('restaurant_price_per_unit')) {
                 $product->restaurant_markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->restaurant_price_per_unit);
             } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('restaurant_markup_percentage') || ! $product->exists) {
                 $product->restaurant_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->restaurant_markup_percentage ?? $product->markup_percentage);

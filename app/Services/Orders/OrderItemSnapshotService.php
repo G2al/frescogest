@@ -5,6 +5,7 @@ namespace App\Services\Orders;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Services\Documents\DeliveryDocumentSnapshotService;
 use App\Services\Pricing\PriceCalculator;
 use App\Services\Pricing\ProductPricingService;
@@ -21,6 +22,11 @@ class OrderItemSnapshotService
     public function enrich(array $data, Order $order): array
     {
         $product = Product::query()->with(['taxRate', 'defaultUnitOfMeasure'])->findOrFail($data['product_id']);
+        $variant = ProductVariant::query()
+            ->whereKey($data['product_variant_id'])
+            ->whereBelongsTo($product)
+            ->where('active', true)
+            ->firstOrFail();
         $pricing = $this->pricing->details($product, $order->customer);
 
         if ((float) $data['quantity'] < (float) $pricing['minimum_quantity']) {
@@ -45,6 +51,10 @@ class OrderItemSnapshotService
         return [
             ...$data,
             'product_name' => $product->name,
+            'product_variant_id' => $variant->id,
+            'variant_sku' => $variant->sku,
+            'variant_size' => $variant->size,
+            'variant_color' => $variant->color,
             'price_per_kg' => $unitPrice,
             'unit_price_net' => $unitPrice,
             'tax_percentage' => $taxPercentage,

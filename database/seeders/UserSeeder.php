@@ -11,14 +11,14 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $admin = User::query()
-            ->where('email', 'admin@ilparadisodellafrutta.it')
+            ->where('email', 'admin@cerinostore.it')
             ->first()
             ?? User::query()->where('can_access_panel', true)->oldest()->first()
             ?? new User;
 
         $admin->forceFill([
-            'name' => 'Amministratore Il Paradiso della Frutta',
-            'email' => 'admin@ilparadisodellafrutta.it',
+            'name' => 'Amministratore Cerino Store',
+            'email' => 'admin@cerinostore.it',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
             'active' => true,

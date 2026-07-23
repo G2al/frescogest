@@ -9,30 +9,35 @@ class WhatsAppLinkService
 {
     public function create(Order $order): array
     {
-        $number = preg_replace('/\D+/', '', (string) config('ilparadisodellafrutta.whatsapp_number'));
+        $number = preg_replace('/\D+/', '', (string) config('cerino.whatsapp_number'));
 
         if ($number === '') {
             throw new RuntimeException('Il numero WhatsApp non è configurato.');
         }
 
         $lines = [
-            '🥬 *IL PARADISO DELLA FRUTTA*',
+            '🛍️ *CERINO STORE*',
             "*Richiesta ordine {$order->order_number}*",
             '',
             "👤 *Cliente:* {$order->customer->display_name}",
             '',
-            '📦 *PRODOTTI RICHIESTI*',
+            '📦 *ARTICOLI RICHIESTI*',
         ];
 
         foreach ($order->items as $item) {
             $unitPrice = $item->unit_price_net ?: $item->price_per_kg;
-            $lineGross = $item->line_gross ?: $item->line_total;
-            $lines[] = "• *{$item->product_name}*";
-            $lines[] = "  {$this->quantity($item->quantity, $item->unit_of_measure_symbol)} × € {$this->money($unitPrice)}/{$item->unit_of_measure_symbol} = *€ {$this->money($lineGross)} IVA incl.*";
+            $lineTotal = $item->line_gross ?: $item->line_total;
+            $variant = collect([
+                filled($item->variant_size) ? "Taglia {$item->variant_size}" : null,
+                filled($item->variant_color) ? "Colore {$item->variant_color}" : null,
+            ])->filter()->implode(' · ');
+
+            $lines[] = "• *{$item->product_name}*".($variant !== '' ? " ({$variant})" : '');
+            $lines[] = "  {$this->quantity($item->quantity)} × € {$this->money($unitPrice)} = *€ {$this->money($lineTotal)}*";
         }
 
         $lines[] = '';
-        $lines[] = '💶 *TOTALE IVA INCLUSA: € '.$this->money($order->total_gross ?: $order->total_amount).'*';
+        $lines[] = '💶 *TOTALE: € '.$this->money($order->total_gross ?: $order->total_amount).'*';
 
         if (filled($order->customer_notes)) {
             $lines[] = '';
@@ -41,31 +46,23 @@ class WhatsAppLinkService
         }
 
         $lines[] = '';
-        $lines[] = '⏳ _Richiesta in trattativa WhatsApp._';
-        $lines[] = 'Ti contatto per concordare disponibilità, dettagli e consegna.';
+        $lines[] = '⏳ _Richiesta in attesa di conferma su WhatsApp._';
+        $lines[] = 'Vorrei concordare disponibilità, spedizione e dettagli dell’ordine.';
         $message = implode("\n", $lines);
 
-        return ['url' => "https://wa.me/{$number}?text=".rawurlencode($message), 'message' => $message];
+        return [
+            'url' => "https://wa.me/{$number}?text=".rawurlencode($message),
+            'message' => $message,
+        ];
     }
 
-    private function quantity(string|int|float $quantity, string $unit): string
+    private function quantity(string|int|float $quantity): string
     {
-        $value = (float) $quantity;
-
-        if ($unit === 'kg' && $value > 0 && $value < 1) {
-            return $this->number($value * 1000).' g';
-        }
-
-        return $this->number($value).' '.$unit;
+        return number_format((float) $quantity, 0, ',', '').' pz';
     }
 
     private function money(string|int|float $amount): string
     {
         return number_format((float) $amount, 2, ',', '.');
-    }
-
-    private function number(float $value): string
-    {
-        return rtrim(rtrim(number_format($value, 3, ',', ''), '0'), ',');
     }
 }

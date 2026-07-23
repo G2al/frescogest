@@ -1,4 +1,4 @@
-const cartStorageKey = 'ilparadisodellafrutta_cart_v3';
+const cartStorageKey = 'cerinostore_cart_v1';
 
 function migrateLegacyCart() {
     if (localStorage.getItem(cartStorageKey) !== null) {

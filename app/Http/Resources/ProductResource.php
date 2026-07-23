@@ -20,6 +20,7 @@ class ProductResource extends JsonResource
             'name' => $this->name,
             'slug' => $this->slug,
             'description' => $this->public_description,
+            'brand' => $this->brand,
             'price_per_unit' => $this->effective_price_per_unit ?? $this->base_price_per_unit,
             'price_per_kg' => $this->effective_price_per_unit ?? $this->base_price_per_unit,
             'minimum_quantity' => $this->minimum_quantity ?? $this->base_minimum_quantity,
@@ -28,6 +29,15 @@ class ProductResource extends JsonResource
             'discount_percentage' => $this->discount_percentage,
             'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
             'is_seasonal' => $this->is_seasonal,
+            'variants' => $this->whenLoaded('variants', fn () => $this->variants
+                ->where('active', true)
+                ->values()
+                ->map(fn ($variant): array => [
+                    'id' => $variant->id,
+                    'sku' => $variant->sku,
+                    'size' => $variant->size,
+                    'color' => $variant->color,
+                ])),
             'category' => ProductCategoryResource::make($this->whenLoaded('productCategory')),
             'unit_of_measure' => [
                 'name' => $this->defaultUnitOfMeasure?->name,

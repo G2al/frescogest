@@ -10,27 +10,32 @@ class ProductCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        foreach ([
-            ['name' => 'Frutta', 'description' => 'Frutta fresca selezionata, italiana e di importazione.', 'catalog_color' => '#e7f3df'],
-            ['name' => 'Verdura', 'description' => 'Ortaggi e verdure fresche per ristorazione e attività commerciali.', 'catalog_color' => '#e3f2e5'],
-            ['name' => 'Latticini', 'description' => 'Formaggi freschi, stagionati e specialità casearie.', 'catalog_color' => '#fff1d8'],
-            ['name' => 'Prodotti campani', 'description' => 'Eccellenze alimentari e specialità tipiche della Campania.', 'catalog_color' => '#f8e6d8'],
-            ['name' => 'Prodotti confezionati', 'description' => 'Prodotti alimentari confezionati per la dispensa professionale.', 'catalog_color' => '#eee6f7'],
-            ['name' => 'Dolci campani', 'description' => 'Dolci tradizionali campani in confezioni pronte alla vendita.', 'catalog_color' => '#f8e5eb'],
-            ['name' => 'Prodotti pizzerie', 'description' => 'Latticini e ingredienti professionali dedicati alle pizzerie.', 'catalog_color' => '#e7f3df'],
-            ['name' => 'Materiali di consumo', 'description' => 'Confezioni e materiali di supporto per attività professionali.', 'catalog_color' => '#e8edf3'],
-        ] as $sortOrder => $category) {
-            ProductCategory::updateOrCreate(
+        foreach ($this->categories() as $index => $category) {
+            ProductCategory::query()->updateOrCreate(
                 ['name' => $category['name']],
                 [
                     'slug' => Str::slug($category['name']),
                     'description' => $category['description'],
-                    'catalog_color' => $category['catalog_color'],
+                    'catalog_color' => $category['color'],
                     'is_public' => true,
-                    'sort_order' => $sortOrder,
+                    'sort_order' => $index,
                     'active' => true,
                 ],
             );
         }
+    }
+
+    private function categories(): array
+    {
+        return [
+            ['name' => 'T-shirt', 'description' => 'T-shirt e polo da uomo.', 'color' => '#f1f1f1'],
+            ['name' => 'Camicie', 'description' => 'Camicie casual ed eleganti.', 'color' => '#e8edf2'],
+            ['name' => 'Pantaloni', 'description' => 'Jeans, chino e pantaloni da uomo.', 'color' => '#eee9e2'],
+            ['name' => 'Felpe', 'description' => 'Felpe girocollo e con cappuccio.', 'color' => '#e8e8e8'],
+            ['name' => 'Maglieria', 'description' => 'Maglie e cardigan da uomo.', 'color' => '#ede7df'],
+            ['name' => 'Giacche', 'description' => 'Giacche, blazer e capispalla.', 'color' => '#dfe4e8'],
+            ['name' => 'Scarpe', 'description' => 'Calzature da uomo.', 'color' => '#eeeae5'],
+            ['name' => 'Accessori', 'description' => 'Accessori per completare ogni outfit.', 'color' => '#e9e9e9'],
+        ];
     }
 }

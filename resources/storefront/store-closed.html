@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#111111">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Il Paradiso della Frutta sta aggiornando prezzi e disponibilità.">
-  <link rel="icon" type="image/png" href="/assets/images/icona-web.png">
-  <title>Negozio temporaneamente chiuso · Il Paradiso della Frutta</title>
+  <meta name="description" content="Cerino Store sta aggiornando collezione e disponibilità.">
+  <link rel="icon" type="image/png" href="/assets/images/cerino-favicon.png?v=20260723.2">
+  <title>Store temporaneamente chiuso · Cerino Store</title>
 
   <style>
     :root {
@@ -474,16 +474,16 @@
   </div>
 
   <main class="page">
-    <div class="fruit" aria-hidden="true">🍉</div>
-    <div class="fruit" aria-hidden="true">🍊</div>
-    <div class="fruit" aria-hidden="true">🍓</div>
-    <div class="fruit" aria-hidden="true">🍍</div>
-    <div class="fruit" aria-hidden="true">🥝</div>
-    <div class="fruit" aria-hidden="true">🍇</div>
+    <div class="fruit" aria-hidden="true">👕</div>
+    <div class="fruit" aria-hidden="true">👖</div>
+    <div class="fruit" aria-hidden="true">👟</div>
+    <div class="fruit" aria-hidden="true">🧢</div>
+    <div class="fruit" aria-hidden="true">⌚</div>
+    <div class="fruit" aria-hidden="true">🧥</div>
 
     <section class="card" aria-labelledby="main-title">
       <div class="logo-wrap">
-        <img class="logo" src="/assets/images/new-logo-primary.png" alt="Il Paradiso della Frutta">
+        <img class="logo" src="/assets/images/cerino-logo-primary.png?v=20260723.2" alt="Cerino Store">
       </div>
 
       <div class="eyebrow">
@@ -497,19 +497,19 @@
 
       <p class="description">
         __CLOSURE_MESSAGE__
-        Riapriamo automaticamente alle <strong>__REOPENING_TIME__</strong> con il catalogo fresco e aggiornato.
+        Riapriamo automaticamente alle <strong>__REOPENING_TIME__</strong> con collezione e disponibilità aggiornate.
       </p>
 
       <div class="features" aria-label="Operazioni in corso">
-        <span class="chip">🍎 Controllo prodotti</span>
-        <span class="chip">🥬 Verifica disponibilità</span>
+        <span class="chip">👕 Controllo disponibilità</span>
+        <span class="chip">📦 Verifica disponibilità</span>
         <span class="chip">🏷️ Aggiornamento prezzi</span>
         <span class="chip">🛒 Riapertura alle __REOPENING_TIME__</span>
       </div>
 
       <div class="progress-area">
         <div class="progress-copy">
-          <span>Stiamo aggiornando il banco...</span>
+          <span>Stiamo aggiornando il catalogo...</span>
           <span id="percentage">0%</span>
         </div>
         <div class="progress" role="progressbar" aria-label="Avanzamento aggiornamento" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -523,14 +523,14 @@
       </div>
 
       <div class="bottom">
-        <button class="party-button" id="party-button" type="button">Fai esplodere la frutta! 🎊</button>
+        <button class="party-button" id="party-button" type="button">Scatena lo stile! 🎊</button>
         <span class="status" id="status" aria-live="polite">Torna alle __REOPENING_TIME__: manca davvero poco.</span>
       </div>
     </section>
   </main>
 
   <footer class="footer">
-    © <span id="year"></span>&nbsp; Il Paradiso della Frutta · Tutti i diritti riservati
+    © <span id="year"></span>&nbsp; Cerino Store · Tutti i diritti riservati
   </footer>
 
   <script>
@@ -543,7 +543,7 @@
     const progressFill = document.getElementById('progress-fill');
     const partyButton = document.getElementById('party-button');
     const status = document.getElementById('status');
-    const fruits = ['🍎', '🍊', '🍋', '🍉', '🍓', '🍍', '🥝', '🍇', '🍒', '✨'];
+    const fruits = ['👕', '👖', '👟', '🧢', '⌚', '🧥', '🕶️', '✨'];
     let hasReloaded = false;
 
     document.getElementById('year').textContent = new Date().getFullYear();
@@ -614,10 +614,10 @@
     partyButton.addEventListener('click', event => {
       const rect = event.currentTarget.getBoundingClientRect();
       const messages = [
-        'BOOM! Una valanga di freschezza! 🍉',
-        'Il banco è quasi pronto! 🍎',
-        'Frutta in festa! 🎉',
-        'Prezzi freschi in arrivo! 🍓'
+        'BOOM! Una valanga di stile! ✨',
+        'Lo store è quasi pronto! 👕',
+        'Stile in festa! 🎉',
+        'Nuovi look in arrivo! 👕'
       ];
 
       createFruitExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2);

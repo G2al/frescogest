@@ -1,5 +1,5 @@
 import { api, currentUser } from './api.js?v=20260720.5';
-import { notify, refreshIcons } from './ui.js?v=20260722.5';
+import { notify, refreshIcons } from './ui.js?v=20260723.3';
 
 document.body.classList.add('orders-page');
 
@@ -23,13 +23,17 @@ function escapeHtml(value) {
 function orderItem(item) {
     const image = item.image_url
         ? `<img src="${item.image_url}" alt="${escapeHtml(item.product_name)}" loading="lazy">`
-        : '<span><i data-lucide="package-open"></i></span>';
+        : '<span><i data-lucide="shirt"></i></span>';
+    const variant = [item.variant_size && `Taglia ${item.variant_size}`, item.variant_color && `Colore ${item.variant_color}`]
+        .filter(Boolean)
+        .join(' · ');
 
     return `<div class="order-product">
         <div class="order-product-image">${image}</div>
         <div class="order-product-copy">
             <strong>${escapeHtml(item.product_name)}</strong>
-            <span>${quantity(item.quantity)} ${item.unit_of_measure_symbol || 'kg'} · ${currency(item.price_per_kg)}/kg</span>
+            ${variant ? `<small>${escapeHtml(variant)}</small>` : ''}
+            <span>${quantity(item.quantity)} ${item.unit_of_measure_symbol || 'pz'} · ${currency(item.price_per_kg)}</span>
         </div>
         <strong class="order-product-total">${currency(item.line_total)}</strong>
     </div>`;

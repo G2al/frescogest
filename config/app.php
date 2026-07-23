@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Il Paradiso della Frutta'),
+    'name' => env('APP_NAME', 'Cerino Store'),
 
     /*
     |--------------------------------------------------------------------------

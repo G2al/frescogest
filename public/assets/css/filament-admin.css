@@ -5,6 +5,20 @@
     object-fit: contain;
 }
 
+/* Cerino Store backoffice */
+.fi-logo {
+    width: auto !important;
+    min-width: 10rem;
+    max-width: 15rem !important;
+    object-fit: contain;
+}
+
+.fi-simple-header .fi-logo {
+    width: 18rem !important;
+    max-width: 82vw !important;
+    height: 9rem !important;
+}
+
 .business-report {
     --br-primary: #009b72;
     --br-primary-soft: #eaf9f3;
@@ -515,4 +529,18 @@
     .business-report-table td {
         padding-inline: .8rem;
     }
+}
+
+/* Cerino Store final brand sizing */
+.fi-logo {
+    width: auto !important;
+    min-width: 10rem;
+    max-width: 15rem !important;
+    object-fit: contain;
+}
+
+.fi-simple-header .fi-logo {
+    width: 18rem !important;
+    max-width: 82vw !important;
+    height: 9rem !important;
 }

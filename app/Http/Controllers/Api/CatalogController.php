@@ -58,7 +58,7 @@ class CatalogController extends Controller
     {
         $query = Product::query()
             ->publicCatalog()
-            ->with(['productCategory', 'defaultUnitOfMeasure'])
+            ->with(['productCategory', 'defaultUnitOfMeasure', 'variants'])
             ->when($request->filled('category'), fn ($query) => $query->whereHas(
                 'productCategory',
                 fn ($category) => $category->where('slug', $request->string('category')->toString()),
@@ -99,7 +99,7 @@ class CatalogController extends Controller
     {
         $product = Product::query()
             ->publicCatalog()
-            ->with(['productCategory', 'defaultUnitOfMeasure'])
+            ->with(['productCategory', 'defaultUnitOfMeasure', 'variants'])
             ->where('slug', $slug)
             ->firstOrFail();
 

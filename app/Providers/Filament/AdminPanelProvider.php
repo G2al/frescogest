@@ -2,9 +2,6 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\CustomerTypeRevenueChart;
-use App\Filament\Widgets\FinancialOverview;
-use App\Filament\Widgets\MonthlyPerformanceChart;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -12,7 +9,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -32,10 +28,10 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->authGuard('admin')
             ->login()
-            ->brandLogo(asset('assets/images/new-logo-primary.png'))
-            ->darkModeBrandLogo(asset('assets/images/new-logo-white.png'))
+            ->brandLogo(asset('assets/images/cerino-logo-primary.png?v=20260723.2'))
+            ->darkModeBrandLogo(asset('assets/images/cerino-logo-white.png?v=20260723.2'))
             ->brandLogoHeight('5.75rem')
-            ->favicon(asset('assets/images/icona-web.png'))
+            ->favicon(asset('assets/images/cerino-favicon.png?v=20260723.2'))
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn (): string => view('filament.admin-login-branding')->render(),
@@ -44,14 +40,6 @@ class AdminPanelProvider extends PanelProvider
                 PanelsRenderHook::BODY_END,
                 fn (): string => view('filament.pending-orders-poller')->render(),
             )
-            ->colors([
-                'primary' => '#007060',
-                'success' => '#10B050',
-                'warning' => Color::Amber,
-                'danger' => Color::Rose,
-                'info' => Color::Sky,
-                'gray' => Color::Stone,
-            ])
             ->discoverResources(
                 in: app_path('Filament/Resources'),
                 for: 'App\Filament\Resources'
@@ -69,9 +57,6 @@ class AdminPanelProvider extends PanelProvider
             )
             ->widgets([
                 AccountWidget::class,
-                FinancialOverview::class,
-                MonthlyPerformanceChart::class,
-                CustomerTypeRevenueChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,

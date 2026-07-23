@@ -8,6 +8,7 @@ class StorefrontPageController extends Controller
 {
     private const PAGES = [
         'cart.html',
+        'catalog.html',
         'forgot-password.html',
         'index.html',
         'login.html',

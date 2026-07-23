@@ -19,10 +19,11 @@ class CreateOrderService
     public function create(User $user, array $data): Order
     {
         $customer = $user->customer;
-        $requestedItems = collect($data['items'])->keyBy('product_id');
-        $products = Product::query()->publicCatalog()->whereKey($requestedItems->keys())->pluck('id');
+        $requestedItems = collect($data['items']);
+        $productIds = $requestedItems->pluck('product_id')->unique()->values();
+        $products = Product::query()->publicCatalog()->whereKey($productIds)->pluck('id');
 
-        if ($products->count() !== $requestedItems->count()) {
+        if ($products->count() !== $productIds->count()) {
             throw ValidationException::withMessages(['items' => 'Uno o più prodotti non sono disponibili nel catalogo.']);
         }
 
@@ -37,9 +38,9 @@ class CreateOrderService
                 'delivery_postal_code' => $customer->postal_code,
                 'delivery_province' => $customer->province,
             ]);
-            $order->update(['order_number' => 'IPF-'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT)]);
+            $order->update(['order_number' => 'CS-'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT)]);
 
-            foreach ($requestedItems->values() as $index => $item) {
+            foreach ($requestedItems as $index => $item) {
                 $order->items()->create($this->snapshots->enrich([
                     ...$item,
                     'sort_order' => $index,

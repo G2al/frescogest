@@ -24,7 +24,7 @@ return new class extends Migration
 
         Schema::create('delivery_documents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id')->unique()->constrained()->restrictOnDelete();
+            $table->foreignId('order_id')->unique()->constrained()->cascadeOnDelete();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('document_number')->unique();
             $table->dateTime('issued_at')->index();

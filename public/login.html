@@ -3,30 +3,41 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-    <title>Accedi · Il Paradiso della Frutta</title>
-    <link rel="icon" type="image/png" href="/assets/images/icona-web.png">
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260722.5">
+    <title>Accedi · Cerino Store</title>
+    <link rel="icon" type="image/png" href="/assets/images/cerino-favicon.png?v=20260723.2">
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260723.11">
 </head>
 <body class="auth-page" data-guest-only="true">
     <main class="auth-main">
-        <form class="form-shell auth-form" data-endpoint="/auth/login">
-            <a class="auth-brand" href="/" aria-label="Torna alla home"><img src="/assets/images/new-logo-primary.png" alt="Il Paradiso della Frutta"></a>
-            <div class="auth-form-head">
-                <span class="auth-form-icon"><i data-lucide="log-in"></i></span>
-                <div><span class="eyebrow">Bentornato</span><h2>Accedi</h2></div>
-            </div>
-            <div class="stack">
-                <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" required></div>
-                <div class="field"><label for="password">Password</label><div class="password-control"><input id="password" name="password" type="password" autocomplete="current-password" minlength="4" required><button class="password-toggle" type="button" data-target="password" aria-label="Mostra password"><i data-lucide="eye"></i></button></div></div>
-                <label class="remember-row"><input name="remember" type="checkbox" value="1"><span>Ricordami</span></label>
-            </div>
-            <div class="form-message"></div>
-            <div class="auth-form-actions">
-                <button class="btn btn-primary" type="submit"><i data-lucide="log-in"></i>Accedi</button>
-                <a class="btn btn-link" href="/forgot-password.html"><i data-lucide="key-round"></i>Password dimenticata?</a>
-            </div>
-            <p class="auth-alternative">Non hai ancora un account? <a href="/register.html">Registrati</a></p>
-        </form>
+        <section class="auth-layout">
+            <aside class="auth-editorial auth-editorial-login">
+                <a class="auth-editorial-brand" href="/" aria-label="Torna alla home"><img src="/assets/images/cerino-logo-white.png?v=20260723.2" alt="Cerino Store"></a>
+                <div class="auth-editorial-copy">
+                    <span>Men’s clothing · Lusciano</span>
+                    <h1>Il tuo stile,<br>il tuo account.</h1>
+                    <p>Accedi per ritrovare il carrello, seguire i tuoi ordini e parlare direttamente con Cerino Store.</p>
+                </div>
+                <a class="auth-back-home" href="/"><i data-lucide="arrow-left"></i>Torna alla collezione</a>
+            </aside>
+            <form class="form-shell auth-form" data-endpoint="/auth/login">
+                <a class="auth-brand" href="/" aria-label="Torna alla home"><img src="/assets/images/cerino-logo-primary.png?v=20260723.2" alt="Cerino Store"></a>
+                <div class="auth-form-head">
+                    <span class="auth-form-icon"><i data-lucide="log-in"></i></span>
+                    <div><span class="eyebrow">Bentornato</span><h2>Accedi</h2><p class="auth-intro">Inserisci le tue credenziali per continuare.</p></div>
+                </div>
+                <div class="stack">
+                    <div class="field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" placeholder="nome@email.it" required></div>
+                    <div class="field"><label for="password">Password</label><div class="password-control"><input id="password" name="password" type="password" autocomplete="current-password" minlength="4" placeholder="La tua password" required><button class="password-toggle" type="button" data-target="password" aria-label="Mostra password"><i data-lucide="eye"></i></button></div></div>
+                    <label class="remember-row"><input name="remember" type="checkbox" value="1"><span>Ricordami su questo dispositivo</span></label>
+                </div>
+                <div class="form-message"></div>
+                <div class="auth-form-actions">
+                    <button class="btn btn-primary" type="submit"><i data-lucide="log-in"></i>Accedi al tuo account</button>
+                    <a class="btn btn-link" href="/forgot-password.html"><i data-lucide="key-round"></i>Password dimenticata?</a>
+                </div>
+                <p class="auth-alternative">Non hai ancora un account? <a href="/register.html">Registrati</a></p>
+            </form>
+        </section>
     </main>
     <script type="module" src="/assets/js/auth.js?v=20260722.5"></script>
 </body>

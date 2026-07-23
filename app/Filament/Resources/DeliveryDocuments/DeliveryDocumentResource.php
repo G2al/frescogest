@@ -13,6 +13,8 @@ use UnitEnum;
 
 class DeliveryDocumentResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $model = DeliveryDocument::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;

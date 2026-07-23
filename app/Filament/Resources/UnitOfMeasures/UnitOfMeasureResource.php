@@ -17,6 +17,8 @@ use UnitEnum;
 
 class UnitOfMeasureResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
+
     protected static ?string $model = UnitOfMeasure::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedScale;

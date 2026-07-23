@@ -2,7 +2,6 @@
 
 namespace App\Services\Auth;
 
-use App\Enums\CustomerType;
 use App\Exceptions\CustomerIdentityConflictException;
 use App\Models\Customer;
 use App\Models\User;
@@ -40,10 +39,10 @@ class RegisterCustomerService
             ])->save();
 
             $user->customer()->create([
-                'type' => $data['type'],
-                'company_name' => $data['type'] === CustomerType::Restaurant->value ? trim($data['company_name']) : null,
-                'first_name' => filled($data['first_name'] ?? null) ? trim($data['first_name']) : null,
-                'last_name' => filled($data['last_name'] ?? null) ? trim($data['last_name']) : null,
+                'type' => 'private',
+                'company_name' => null,
+                'first_name' => trim($data['first_name']),
+                'last_name' => trim($data['last_name']),
                 'email' => $email,
                 'phone' => trim($data['phone']),
                 'phone_normalized' => $phone,
@@ -56,10 +55,6 @@ class RegisterCustomerService
 
     private function displayName(array $data): string
     {
-        if ($data['type'] === CustomerType::Restaurant->value) {
-            return trim($data['company_name']);
-        }
-
-        return trim(($data['first_name'] ?? '').' '.($data['last_name'] ?? ''));
+        return trim($data['first_name'].' '.$data['last_name']);
     }
 }

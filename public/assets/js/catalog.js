@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260722.5';
+import { notify, productCard, refreshIcons, skeletonCards, variantPickerMarkup } from './ui.js?v=20260723.4';
 
 const categoriesRoot = document.querySelector('#categories');
 const previousCategoriesButton = document.querySelector('#categories-previous');
@@ -49,14 +49,14 @@ const state = {
 };
 
 const categoryIcons = {
-    Frutta: 'apple',
-    Verdura: 'salad',
-    Latticini: 'milk',
-    'Prodotti campani': 'map-pinned',
-    'Prodotti confezionati': 'package',
-    'Frutta secca': 'nut',
-    Legumi: 'bean',
-    'Spezie ed erbe': 'sprout',
+    'T-shirt': 'shirt',
+    Camicie: 'shirt',
+    Pantaloni: 'ruler',
+    Felpe: 'shirt',
+    Maglieria: 'shirt',
+    Giacche: 'briefcase-business',
+    Scarpe: 'footprints',
+    Accessori: 'watch',
 };
 
 function escapeHtml(value) {
@@ -66,7 +66,7 @@ function escapeHtml(value) {
 }
 
 function safeColor(value) {
-    return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : '#eaf6ee';
+    return /^#[0-9a-f]{6}$/i.test(String(value)) ? value : '#ede9e4';
 }
 
 function ensureProductModal() {
@@ -125,18 +125,21 @@ async function showProductModal(slug, trigger) {
         const image = product.image_url
             ? `<img src="${product.image_url}" alt="${product.name}">`
             : '<span class="product-modal-placeholder"><i data-lucide="image"></i></span>';
+        const variants = Array.isArray(product.variants) ? product.variants : [];
+        const variantPicker = variantPickerMarkup(variants, 'variant-picker-modal');
         content.innerHTML = `
-            <div class="product-modal-media">${image}${product.is_seasonal ? '<span class="seasonal-badge"><i data-lucide="sparkles"></i>Stagionale</span>' : ''}</div>
+            <div class="product-modal-media">${image}${product.is_seasonal ? '<span class="seasonal-badge"><i data-lucide="sparkles"></i>Novità</span>' : ''}</div>
             <div class="product-modal-copy">
                 <span class="eyebrow">${product.category?.name || 'Catalogo'}</span>
                 <h2 id="product-modal-title">${product.name}</h2>
-                <p>${product.description || 'Prodotto selezionato da Il Paradiso della Frutta.'}</p>
-                <div class="product-modal-facts"><span><i data-lucide="scale"></i>Venduto al kg</span><span><i data-lucide="badge-check"></i>Qualità selezionata</span></div>
-                <div class="product-modal-price"><div class="product-price-summary"><strong>${price}<small>/kg</small></strong><span class="product-total-preview" aria-live="polite">Totale: ${total}</span></div>${product.has_personalized_price ? '<span class="badge">Il tuo prezzo</span>' : ''}</div>
+                <p>${product.description || 'Un capo selezionato per completare il tuo stile.'}</p>
+                <div class="product-modal-facts"><span><i data-lucide="shirt"></i>Moda uomo</span><span><i data-lucide="badge-check"></i>Selezione Cerino</span></div>
+                <div class="product-modal-price"><div class="product-price-summary"><strong>${price}<small>/${unit}</small></strong><span class="product-total-preview" aria-live="polite">Totale: ${total}</span></div>${product.has_personalized_price ? '<span class="badge">Il tuo prezzo</span>' : ''}</div>
                 <div class="product-modal-purchase">
-                    <label>Quantità in kg</label>
+                    ${variantPicker}
+                    <label>Quantità</label>
                     <div class="product-modal-controls">
-                        <div class="quantity-stepper" aria-label="Quantità in chilogrammi"><button class="qty-step" type="button" data-step="-1" aria-label="Diminuisci quantità"><i data-lucide="minus"></i></button><input class="card-quantity" type="number" step="1" inputmode="decimal" value="1" aria-label="Quantità in kg"><button class="qty-step" type="button" data-step="1" aria-label="Aumenta quantità"><i data-lucide="plus"></i></button></div>
+                        <div class="quantity-stepper" aria-label="Quantità"><button class="qty-step" type="button" data-step="-1" aria-label="Diminuisci quantità"><i data-lucide="minus"></i></button><input class="card-quantity" type="number" step="1" inputmode="numeric" value="1" aria-label="Quantità"><button class="qty-step" type="button" data-step="1" aria-label="Aumenta quantità"><i data-lucide="plus"></i></button></div>
                         <button class="add-cart catalog-add-button" type="button" data-id="${product.id}" data-name="${product.name}" data-slug="${product.slug}" data-price="${product.price_per_kg}" data-image="${product.image_url || ''}"><i data-lucide="shopping-cart"></i>Aggiungi al carrello</button>
                     </div>
                 </div>

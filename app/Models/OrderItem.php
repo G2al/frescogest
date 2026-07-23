@@ -10,7 +10,11 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'product_id',
+        'product_variant_id',
         'product_name',
+        'variant_sku',
+        'variant_size',
+        'variant_color',
         'quantity',
         'price_per_kg',
         'unit_price_net',
@@ -41,6 +45,11 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class)->withTrashed();
+    }
+
+    public function productVariant(): BelongsTo
+    {
+        return $this->belongsTo(ProductVariant::class);
     }
 
     protected function casts(): array

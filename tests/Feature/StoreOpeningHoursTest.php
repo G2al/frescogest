@@ -43,7 +43,7 @@ class StoreOpeningHoursTest extends TestCase
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-22 09:59:59', 'Europe/Rome'));
 
         $this->get('/')->assertRedirect('/index.html');
-        $this->get('/index.html')->assertOk()->assertSee('Catalogo prodotti');
+        $this->get('/index.html')->assertOk()->assertSee('The Cerino');
     }
 
     public function test_storefront_and_public_api_are_closed_during_the_configured_period(): void
@@ -57,7 +57,7 @@ class StoreOpeningHoursTest extends TestCase
             ->assertHeader('Cache-Control', 'must-revalidate, no-cache, no-store, private')
             ->assertSee('Il negozio è temporaneamente chiuso')
             ->assertSee('11:30')
-            ->assertSee('/assets/images/new-logo-primary.png', false)
+            ->assertSee('/assets/images/cerino-logo-primary.png', false)
             ->assertDontSee('__REOPENING_AT__')
             ->assertDontSee('__SERVER_TIME__');
 
@@ -83,7 +83,7 @@ class StoreOpeningHoursTest extends TestCase
     {
         CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-07-22 11:30:00', 'Europe/Rome'));
 
-        $this->get('/index.html')->assertOk()->assertSee('Catalogo prodotti');
+        $this->get('/index.html')->assertOk()->assertSee('The Cerino');
         $this->getJson('/api/v1/store/status')
             ->assertOk()
             ->assertJsonPath('data.is_closed', false)
