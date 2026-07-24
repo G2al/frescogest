@@ -67,6 +67,16 @@ class Product extends Model
         return $this->hasMany(CustomerProductPrice::class);
     }
 
+    public function partnerPrices(): HasMany
+    {
+        return $this->hasMany(PartnerProductPrice::class);
+    }
+
+    public function partnerGoodsEntries(): HasMany
+    {
+        return $this->hasMany(PartnerGoodsEntry::class);
+    }
+
     public function scopePublicCatalog(Builder $query): Builder
     {
         return $query

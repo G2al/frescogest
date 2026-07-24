@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             CommercialRuleSeeder::class,
             StoreClosureScheduleSeeder::class,
             ProductSeeder::class,
+            PartnerSeeder::class,
             CostCategorySeeder::class,
             CustomerPriceListSeeder::class,
         ]);

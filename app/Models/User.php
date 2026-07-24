@@ -24,6 +24,9 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'active',
+        'can_access_panel',
+        'panel_role',
     ];
 
     /**
@@ -38,14 +41,25 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $panel->getId() === 'admin'
-            && $this->active
-            && $this->can_access_panel;
+        if (! $this->active || ! $this->can_access_panel) {
+            return false;
+        }
+
+        return match ($panel->getId()) {
+            'admin' => in_array($this->panel_role, [null, 'admin'], true),
+            'partner' => $this->panel_role === 'partner' && $this->partner?->active === true,
+            default => false,
+        };
     }
 
     public function customer(): HasOne
     {
         return $this->hasOne(Customer::class);
+    }
+
+    public function partner(): HasOne
+    {
+        return $this->hasOne(Partner::class);
     }
 
     /**

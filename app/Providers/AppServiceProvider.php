@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Http\Controllers\Admin\LogoutController as AdminLogoutController;
 use App\Models\Customer;
+use App\Models\Partner;
 use App\Models\Product;
 use App\Models\User;
 use App\Observers\CustomerObserver;
+use App\Observers\PartnerObserver;
 use App\Observers\ProductObserver;
 use Filament\Auth\Http\Controllers\LogoutController;
 use Illuminate\Auth\Notifications\ResetPassword;
@@ -31,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Customer::observe(CustomerObserver::class);
+        Partner::observe(PartnerObserver::class);
         Product::observe(ProductObserver::class);
 
         ResetPassword::createUrlUsing(fn (User $user, string $token): string => url('/reset-password.html').'?'.http_build_query([

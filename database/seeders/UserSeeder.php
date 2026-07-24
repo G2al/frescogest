@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
             'active' => true,
             'can_access_panel' => true,
+            'panel_role' => 'admin',
         ])->save();
     }
 }
