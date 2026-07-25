@@ -103,7 +103,7 @@ class RegistryStructureTest extends TestCase
         $this->assertSame('warning', OrderResource::getNavigationBadgeColor());
     }
 
-    public function test_orders_page_handles_orders_linked_to_soft_deleted_customers(): void
+    public function test_orders_page_remains_available_after_a_customer_is_permanently_deleted(): void
     {
         $admin = User::factory()->create([
             'active' => true,
@@ -121,6 +121,9 @@ class RegistryStructureTest extends TestCase
         ]);
 
         $customer->delete();
+
+        $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
+        $this->assertDatabaseMissing('orders', ['customer_id' => $customer->id]);
 
         $this->actingAs($admin, 'admin')
             ->get(OrderResource::getUrl('index'))

@@ -5,13 +5,10 @@ namespace App\Filament\Resources\ProductCategories\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 
 class ProductCategoriesTable
@@ -52,8 +49,6 @@ class ProductCategoriesTable
                     ->placeholder('Tutte')
                     ->trueLabel('Attive')
                     ->falseLabel('Non attive'),
-                TrashedFilter::make()
-                    ->label('Eliminate'),
             ])
             ->defaultSort('name')
             ->recordActions([
@@ -61,9 +56,11 @@ class ProductCategoriesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Elimina definitivamente')
+                        ->modalHeading('Eliminare definitivamente le categorie selezionate?')
+                        ->modalDescription('Verranno eliminati definitivamente anche tutti i prodotti appartenenti alle categorie.')
+                        ->modalSubmitActionLabel('Elimina definitivamente'),
                 ]),
             ]);
     }

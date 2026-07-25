@@ -6,7 +6,7 @@
     <title>Catalogo prodotti · Il Paradiso della Frutta</title>
     <meta name="description" content="Catalogo di frutta, verdura e prodotti freschi per privati e ristoratori.">
     <link rel="icon" type="image/png" href="/assets/images/icona-web.png">
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260722.4">
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260725.1">
 </head>
 <body class="catalog-page">
     <header id="site-header"></header>
@@ -78,6 +78,31 @@
             </div>
         </section>
 
+        <section class="promo-sticker-section catalog-container" aria-labelledby="promo-sticker-title">
+            <div class="promo-sticker-copy">
+                <span class="eyebrow">Una sorpresa per te</span>
+                <h2 id="promo-sticker-title">Tira lo sticker e scopri il tuo codice promo</h2>
+                <p>Trascina un bordo fino a staccarlo completamente. Troverai un vantaggio riservato da comunicare ad Antonio quando invii l'ordine su WhatsApp.</p>
+                <div class="promo-sticker-instructions">
+                    <span><i data-lucide="mouse-pointer-2"></i>Trascina da un bordo</span>
+                    <span><i data-lucide="sparkles"></i>Scopri la sorpresa</span>
+                </div>
+            </div>
+            <div id="promo-sticker-stage" class="promo-sticker-stage">
+                <div id="promo-sticker-reward" class="promo-sticker-reward" aria-hidden="true">
+                    <span class="promo-reward-label">Codice sbloccato</span>
+                    <strong id="promo-code">PARADISO10</strong>
+                    <p>Comunicalo ad Antonio su WhatsApp per ricevere il vantaggio riservato.</p>
+                    <button id="copy-promo-code" type="button" disabled>
+                        <i data-lucide="copy"></i>
+                        <span>Copia il codice</span>
+                    </button>
+                </div>
+                <sticker-forge id="promo-sticker" aria-label="Sticker interattivo: trascina un bordo per scoprire il codice promozionale"></sticker-forge>
+                <p id="promo-sticker-status" class="promo-sticker-status" aria-live="polite">Afferra un bordo e tira</p>
+            </div>
+        </section>
+
         <section class="catalog-services catalog-container">
             <article><span class="service-icon"><i data-lucide="sprout"></i></span><div><h3>Prodotti freschi</h3><p>Selezionati ogni giorno per qualità e genuinità.</p></div></article>
             <article><span class="service-icon"><i data-lucide="truck"></i></span><div><h3>Consegna concordata</h3><p>Organizziamo con te tempi e dettagli della consegna.</p></div></article>
@@ -88,5 +113,6 @@
     <footer id="site-footer" class="footer"></footer>
     <script type="module" src="/assets/js/catalog.js?v=20260722.5"></script>
     <script type="module" src="/assets/js/cart.js?v=20260722.5"></script>
+    <script type="module" src="/assets/js/promo-sticker.js?v=20260725.1"></script>
 </body>
 </html>

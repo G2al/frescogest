@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Customer extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'company_name',
@@ -66,5 +65,20 @@ class Customer extends Model
             'type' => CustomerType::class,
             'global_discount_percentage' => 'decimal:2',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::deleted(function (Customer $customer): void {
+            if ($customer->user_id === null) {
+                return;
+            }
+
+            User::query()
+                ->whereKey($customer->user_id)
+                ->where('can_access_panel', false)
+                ->whereDoesntHave('partner')
+                ->delete();
+        });
     }
 }

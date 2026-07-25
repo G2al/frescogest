@@ -6,13 +6,10 @@ use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -76,8 +73,6 @@ class ProductsTable
                     ->relationship('productCategory', 'name')
                     ->searchable()
                     ->preload(),
-                TrashedFilter::make()
-                    ->label('Eliminati'),
             ])
             ->paginationPageOptions([10, 25, 50, 100, 'all'])
             ->defaultPaginationPageOption('all')
@@ -101,9 +96,11 @@ class ProductsTable
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['active' => false]))
                         ->deselectRecordsAfterCompletion(),
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Elimina definitivamente')
+                        ->modalHeading('Eliminare definitivamente i prodotti selezionati?')
+                        ->modalDescription('I prodotti verranno rimossi dal database. Lo storico degli ordini manterrà i dati già registrati.')
+                        ->modalSubmitActionLabel('Elimina definitivamente'),
                 ]),
             ]);
     }

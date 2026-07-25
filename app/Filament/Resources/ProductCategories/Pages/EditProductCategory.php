@@ -4,8 +4,6 @@ namespace App\Filament\Resources\ProductCategories\Pages;
 
 use App\Filament\Resources\ProductCategories\ProductCategoryResource;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditProductCategory extends EditRecord
@@ -15,9 +13,11 @@ class EditProductCategory extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            DeleteAction::make()
+                ->label('Elimina definitivamente')
+                ->modalHeading('Eliminare definitivamente la categoria?')
+                ->modalDescription('Verranno eliminati definitivamente anche tutti i prodotti appartenenti alla categoria.')
+                ->modalSubmitActionLabel('Elimina definitivamente'),
         ];
     }
 }

@@ -85,10 +85,10 @@ class ProductSeeder extends Seeder
             $code = 'IPF-PDF-'.strtoupper(substr(sha1($name.'|'.$unit.'|'.$minimum), 0, 8));
             $description = $package === null ? $name.'.' : $name.'. '.$package.'.';
 
-            $product = Product::withTrashed()->where('code', $code)->first();
+            $product = Product::query()->where('code', $code)->first();
 
             if (! $product && $aliases !== []) {
-                $product = Product::withTrashed()->whereIn('name', [$name, ...$aliases])->orderBy('id')->first();
+                $product = Product::query()->whereIn('name', [$name, ...$aliases])->orderBy('id')->first();
             }
 
             $attributes = [
@@ -116,7 +116,6 @@ class ProductSeeder extends Seeder
             ];
 
             if ($product) {
-                $product->restore();
                 $product->fill($attributes)->save();
             } else {
                 $product = Product::query()->create(['code' => $code, ...$attributes]);
