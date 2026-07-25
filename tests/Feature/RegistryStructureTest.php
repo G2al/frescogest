@@ -103,6 +103,30 @@ class RegistryStructureTest extends TestCase
         $this->assertSame('warning', OrderResource::getNavigationBadgeColor());
     }
 
+    public function test_orders_page_handles_orders_linked_to_soft_deleted_customers(): void
+    {
+        $admin = User::factory()->create([
+            'active' => true,
+            'can_access_panel' => true,
+        ]);
+        $customer = Customer::factory()->create([
+            'phone' => '+39 333 123 4567',
+        ]);
+
+        Order::create([
+            'order_number' => 'IPF-000001',
+            'customer_id' => $customer->id,
+            'status' => OrderStatus::WhatsAppPending,
+            'requested_at' => now(),
+        ]);
+
+        $customer->delete();
+
+        $this->actingAs($admin, 'admin')
+            ->get(OrderResource::getUrl('index'))
+            ->assertOk();
+    }
+
     public function test_pending_order_poller_updates_without_reloading_the_panel(): void
     {
         $customer = Customer::factory()->create();

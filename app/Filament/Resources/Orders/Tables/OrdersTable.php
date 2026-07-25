@@ -29,6 +29,7 @@ class OrdersTable
                 TextColumn::make('order_number')->label('Numero')->searchable()->sortable(),
                 TextColumn::make('customer.display_name')
                     ->label('Cliente')
+                    ->placeholder('Cliente eliminato')
                     ->searchable(['company_name', 'first_name', 'last_name']),
                 TextColumn::make('status')
                     ->label('Stato')
@@ -81,9 +82,9 @@ class OrdersTable
                     ->iconButton()
                     ->tooltip('Apri WhatsApp')
                     ->color('success')
-                    ->url(fn (Order $record): string => 'https://wa.me/'.preg_replace('/\D+/', '', (string) $record->customer->phone))
+                    ->url(fn (Order $record): string => 'https://wa.me/'.preg_replace('/\D+/', '', (string) $record->customer?->phone))
                     ->openUrlInNewTab()
-                    ->visible(fn (Order $record): bool => filled($record->customer->phone)),
+                    ->visible(fn (Order $record): bool => filled($record->customer?->phone)),
                 EditAction::make()
                     ->iconButton()
                     ->tooltip('Modifica ordine'),
