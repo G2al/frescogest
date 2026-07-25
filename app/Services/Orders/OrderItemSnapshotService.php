@@ -29,7 +29,31 @@ class OrderItemSnapshotService
             ]);
         }
 
-        $unitPrice = $pricing['price'];
+        return $this->snapshot($data, $order, $product, $pricing['price']);
+    }
+
+    public function enrichManual(array $data, Order $order): array
+    {
+        $product = Product::query()
+            ->with(['taxRate', 'defaultUnitOfMeasure'])
+            ->findOrFail($data['product_id']);
+        $unitPrice = $data['unit_price_net'] ?? $this->pricing->details($product, $order->customer)['price'];
+
+        if ((float) $data['quantity'] <= 0 || (float) $unitPrice < 0) {
+            throw ValidationException::withMessages([
+                'items' => "Controlla quantità e prezzo di {$product->name}.",
+            ]);
+        }
+
+        return $this->snapshot($data, $order, $product, $unitPrice);
+    }
+
+    private function snapshot(
+        array $data,
+        Order $order,
+        Product $product,
+        string|int|float $unitPrice,
+    ): array {
         $originalLineNet = $this->calculator->lineTotal($unitPrice, $data['quantity']);
         $discountPercentage = (float) ($order->discount_percentage ?? 0);
         $lineNet = $this->calculator->discountedPrice($originalLineNet, $discountPercentage);
