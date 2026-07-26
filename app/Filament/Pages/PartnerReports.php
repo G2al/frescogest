@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Partner;
 use App\Services\Partners\PartnerReportService;
+use App\Services\Reports\TrendService;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Pages\Page;
@@ -61,6 +62,32 @@ class PartnerReports extends Page
         return $from->format('d/m/Y').' – '.$to->format('d/m/Y');
     }
 
+    public function trends(): array
+    {
+        $partner = Partner::query()->find($this->partnerId);
+
+        if (! $partner) {
+            return [];
+        }
+
+        [$from, $to] = $this->range();
+        [$previousFrom, $previousTo] = $this->previousRange($from, $to);
+        $current = app(PartnerReportService::class)->build($partner, $from, $to)['summary'];
+        $previous = app(PartnerReportService::class)->build($partner, $previousFrom, $previousTo)['summary'];
+        $lowerIsBetter = ['purchases_gross', 'waste_amount', 'expense_amount'];
+
+        return collect($current)
+            ->only(['purchases_gross', 'revenue_gross', 'waste_amount', 'expense_amount', 'estimated_result'])
+            ->mapWithKeys(fn ($value, string $key): array => [
+                $key => app(TrendService::class)->compare(
+                    (float) $value,
+                    (float) ($previous[$key] ?? 0),
+                    in_array($key, $lowerIsBetter, true),
+                ),
+            ])
+            ->all();
+    }
+
     private function range(): array
     {
         $date = CarbonImmutable::parse($this->referenceDate ?: now()->toDateString());
@@ -68,6 +95,13 @@ class PartnerReports extends Page
         return $this->period === 'week'
             ? [$date->startOfWeek(), $date->endOfWeek()]
             : [$date->startOfMonth(), $date->endOfMonth()];
+    }
+
+    private function previousRange(CarbonImmutable $from, CarbonImmutable $to): array
+    {
+        return $this->period === 'week'
+            ? [$from->subWeek(), $to->subWeek()]
+            : [$from->subMonthNoOverflow()->startOfMonth(), $from->subMonthNoOverflow()->endOfMonth()];
     }
 
     private function emptyReport(): array

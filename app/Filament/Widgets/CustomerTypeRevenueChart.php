@@ -5,13 +5,14 @@ namespace App\Filament\Widgets;
 use App\Enums\CustomerType;
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\PartnerGoodsEntry;
 use Filament\Widgets\ChartWidget;
 
 class CustomerTypeRevenueChart extends ChartWidget
 {
     protected ?string $heading = 'Ricavi per tipologia cliente';
 
-    protected ?string $description = 'Totali IVA inclusa degli ultimi sei mesi, distinti tra privati e ristoratori.';
+    protected ?string $description = 'Totali IVA inclusa degli ultimi sei mesi, distinti tra privati, ristoratori e partner.';
 
     protected int|string|array $columnSpan = 'full';
 
@@ -34,7 +35,14 @@ class CustomerTypeRevenueChart extends ChartWidget
                 'data' => $data,
                 'backgroundColor' => $type === CustomerType::Private ? '#16a34a' : '#2563eb',
             ];
-        });
+        })->push([
+            'label' => 'Partner',
+            'data' => $periods->map(fn ($period): float => (float) PartnerGoodsEntry::query()
+                ->whereYear('delivered_on', $period->year)
+                ->whereMonth('delivered_on', $period->month)
+                ->sum('total_gross')),
+            'backgroundColor' => '#d88311',
+        ]);
 
         return [
             'datasets' => $datasets->all(),

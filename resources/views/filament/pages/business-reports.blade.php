@@ -1,19 +1,21 @@
 <x-filament-panels::page>
     @php
         $summary = $this->summary();
+        $trends = $this->trends();
+        $activityDescription = 'Ordini pagati: '.$summary['ordersCount'].' · Forniture partner: '.$summary['partnerSuppliesCount'];
         $cards = [
-            ['Ricavi netti', $summary['revenue'], 'Ordini pagati: '.$summary['ordersCount'], 'heroicon-o-banknotes', 'is-green'],
-            ['Ricavi IVA inclusa', $summary['grossRevenue'], 'Totale realmente incassato', 'heroicon-o-currency-euro', 'is-green'],
-            ['IVA sulle vendite', $summary['tax'], 'IVA complessiva del periodo', 'heroicon-o-receipt-percent', 'is-red'],
-            ['IVA sugli acquisti', $summary['purchaseTax'], 'IVA compresa nei costi della merce', 'heroicon-o-arrow-down-tray', 'is-blue'],
-            ['Saldo IVA', $summary['vatBalance'], 'IVA vendite meno IVA acquisti', 'heroicon-o-scale', $summary['vatBalance'] >= 0 ? 'is-amber' : 'is-green'],
-            ['Sconti concessi', $summary['discounts'], 'Riduzione netta applicata in bolla', 'heroicon-o-tag', 'is-violet'],
-            ['Food cost netto', $summary['costOfGoods'], 'Costo della merce venduta', 'heroicon-o-shopping-bag', 'is-blue'],
-            ['Margine lordo', $summary['grossMargin'], number_format($summary['marginPercentage'], 1, ',', '.').'% sui ricavi', 'heroicon-o-arrow-trending-up', 'is-amber'],
-            ['Costi extra', $summary['extraCosts'], 'Movimenti registrati nel mese', 'heroicon-o-receipt-percent', 'is-violet'],
-            ['Costo del personale', $summary['personnelCosts'], 'Paghe giornaliere e mensili del periodo', 'heroicon-o-identification', 'is-blue'],
-            ['Costi operativi', $summary['operatingCosts'], 'Costi extra e costo del personale', 'heroicon-o-calculator', 'is-violet'],
-            ['Risultato reale', $summary['netResult'], 'Margine al netto di tutti i costi operativi', 'heroicon-o-scale', $summary['netResult'] >= 0 ? 'is-green' : 'is-red'],
+            ['revenue', 'Ricavi netti', $summary['revenue'], $activityDescription, 'heroicon-o-banknotes', 'is-green'],
+            ['grossRevenue', 'Ricavi IVA inclusa', $summary['grossRevenue'], 'Totale realmente incassato', 'heroicon-o-currency-euro', 'is-teal'],
+            ['tax', 'IVA sulle vendite', $summary['tax'], 'IVA complessiva del periodo', 'heroicon-o-receipt-percent', 'is-red'],
+            ['purchaseTax', 'IVA sugli acquisti', $summary['purchaseTax'], 'IVA compresa nei costi della merce', 'heroicon-o-arrow-down-tray', 'is-blue'],
+            ['vatBalance', 'Saldo IVA', $summary['vatBalance'], 'IVA vendite meno IVA acquisti', 'heroicon-o-scale', $summary['vatBalance'] >= 0 ? 'is-amber' : 'is-green'],
+            ['discounts', 'Sconti concessi', $summary['discounts'], 'Riduzione netta applicata in bolla', 'heroicon-o-tag', 'is-pink'],
+            ['costOfGoods', 'Food cost netto', $summary['costOfGoods'], 'Costo della merce venduta', 'heroicon-o-shopping-bag', 'is-cyan'],
+            ['grossMargin', 'Margine lordo', $summary['grossMargin'], number_format($summary['marginPercentage'], 1, ',', '.').'% sui ricavi', 'heroicon-o-arrow-trending-up', 'is-orange'],
+            ['extraCosts', 'Costi extra', $summary['extraCosts'], 'Movimenti registrati nel mese', 'heroicon-o-receipt-percent', 'is-violet'],
+            ['personnelCosts', 'Costo del personale', $summary['personnelCosts'], 'Paghe giornaliere e mensili del periodo', 'heroicon-o-identification', 'is-indigo'],
+            ['operatingCosts', 'Costi operativi', $summary['operatingCosts'], 'Costi extra e costo del personale', 'heroicon-o-calculator', 'is-slate'],
+            ['netResult', 'Risultato reale', $summary['netResult'], 'Margine al netto di tutti i costi operativi', 'heroicon-o-scale', $summary['netResult'] >= 0 ? 'is-green' : 'is-red'],
         ];
         $products = $this->products();
         $categories = $this->categories();
@@ -29,7 +31,7 @@
                 </span>
                 <div>
                     <h2>Periodo di analisi</h2>
-                    <p>Il report considera esclusivamente gli ordini pagati nel mese selezionato.</p>
+                    <p>Confronta ordini pagati e forniture ai partner senza duplicare gli incassi dei partner.</p>
                 </div>
             </div>
 
@@ -78,7 +80,8 @@
         </section>
 
         <section class="business-report-cards" aria-label="Riepilogo economico">
-            @foreach ($cards as [$label, $value, $description, $icon, $tone])
+            @foreach ($cards as [$key, $label, $value, $description, $icon, $tone])
+                @php($trend = $trends[$key])
                 <article class="business-report-card {{ $tone }}">
                     <span class="business-report-card-icon">
                         <x-dynamic-component :component="$icon" />
@@ -87,13 +90,26 @@
                         <span class="business-report-card-label">{{ $label }}</span>
                         <strong class="business-report-card-value">€ {{ number_format($value, 2, ',', '.') }}</strong>
                         <span class="business-report-card-description">{{ $description }}</span>
+                        <span
+                            class="business-report-trend {{ $trend['direction'] === 'flat' ? 'is-flat' : ($trend['favorable'] ? 'is-positive' : 'is-negative') }}"
+                            title="{{ $trend['direction'] === 'flat' ? 'Andamento stabile' : ($trend['favorable'] ? 'Andamento favorevole' : 'Andamento sfavorevole') }}"
+                            aria-label="{{ $trend['direction'] === 'flat' ? 'Andamento stabile' : ($trend['favorable'] ? 'Andamento favorevole' : 'Andamento sfavorevole') }}"
+                        >
+                            @if ($trend['direction'] === 'flat')
+                                <x-heroicon-m-minus />
+                            @elseif ($trend['favorable'])
+                                <x-heroicon-m-arrow-trending-up />
+                            @else
+                                <x-heroicon-m-arrow-trending-down />
+                            @endif
+                        </span>
                     </div>
                 </article>
             @endforeach
         </section>
 
         <div class="business-report-grid">
-            <section class="business-report-section is-wide">
+            <section class="business-report-section is-wide is-tax">
                 <header class="business-report-section-heading">
                     <span class="business-report-section-icon"><x-heroicon-o-receipt-percent /></span>
                     <div><h2>Riepilogo IVA</h2><p>IVA sulle vendite, IVA compresa negli acquisti e relativo saldo, suddivisi per aliquota.</p></div>
@@ -111,7 +127,7 @@
                     </table>
                 </div>
             </section>
-            <section class="business-report-section is-wide">
+            <section class="business-report-section is-wide is-product">
                 <header class="business-report-section-heading">
                     <span class="business-report-section-icon"><x-heroicon-o-cube /></span>
                     <div>
@@ -150,7 +166,7 @@
                 </div>
             </section>
 
-            <section class="business-report-section">
+            <section class="business-report-section is-category">
                 <header class="business-report-section-heading">
                     <span class="business-report-section-icon"><x-heroicon-o-tag /></span>
                     <div>
@@ -184,20 +200,21 @@
                 </div>
             </section>
 
-            <section class="business-report-section">
+            <section class="business-report-section is-recipient">
                 <header class="business-report-section-heading">
                     <span class="business-report-section-icon"><x-heroicon-o-users /></span>
                     <div>
-                        <h2>Forniture per cliente</h2>
-                        <p>Clienti ordinati per valore delle forniture pagate.</p>
+                        <h2>Forniture per destinatario</h2>
+                        <p>Clienti e partner ordinati per valore delle forniture registrate.</p>
                     </div>
                 </header>
                 <div class="business-report-table-wrap">
                     <table class="business-report-table">
                         <thead>
                             <tr>
-                                <th>Cliente</th>
-                                <th class="is-number">Ordini</th>
+                                <th>Destinatario</th>
+                                <th>Tipo</th>
+                                <th class="is-number">Movimenti</th>
                                 <th class="is-number">Ricavi</th>
                                 <th class="is-number">Margine</th>
                             </tr>
@@ -205,13 +222,14 @@
                         <tbody>
                             @forelse ($customers as $row)
                                 <tr>
-                                    <td class="is-name">{{ $row->company_name ?: trim($row->first_name.' '.$row->last_name) }}</td>
+                                    <td class="is-name">{{ $row->display_name }}</td>
+                                    <td><span class="business-report-source">{{ $row->recipient_type }}</span></td>
                                     <td class="is-number">{{ $row->orders_count }}</td>
                                     <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
                                     <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
                                 </tr>
                             @empty
-                                <tr><td colspan="4" class="business-report-empty">Nessuna fornitura disponibile nel periodo.</td></tr>
+                                <tr><td colspan="5" class="business-report-empty">Nessuna fornitura disponibile nel periodo.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

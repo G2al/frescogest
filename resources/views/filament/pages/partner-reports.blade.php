@@ -2,6 +2,7 @@
     @php
         $report = $this->report();
         $summary = $report['summary'];
+        $trends = $this->trends();
         $money = fn ($value) => '€ '.number_format((float) $value, 2, ',', '.');
     @endphp
 
@@ -38,25 +39,39 @@
 
         <section class="business-report-cards">
             @foreach ([
-                ['Merce acquistata', $summary['purchases_gross'], 'IVA inclusa', 'heroicon-o-shopping-cart', 'is-blue'],
-                ['Incassi registrati', $summary['revenue_gross'], 'Importi giornalieri lordi', 'heroicon-o-banknotes', 'is-green'],
-                ['Scarti', $summary['waste_amount'], 'Perdita registrata', 'heroicon-o-trash', 'is-red'],
-                ['Spese', $summary['expense_amount'], 'Costi aggiuntivi', 'heroicon-o-receipt-percent', 'is-violet'],
-                ['Risultato stimato', $summary['estimated_result'], number_format($summary['estimated_margin_percentage'], 1, ',', '.').'% sugli incassi', 'heroicon-o-chart-bar', $summary['estimated_result'] >= 0 ? 'is-green' : 'is-red'],
-            ] as [$label, $value, $description, $icon, $tone])
+                ['purchases_gross', 'Merce acquistata', $summary['purchases_gross'], 'IVA inclusa', 'heroicon-o-shopping-cart', 'is-blue'],
+                ['revenue_gross', 'Incassi registrati', $summary['revenue_gross'], 'Importi giornalieri lordi', 'heroicon-o-banknotes', 'is-green'],
+                ['waste_amount', 'Scarti', $summary['waste_amount'], 'Perdita registrata', 'heroicon-o-trash', 'is-red'],
+                ['expense_amount', 'Spese', $summary['expense_amount'], 'Costi aggiuntivi', 'heroicon-o-receipt-percent', 'is-violet'],
+                ['estimated_result', 'Risultato stimato', $summary['estimated_result'], number_format($summary['estimated_margin_percentage'], 1, ',', '.').'% sugli incassi', 'heroicon-o-chart-bar', $summary['estimated_result'] >= 0 ? 'is-green' : 'is-red'],
+            ] as [$key, $label, $value, $description, $icon, $tone])
+                @php($trend = $trends[$key] ?? ['direction' => 'flat', 'percentage' => 0, 'favorable' => true])
                 <article class="business-report-card {{ $tone }}">
                     <span class="business-report-card-icon"><x-dynamic-component :component="$icon" /></span>
                     <div class="business-report-card-copy">
                         <span class="business-report-card-label">{{ $label }}</span>
                         <strong class="business-report-card-value">{{ $money($value) }}</strong>
                         <span class="business-report-card-description">{{ $description }}</span>
+                        <span
+                            class="business-report-trend {{ $trend['direction'] === 'flat' ? 'is-flat' : ($trend['favorable'] ? 'is-positive' : 'is-negative') }}"
+                            title="{{ $trend['direction'] === 'flat' ? 'Andamento stabile' : ($trend['favorable'] ? 'Andamento favorevole' : 'Andamento sfavorevole') }}"
+                            aria-label="{{ $trend['direction'] === 'flat' ? 'Andamento stabile' : ($trend['favorable'] ? 'Andamento favorevole' : 'Andamento sfavorevole') }}"
+                        >
+                            @if ($trend['direction'] === 'flat')
+                                <x-heroicon-m-minus />
+                            @elseif ($trend['favorable'])
+                                <x-heroicon-m-arrow-trending-up />
+                            @else
+                                <x-heroicon-m-arrow-trending-down />
+                            @endif
+                        </span>
                     </div>
                 </article>
             @endforeach
         </section>
 
         <div class="business-report-grid">
-            <section class="business-report-section is-wide">
+            <section class="business-report-section is-wide is-product">
                 <header class="business-report-section-heading">
                     <span class="business-report-section-icon"><x-heroicon-o-cube /></span>
                     <div><h2>Merce caricata per prodotto</h2><p>Valore effettivamente fornito da Antonio ad Angela.</p></div>
@@ -82,11 +97,11 @@
             </section>
 
             @foreach ([
-                ['Incassi giornalieri', $report['receipts'], 'receipt_date', 'gross_amount'],
-                ['Scarti giornalieri', $report['wastes'], 'waste_date', 'amount'],
-                ['Spese', $report['expenses'], 'expense_date', 'amount'],
-            ] as [$title, $rows, $dateField, $amountField])
-                <section class="business-report-section">
+                ['Incassi giornalieri', $report['receipts'], 'receipt_date', 'gross_amount', 'is-receipts'],
+                ['Scarti giornalieri', $report['wastes'], 'waste_date', 'amount', 'is-waste'],
+                ['Spese', $report['expenses'], 'expense_date', 'amount', 'is-expenses'],
+            ] as [$title, $rows, $dateField, $amountField, $tone])
+                <section class="business-report-section {{ $tone }}">
                     <header class="business-report-section-heading">
                         <span class="business-report-section-icon"><x-heroicon-o-calendar-days /></span>
                         <div><h2>{{ $title }}</h2><p>Movimenti inseriti nel periodo.</p></div>

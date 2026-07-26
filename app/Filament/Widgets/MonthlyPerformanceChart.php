@@ -5,6 +5,7 @@ namespace App\Filament\Widgets;
 use App\Enums\OrderStatus;
 use App\Models\CostMovement;
 use App\Models\Order;
+use App\Models\PartnerGoodsEntry;
 use App\Services\Employees\EmployeeCostService;
 use Filament\Widgets\ChartWidget;
 
@@ -12,7 +13,7 @@ class MonthlyPerformanceChart extends ChartWidget
 {
     protected ?string $heading = 'Andamento economico ultimi 12 mesi';
 
-    protected ?string $description = 'Confronto mensile tra ricavi netti, margine lordo e risultato dopo costi extra e personale.';
+    protected ?string $description = 'Ordini pagati e forniture partner: ricavi netti, margine lordo e risultato dopo tutti i costi.';
 
     protected int|string|array $columnSpan = 'full';
 
@@ -26,8 +27,11 @@ class MonthlyPerformanceChart extends ChartWidget
         $data = $periods->map(function ($period): array {
             $orders = Order::query()->where('status', OrderStatus::Paid)
                 ->whereYear('paid_at', $period->year)->whereMonth('paid_at', $period->month);
-            $revenue = (float) (clone $orders)->sum('total_net');
-            $costOfGoods = (float) (clone $orders)->sum('total_purchase_cost_net');
+            $partnerGoods = PartnerGoodsEntry::query()
+                ->whereYear('delivered_on', $period->year)
+                ->whereMonth('delivered_on', $period->month);
+            $revenue = (float) (clone $orders)->sum('total_net') + (float) (clone $partnerGoods)->sum('total_net');
+            $costOfGoods = (float) (clone $orders)->sum('total_purchase_cost_net') + (float) (clone $partnerGoods)->sum('total_cost_net');
             $extraCosts = (float) CostMovement::query()->whereYear('movement_date', $period->year)->whereMonth('movement_date', $period->month)->sum('amount');
             $personnelCosts = app(EmployeeCostService::class)->forMonth($period->year, $period->month);
 

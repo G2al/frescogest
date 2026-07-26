@@ -2,8 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Enums\CustomerType;
+use App\Enums\OrderStatus;
+use App\Filament\Pages\BusinessReports;
 use App\Models\Company;
+use App\Models\Customer;
 use App\Models\DeliveryDocument;
+use App\Models\Order;
 use App\Models\Partner;
 use App\Models\PartnerDailyReceipt;
 use App\Models\PartnerDailyWaste;
@@ -85,8 +90,53 @@ class PartnerManagementTest extends TestCase
         $this->assertSame('20.00', $entry->total_net);
         $this->assertSame('0.80', $entry->total_tax);
         $this->assertSame('20.80', $entry->total_gross);
+        $this->assertSame('1.0000', $entry->unit_cost_net);
+        $this->assertSame('10.00', $entry->total_cost_net);
+        $this->assertSame('10.40', $entry->total_cost_gross);
         $this->assertSame(33.2, $report['summary']['estimated_result']);
         $this->assertSame(55.33, $report['summary']['estimated_margin_percentage']);
+    }
+
+    public function test_general_report_can_include_or_isolate_partner_supplies(): void
+    {
+        [$partner, $product] = $this->partnerAndProduct();
+        $customer = Customer::factory()->create(['type' => CustomerType::Private]);
+        Order::create([
+            'customer_id' => $customer->id,
+            'order_number' => 'IPF-000001',
+            'status' => OrderStatus::Paid,
+            'requested_at' => now(),
+            'paid_at' => now(),
+            'total_net' => 10,
+            'total_tax' => 0.4,
+            'total_gross' => 10.4,
+            'total_purchase_cost_net' => 5,
+            'gross_margin' => 5,
+        ]);
+        PartnerGoodsEntry::create([
+            'partner_id' => $partner->id,
+            'product_id' => $product->id,
+            'delivered_on' => today(),
+            'quantity' => 2,
+            'unit_purchase_price_net' => 2,
+            'tax_percentage' => 4,
+        ]);
+
+        $page = app(BusinessReports::class);
+        $page->month = now()->format('Y-m');
+        $page->customerType = 'all';
+
+        $this->assertSame(14.0, $page->summary()['revenue']);
+        $this->assertSame(7.0, $page->summary()['costOfGoods']);
+        $this->assertSame(7.0, $page->summary()['grossMargin']);
+
+        $page->customerType = 'partners';
+        $this->assertSame(4.0, $page->summary()['revenue']);
+        $this->assertSame(2.0, $page->summary()['costOfGoods']);
+
+        $page->customerType = CustomerType::Private->value;
+        $this->assertSame(10.0, $page->summary()['revenue']);
+        $this->assertSame(5.0, $page->summary()['costOfGoods']);
     }
 
     public function test_partner_delivery_document_creates_the_document_and_goods_entries_together(): void
