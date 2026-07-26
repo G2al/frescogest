@@ -5,6 +5,130 @@
     object-fit: contain;
 }
 
+.fi-sidebar-nav {
+    gap: 1rem;
+    padding: 1.15rem 1rem 1.5rem;
+}
+
+.fi-sidebar-nav-groups {
+    gap: .8rem;
+    margin-inline: 0;
+}
+
+.fi-sidebar-group:has(> .fi-sidebar-group-btn) {
+    gap: .35rem;
+    padding: .45rem;
+    border: 1px solid color-mix(in srgb, var(--gray-300) 72%, transparent);
+    border-radius: .9rem;
+    background: color-mix(in srgb, var(--gray-50) 78%, transparent);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .025);
+    transition: border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+
+.fi-sidebar-group > .fi-sidebar-group-btn {
+    min-height: 2.45rem;
+    gap: .65rem;
+    padding: .5rem .65rem;
+    border-radius: .65rem;
+}
+
+.fi-sidebar-group-label {
+    color: var(--gray-600);
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .095em;
+    line-height: 1.15rem;
+    text-transform: uppercase;
+}
+
+.fi-sidebar-group-collapse-btn {
+    width: 1.75rem;
+    height: 1.75rem;
+}
+
+.fi-sidebar-group-items {
+    gap: .2rem;
+}
+
+.fi-sidebar-item-btn {
+    min-height: 2.65rem;
+    padding: .58rem .7rem;
+    border: 1px solid transparent;
+    border-radius: .68rem;
+}
+
+.fi-sidebar-item-label {
+    font-weight: 600;
+}
+
+.fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active) > .fi-sidebar-item-btn:hover,
+.fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active) > .fi-sidebar-item-btn:focus-visible {
+    border-color: color-mix(in srgb, var(--gray-300) 65%, transparent);
+    background: color-mix(in srgb, var(--gray-100) 78%, transparent);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    border-color: color-mix(in srgb, var(--primary-500) 34%, transparent);
+    background: color-mix(in srgb, var(--primary-50) 88%, white);
+    box-shadow: inset 3px 0 0 var(--primary-600), 0 4px 12px rgba(15, 118, 94, .07);
+}
+
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label {
+    font-weight: 750;
+}
+
+.fi-sidebar-group.fi-active:has(> .fi-sidebar-group-btn) {
+    border-color: color-mix(in srgb, var(--primary-500) 34%, var(--gray-200));
+    background: color-mix(in srgb, var(--primary-50) 48%, white);
+    box-shadow: 0 7px 20px rgba(15, 118, 94, .07);
+}
+
+.fi-sidebar-group.fi-active > .fi-sidebar-group-btn {
+    background: color-mix(in srgb, var(--primary-100) 60%, transparent);
+}
+
+.fi-sidebar-group.fi-active > .fi-sidebar-group-btn .fi-sidebar-group-label,
+.fi-sidebar-group.fi-active > .fi-sidebar-group-btn > .fi-icon {
+    color: var(--primary-700);
+}
+
+.dark .fi-sidebar-group:has(> .fi-sidebar-group-btn) {
+    border-color: rgba(255, 255, 255, .085);
+    background: rgba(255, 255, 255, .025);
+    box-shadow: none;
+}
+
+.dark .fi-sidebar-group-label {
+    color: var(--gray-400);
+}
+
+.dark .fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active) > .fi-sidebar-item-btn:hover,
+.dark .fi-sidebar-item.fi-sidebar-item-has-url:not(.fi-active) > .fi-sidebar-item-btn:focus-visible {
+    border-color: rgba(255, 255, 255, .09);
+    background: rgba(255, 255, 255, .055);
+}
+
+.dark .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    border-color: color-mix(in srgb, var(--primary-400) 32%, transparent);
+    background: color-mix(in srgb, var(--primary-500) 15%, transparent);
+    box-shadow: inset 3px 0 0 var(--primary-400), 0 5px 16px rgba(0, 0, 0, .14);
+}
+
+.dark .fi-sidebar-group.fi-active:has(> .fi-sidebar-group-btn) {
+    border-color: color-mix(in srgb, var(--primary-400) 28%, rgba(255, 255, 255, .08));
+    background: color-mix(in srgb, var(--primary-500) 7%, rgba(255, 255, 255, .025));
+    box-shadow: 0 8px 22px rgba(0, 0, 0, .13);
+}
+
+.dark .fi-sidebar-group.fi-active > .fi-sidebar-group-btn {
+    background: color-mix(in srgb, var(--primary-500) 13%, transparent);
+}
+
+.dark .fi-sidebar-group.fi-active > .fi-sidebar-group-btn .fi-sidebar-group-label,
+.dark .fi-sidebar-group.fi-active > .fi-sidebar-group-btn > .fi-icon {
+    color: var(--primary-300);
+}
+
 .business-report {
     --br-primary: #009b72;
     --br-primary-soft: #eaf9f3;
