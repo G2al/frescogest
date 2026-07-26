@@ -5,13 +5,14 @@ namespace App\Filament\Widgets;
 use App\Enums\OrderStatus;
 use App\Models\CostMovement;
 use App\Models\Order;
+use App\Services\Employees\EmployeeCostService;
 use Filament\Widgets\ChartWidget;
 
 class MonthlyPerformanceChart extends ChartWidget
 {
     protected ?string $heading = 'Andamento economico ultimi 12 mesi';
 
-    protected ?string $description = 'Confronto mensile tra ricavi netti, margine lordo e risultato dopo i costi extra.';
+    protected ?string $description = 'Confronto mensile tra ricavi netti, margine lordo e risultato dopo costi extra e personale.';
 
     protected int|string|array $columnSpan = 'full';
 
@@ -28,8 +29,9 @@ class MonthlyPerformanceChart extends ChartWidget
             $revenue = (float) (clone $orders)->sum('total_net');
             $costOfGoods = (float) (clone $orders)->sum('total_purchase_cost_net');
             $extraCosts = (float) CostMovement::query()->whereYear('movement_date', $period->year)->whereMonth('movement_date', $period->month)->sum('amount');
+            $personnelCosts = app(EmployeeCostService::class)->forMonth($period->year, $period->month);
 
-            return ['revenue' => $revenue, 'margin' => $revenue - $costOfGoods, 'result' => $revenue - $costOfGoods - $extraCosts];
+            return ['revenue' => $revenue, 'margin' => $revenue - $costOfGoods, 'result' => $revenue - $costOfGoods - $extraCosts - $personnelCosts];
         });
 
         return [

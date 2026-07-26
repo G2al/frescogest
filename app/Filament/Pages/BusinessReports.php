@@ -7,6 +7,7 @@ use App\Enums\OrderStatus;
 use App\Models\CostMovement;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Services\Employees\EmployeeCostService;
 use BackedEnum;
 use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
@@ -48,11 +49,13 @@ class BusinessReports extends Page
         $discounts = (float) (clone $orders)->sum('discount_amount_net');
         $costOfGoods = (float) (clone $orders)->sum('total_purchase_cost_net');
         $extraCosts = (float) CostMovement::query()->whereYear('movement_date', $year)->whereMonth('movement_date', $month)->sum('amount');
+        $personnelCosts = app(EmployeeCostService::class)->forMonth($year, $month);
+        $operatingCosts = $extraCosts + $personnelCosts;
         $grossMargin = $revenue - $costOfGoods;
 
-        return compact('revenue', 'grossRevenue', 'tax', 'purchaseTax', 'discounts', 'costOfGoods', 'extraCosts', 'grossMargin') + [
+        return compact('revenue', 'grossRevenue', 'tax', 'purchaseTax', 'discounts', 'costOfGoods', 'extraCosts', 'personnelCosts', 'operatingCosts', 'grossMargin') + [
             'vatBalance' => $tax - $purchaseTax,
-            'netResult' => $grossMargin - $extraCosts,
+            'netResult' => $grossMargin - $operatingCosts,
             'marginPercentage' => $revenue > 0 ? $grossMargin / $revenue * 100 : 0,
             'ordersCount' => (clone $orders)->count(),
         ];

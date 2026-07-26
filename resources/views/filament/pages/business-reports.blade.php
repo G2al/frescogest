@@ -11,7 +11,9 @@
             ['Food cost netto', $summary['costOfGoods'], 'Costo della merce venduta', 'heroicon-o-shopping-bag', 'is-blue'],
             ['Margine lordo', $summary['grossMargin'], number_format($summary['marginPercentage'], 1, ',', '.').'% sui ricavi', 'heroicon-o-arrow-trending-up', 'is-amber'],
             ['Costi extra', $summary['extraCosts'], 'Movimenti registrati nel mese', 'heroicon-o-receipt-percent', 'is-violet'],
-            ['Risultato reale', $summary['netResult'], 'Margine al netto dei costi extra', 'heroicon-o-scale', $summary['netResult'] >= 0 ? 'is-green' : 'is-red'],
+            ['Costo del personale', $summary['personnelCosts'], 'Paghe giornaliere e mensili del periodo', 'heroicon-o-identification', 'is-blue'],
+            ['Costi operativi', $summary['operatingCosts'], 'Costi extra e costo del personale', 'heroicon-o-calculator', 'is-violet'],
+            ['Risultato reale', $summary['netResult'], 'Margine al netto di tutti i costi operativi', 'heroicon-o-scale', $summary['netResult'] >= 0 ? 'is-green' : 'is-red'],
         ];
         $products = $this->products();
         $categories = $this->categories();
