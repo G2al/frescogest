@@ -46,6 +46,11 @@ class OrdersTable
                 TextColumn::make('items_count')->label('Righe')->counts('items'),
                 TextColumn::make('total_net')->label('Netto')->money('EUR')->sortable(),
                 TextColumn::make('discount_percentage')->label('Sconto')->suffix('%')->toggleable()->sortable(),
+                TextColumn::make('promotion_code_snapshot')
+                    ->label('Codice promo')
+                    ->badge()
+                    ->placeholder('—')
+                    ->toggleable(),
                 TextColumn::make('total_gross')->label('Totale IVA incl.')->money('EUR')->sortable(),
                 TextColumn::make('gross_margin')->label('Margine')->money('EUR')->sortable(),
                 TextColumn::make('requested_at')->label('Richiesto il')->dateTime('d/m/Y H:i')->sortable(),

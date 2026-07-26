@@ -4,12 +4,56 @@ import { getStoredCart, saveStoredCart } from './cart-storage.js?v=20260720.7';
 
 let drawerNotes = '';
 let commercialTerms;
+let appliedPromotion = readPromotion();
 
 export function getCart() { return getStoredCart(); }
 export function saveCart(cart) { saveStoredCart(cart); }
 
 function currency(value) {
     return Number(value).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+}
+
+function readPromotion() {
+    try {
+        return JSON.parse(sessionStorage.getItem('appliedPromotion') || 'null');
+    } catch {
+        return null;
+    }
+}
+
+function savePromotion(promotion) {
+    appliedPromotion = promotion;
+
+    if (promotion) {
+        sessionStorage.setItem('appliedPromotion', JSON.stringify(promotion));
+    } else {
+        sessionStorage.removeItem('appliedPromotion');
+    }
+}
+
+function discountedTotal(total) {
+    const percentage = Number(appliedPromotion?.discount_percentage || 0);
+    return total * (1 - percentage / 100);
+}
+
+function promotionMarkup(context) {
+    if (appliedPromotion) {
+        return `<div class="promotion-applied">
+            <span><i data-lucide="badge-check"></i><span><strong>${escapeHtml(appliedPromotion.code)}</strong><small>${escapeHtml(appliedPromotion.name)} · -${Number(appliedPromotion.discount_percentage).toLocaleString('it-IT')}%</small></span></span>
+            <button class="promotion-remove" type="button">Rimuovi</button>
+        </div>`;
+    }
+
+    return `<div class="promotion-entry">
+        <label for="promotion-code-${context}"><i data-lucide="ticket-percent"></i>Hai un codice sconto?</label>
+        <div><input id="promotion-code-${context}" class="promotion-code-input" type="text" maxlength="64" autocomplete="off" placeholder="Inserisci il codice"><button class="promotion-apply" type="button">Applica</button></div>
+    </div>`;
+}
+
+function totalMarkup(total) {
+    if (!appliedPromotion) return `<strong>${currency(total)}</strong>`;
+
+    return `<span class="promotion-total"><del>${currency(total)}</del><strong>${currency(discountedTotal(total))}</strong></span>`;
 }
 
 function quantity(value, unit) {
@@ -129,7 +173,7 @@ function renderCartDrawer() {
 
     const total = cart.reduce((sum, item) => sum + (item.quantity * item.price_per_kg), 0);
     footer.innerHTML = cart.length
-        ? `<div class="commercial-terms-slot">${commercialTermsMarkup()}</div><label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span><strong>${currency(total)}</strong></div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
+        ? `<div class="commercial-terms-slot">${commercialTermsMarkup()}</div>${promotionMarkup('drawer')}<label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span>${totalMarkup(total)}</div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
         : '<button class="btn btn-primary cart-drawer-continue" type="button"><i data-lucide="arrow-left"></i>Continua nel catalogo</button>';
     updateCartBadges();
     refreshIcons(document.querySelector('#cart-drawer'));
@@ -272,6 +316,19 @@ document.addEventListener('click', async event => {
 
     const quickOrderButton = event.target.closest('.cart-drawer-whatsapp');
     if (quickOrderButton) await submitOrder(drawerNotes, quickOrderButton);
+
+    const promotionButton = event.target.closest('.promotion-apply');
+    if (promotionButton) {
+        const input = promotionButton.closest('.promotion-entry')?.querySelector('.promotion-code-input');
+        await applyPromotion(input, promotionButton);
+    }
+
+    if (event.target.closest('.promotion-remove')) {
+        savePromotion(null);
+        renderCartDrawer();
+        renderCart();
+        notify('Codice sconto rimosso.', 'success');
+    }
 });
 
 document.addEventListener('input', event => {
@@ -319,7 +376,12 @@ async function renderCart() {
     document.querySelector('#order-form')?.classList.toggle('hidden', !cart.length);
     const total = cart.reduce((sum, item) => sum + (item.quantity * item.price_per_kg), 0);
     const totalRoot = document.querySelector('#cart-total');
-    if (totalRoot) totalRoot.textContent = total.toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
+    if (totalRoot) totalRoot.innerHTML = totalMarkup(total);
+    const promotionRoot = document.querySelector('#cart-promotion');
+    if (promotionRoot) {
+        promotionRoot.innerHTML = promotionMarkup('page');
+        refreshIcons(promotionRoot);
+    }
 }
 
 document.addEventListener('change', event => {
@@ -366,14 +428,45 @@ async function submitOrder(customerNotes, button) {
         return;
     }
     try {
-        const payload = await api('/orders', { method: 'POST', body: JSON.stringify({ customer_notes: customerNotes || null, items: getCart().map(({ product_id, quantity }) => ({ product_id, quantity })) }) });
+        const payload = await api('/orders', { method: 'POST', body: JSON.stringify({ customer_notes: customerNotes || null, promotion_code: appliedPromotion?.code || null, items: getCart().map(({ product_id, quantity }) => ({ product_id, quantity })) }) });
         saveCart([]);
+        savePromotion(null);
         drawerNotes = '';
         updateCartBadges();
         whatsappWindow.location.replace(payload.data.whatsapp_url);
     } catch (error) {
         whatsappWindow.close();
         notify(error.message, 'error');
+        button.disabled = false;
+        button.classList.remove('is-loading');
+    }
+}
+
+async function applyPromotion(input, button) {
+    const code = input?.value.trim();
+
+    if (!code) {
+        notify('Inserisci un codice sconto.', 'warning');
+        input?.focus();
+        return;
+    }
+
+    button.disabled = true;
+    button.classList.add('is-loading');
+
+    try {
+        const response = await api('/promotions/validate', {
+            method: 'POST',
+            body: JSON.stringify({ code }),
+        });
+        savePromotion(response.data);
+        renderCartDrawer();
+        renderCart();
+        notify(response.message, 'success');
+    } catch (error) {
+        notify(error.message, 'error');
+        input?.focus();
+    } finally {
         button.disabled = false;
         button.classList.remove('is-loading');
     }

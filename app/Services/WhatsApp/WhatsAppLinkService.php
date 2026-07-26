@@ -32,6 +32,11 @@ class WhatsAppLinkService
         }
 
         $lines[] = '';
+        if (filled($order->promotion_code_snapshot)) {
+            $lines[] = "🎟️ *Codice promo:* {$order->promotion_code_snapshot} (-{$this->number((float) $order->promotion_discount_percentage)}%)";
+            $lines[] = '💸 *Sconto netto: € '.$this->money($order->discount_amount_net).'*';
+            $lines[] = '';
+        }
         $lines[] = '💶 *TOTALE IVA INCLUSA: € '.$this->money($order->total_gross ?: $order->total_amount).'*';
 
         if (filled($order->customer_notes)) {

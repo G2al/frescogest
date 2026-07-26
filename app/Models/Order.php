@@ -16,6 +16,9 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'customer_id',
+        'promotion_code_id',
+        'promotion_code_snapshot',
+        'promotion_discount_percentage',
         'payment_method_id',
         'status',
         'requested_at',
@@ -57,6 +60,16 @@ class Order extends Model
         return $this->belongsTo(PaymentMethod::class);
     }
 
+    public function promotionCode(): BelongsTo
+    {
+        return $this->belongsTo(PromotionCode::class);
+    }
+
+    public function promotionCodeUsage(): HasOne
+    {
+        return $this->hasOne(PromotionCodeUsage::class);
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class)->orderBy('sort_order');
@@ -77,6 +90,7 @@ class Order extends Model
             'delivered_at' => 'datetime',
             'paid_at' => 'datetime',
             'total_amount' => 'decimal:2',
+            'promotion_discount_percentage' => 'decimal:2',
             'subtotal_net' => 'decimal:2',
             'discount_percentage' => 'decimal:2',
             'discount_amount_net' => 'decimal:2',

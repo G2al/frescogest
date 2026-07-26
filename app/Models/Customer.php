@@ -58,6 +58,11 @@ class Customer extends Model
         return $this->hasMany(CustomerCategoryDiscount::class);
     }
 
+    public function promotionCodeUsages(): HasMany
+    {
+        return $this->hasMany(PromotionCodeUsage::class);
+    }
+
     protected function casts(): array
     {
         return [

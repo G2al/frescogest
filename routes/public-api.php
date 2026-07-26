@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CatalogController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\PromotionCodeController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('api/v1')->middleware('store.open')->group(function (): void {
@@ -36,6 +37,7 @@ Route::prefix('api/v1')->middleware('store.open')->group(function (): void {
         Route::patch('profile', [ProfileController::class, 'update']);
         Route::get('orders', [OrderController::class, 'index']);
         Route::get('orders/commercial-terms', [OrderController::class, 'commercialTerms']);
+        Route::post('promotions/validate', [PromotionCodeController::class, 'validate'])->middleware('throttle:30,1');
         Route::post('orders', [OrderController::class, 'store'])->middleware('throttle:20,1');
         Route::get('orders/{orderNumber}', [OrderController::class, 'show']);
     });

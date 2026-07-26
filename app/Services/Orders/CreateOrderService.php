@@ -3,9 +3,11 @@
 namespace App\Services\Orders;
 
 use App\Enums\OrderStatus;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\Promotions\PromotionCodeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -14,6 +16,7 @@ class CreateOrderService
     public function __construct(
         private readonly OrderItemSnapshotService $snapshots,
         private readonly CommercialRuleService $commercialRules,
+        private readonly PromotionCodeService $promotions,
     ) {}
 
     public function create(User $user, array $data): Order
@@ -27,8 +30,17 @@ class CreateOrderService
         }
 
         return DB::transaction(function () use ($customer, $data, $requestedItems): Order {
+            $customer = Customer::query()->lockForUpdate()->findOrFail($customer->id);
+            $promotion = filled($data['promotion_code'] ?? null)
+                ? $this->promotions->validate($customer, $data['promotion_code'], true)
+                : null;
+
             $order = Order::query()->create([
                 'customer_id' => $customer->id,
+                'promotion_code_id' => $promotion?->id,
+                'promotion_code_snapshot' => $promotion?->code,
+                'promotion_discount_percentage' => $promotion?->discount_percentage ?? 0,
+                'discount_percentage' => $promotion?->discount_percentage ?? 0,
                 'status' => OrderStatus::WhatsAppPending,
                 'requested_at' => now(),
                 'customer_notes' => $data['customer_notes'] ?? null,
@@ -49,7 +61,11 @@ class CreateOrderService
             $this->commercialRules->apply($order);
             $this->snapshots->recalculate($order);
 
-            return $order->load(['customer', 'items.product']);
+            if ($promotion) {
+                $this->promotions->recordUsage($promotion, $customer, $order);
+            }
+
+            return $order->load(['customer', 'items.product', 'promotionCode']);
         });
     }
 }

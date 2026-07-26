@@ -88,6 +88,27 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 .line-total { align-self: center; color: var(--green-dark); font-size: 1.1rem; }
 .cart-summary { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--line); font-size: 1.15rem; }
 .cart-summary strong { color: var(--green-dark); font-size: 1.7rem; }
+.cart-promotion { margin-bottom: 22px; }
+.promotion-entry { display: grid; gap: 8px; }
+.promotion-entry > label { display: flex; align-items: center; gap: 7px; color: var(--ink); font-size: .84rem; font-weight: 850; }
+.promotion-entry > label svg { width: 18px; height: 18px; color: var(--brand-teal); }
+.promotion-entry > div { display: grid; grid-template-columns: minmax(0,1fr) auto; overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.promotion-entry input { min-width: 0; border: 0; border-radius: 0; text-transform: uppercase; }
+.promotion-entry input:focus { box-shadow: inset 0 0 0 2px rgba(0,112,96,.16); }
+.promotion-entry button, .promotion-remove { cursor: pointer; border: 0; color: #fff; background: var(--brand-teal); font-weight: 850; }
+.promotion-entry button { min-width: 92px; padding-inline: 18px; }
+.promotion-entry button:hover { background: var(--green-dark); }
+.promotion-applied { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border: 1px solid rgba(18,140,90,.24); border-radius: 12px; background: #edf9f3; }
+.promotion-applied > span { display: flex; min-width: 0; align-items: center; gap: 10px; }
+.promotion-applied > span > svg { width: 22px; height: 22px; flex: 0 0 auto; color: #128c5a; }
+.promotion-applied > span > span { display: grid; min-width: 0; }
+.promotion-applied strong { color: #075b45; font-size: .86rem; }
+.promotion-applied small { overflow: hidden; color: var(--muted); font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
+.promotion-remove { padding: 7px 10px; border-radius: 8px; color: #075b45; background: transparent; font-size: .72rem; }
+.promotion-remove:hover { background: rgba(18,140,90,.1); }
+.promotion-total { display: grid; justify-items: end; }
+.promotion-total del { color: var(--muted); font-size: .78rem; font-weight: 700; }
+.promotion-total strong { color: var(--brand-teal); }
 .quantity { width: 90px; }
 .empty { padding: 42px; text-align: center; border: 1px dashed #b9c9bf; border-radius: 18px; color: var(--muted); }
 .notice { position: fixed; z-index: 50; right: 20px; bottom: 20px; max-width: 380px; padding: 14px 18px; color: #fff; border-radius: 12px; background: var(--ink); box-shadow: var(--shadow); }
