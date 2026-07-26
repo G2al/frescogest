@@ -12,7 +12,9 @@ class DeliveryDocument extends Model
         'partner_id',
         'created_by',
         'document_number',
+        'revision',
         'issued_at',
+        'regenerated_at',
         'transport_reason',
         'transport_method',
         'goods_appearance',
@@ -82,6 +84,7 @@ class DeliveryDocument extends Model
     {
         return [
             'issued_at' => 'datetime',
+            'regenerated_at' => 'datetime',
             'transport_started_at' => 'datetime',
             'total_weight' => 'decimal:3',
             'sender_snapshot' => 'array',

@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Partners\RelationManagers;
 
 use App\Filament\Resources\Partners\Actions\CreatePartnerDeliveryDocumentAction;
+use App\Filament\Resources\Partners\Actions\DeletePartnerDeliveryDocumentAction;
+use App\Filament\Resources\Partners\Actions\EditPartnerDeliveryDocumentAction;
 use App\Models\DeliveryDocument;
 use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -20,6 +22,7 @@ class DeliveryDocumentsRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('document_number')->label('Numero')->searchable()->sortable(),
+                TextColumn::make('revision')->label('Revisione')->prefix('Rev. '),
                 TextColumn::make('issued_at')->label('Emessa il')->dateTime('d/m/Y H:i')->sortable(),
                 TextColumn::make('payment_method_snapshot')->label('Pagamento')->placeholder('Da concordare'),
                 TextColumn::make('total_net')->label('Netto')->money('EUR'),
@@ -38,6 +41,8 @@ class DeliveryDocumentsRelationManager extends RelationManager
                     ->tooltip('Scarica bolla')
                     ->url(fn (DeliveryDocument $record): string => route('admin.delivery-documents.show', $record))
                     ->openUrlInNewTab(),
+                EditPartnerDeliveryDocumentAction::make(),
+                DeletePartnerDeliveryDocumentAction::make(),
             ]);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\DeliveryDocuments\Tables;
 
+use App\Filament\Resources\Partners\Actions\DeletePartnerDeliveryDocumentAction;
+use App\Filament\Resources\Partners\Actions\EditPartnerDeliveryDocumentAction;
 use App\Models\Customer;
 use App\Models\DeliveryDocument;
 use App\Models\Partner;
@@ -24,6 +26,7 @@ class DeliveryDocumentsTable
         return $table
             ->columns([
                 TextColumn::make('document_number')->label('Numero')->searchable()->sortable(),
+                TextColumn::make('revision')->label('Revisione')->prefix('Rev. '),
                 TextColumn::make('order.order_number')->label('Ordine')->searchable()->placeholder('Bolla partner'),
                 TextColumn::make('recipient_name')->label('Ricevente'),
                 TextColumn::make('recipient_type')->label('Tipo')->badge()->color(fn (string $state): string => $state === 'Partner' ? 'warning' : 'info'),
@@ -58,6 +61,8 @@ class DeliveryDocumentsTable
             ->recordActions([
                 Action::make('download')->label('Scarica')->icon('heroicon-o-arrow-down-tray')->iconButton()->tooltip('Scarica bolla')
                     ->url(fn (DeliveryDocument $record): string => route('admin.delivery-documents.show', $record))->openUrlInNewTab(),
+                EditPartnerDeliveryDocumentAction::make(),
+                DeletePartnerDeliveryDocumentAction::make(),
             ])
             ->toolbarActions([
                 Action::make('downloadFiltered')

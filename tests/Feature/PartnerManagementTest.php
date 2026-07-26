@@ -15,7 +15,7 @@ use App\Models\ProductCategory;
 use App\Models\TaxRate;
 use App\Models\UnitOfMeasure;
 use App\Models\User;
-use App\Services\Documents\CreatePartnerDeliveryDocumentService;
+use App\Services\Documents\PartnerDeliveryDocumentService;
 use App\Services\Partners\PartnerPriceListService;
 use App\Services\Partners\PartnerReportService;
 use Filament\Panel;
@@ -108,7 +108,8 @@ class PartnerManagementTest extends TestCase
             ->firstOrFail()
             ->update(['purchase_price_net' => 2]);
 
-        $document = app(CreatePartnerDeliveryDocumentService::class)->create(
+        $documents = app(PartnerDeliveryDocumentService::class);
+        $document = $documents->create(
             $partner,
             $admin,
             [
@@ -134,6 +135,34 @@ class PartnerManagementTest extends TestCase
         $this->assertSame('Contanti', $document->payment_method_snapshot);
         $this->assertSame($document->id, $entry->delivery_document_id);
         $this->assertSame('6.24', $entry->total_gross);
+
+        $updated = $documents->update($document, $admin, [
+            'issued_at' => now()->addDay(),
+            'payment_method_snapshot' => 'Bonifico',
+            'items' => [[
+                'product_id' => $product->id,
+                'quantity' => 4,
+                'unit_price_net' => 2.5,
+            ]],
+            'notes' => 'Bolla aggiornata',
+        ]);
+
+        $this->assertSame(2, $updated->revision);
+        $this->assertNotNull($updated->regenerated_at);
+        $this->assertSame('10.00', $updated->total_net);
+        $this->assertSame('10.40', $updated->total_gross);
+        $this->assertSame('Bonifico', $updated->payment_method_snapshot);
+        $this->assertDatabaseCount('partner_goods_entries', 1);
+        $this->assertDatabaseHas('partner_goods_entries', [
+            'delivery_document_id' => $document->id,
+            'quantity' => 4,
+            'total_gross' => 10.40,
+        ]);
+
+        $documents->delete($updated);
+
+        $this->assertDatabaseMissing('delivery_documents', ['id' => $document->id]);
+        $this->assertDatabaseMissing('partner_goods_entries', ['delivery_document_id' => $document->id]);
     }
 
     public function test_panel_roles_keep_admin_and_partner_access_separate(): void
