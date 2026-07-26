@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DeliveryDocumentController;
 use App\Http\Controllers\Admin\DeliveryDocumentExportController;
+use App\Http\Controllers\Admin\DeliveryDocumentFileController;
 use App\Http\Controllers\StorefrontPageController;
 use App\Services\Storefront\StoreOpeningHours;
 use Illuminate\Support\Facades\Route;
@@ -13,6 +14,10 @@ Route::get('/admin/orders/{order}/delivery-document', DeliveryDocumentController
 Route::get('/admin/delivery-documents/export', DeliveryDocumentExportController::class)
     ->middleware('auth:admin')
     ->name('admin.delivery-documents.export');
+
+Route::get('/admin/delivery-documents/{deliveryDocument}', DeliveryDocumentFileController::class)
+    ->middleware('auth:admin')
+    ->name('admin.delivery-documents.show');
 
 Route::get('/api/v1/store/status', fn (StoreOpeningHours $openingHours) => response()->json([
     'data' => $openingHours->status(),

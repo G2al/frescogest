@@ -9,6 +9,7 @@ class DeliveryDocument extends Model
 {
     protected $fillable = [
         'order_id',
+        'partner_id',
         'created_by',
         'document_number',
         'issued_at',
@@ -42,9 +43,39 @@ class DeliveryDocument extends Model
         return $this->belongsTo(Order::class);
     }
 
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
+    }
+
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function getRecipientNameAttribute(): string
+    {
+        if (filled($this->recipient_snapshot['display_name'] ?? null)) {
+            return (string) $this->recipient_snapshot['display_name'];
+        }
+
+        if ($this->relationLoaded('partner') && $this->partner) {
+            return $this->partner->name;
+        }
+
+        if ($this->relationLoaded('order')
+            && $this->order
+            && $this->order->relationLoaded('customer')
+            && $this->order->customer) {
+            return $this->order->customer->display_name;
+        }
+
+        return 'Destinatario';
+    }
+
+    public function getRecipientTypeAttribute(): string
+    {
+        return $this->partner_id ? 'Partner' : 'Cliente';
     }
 
     protected function casts(): array

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\DeliveryDocuments\Tables;
 
 use App\Models\Customer;
 use App\Models\DeliveryDocument;
+use App\Models\Partner;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Forms\Components\DatePicker;
@@ -23,8 +24,9 @@ class DeliveryDocumentsTable
         return $table
             ->columns([
                 TextColumn::make('document_number')->label('Numero')->searchable()->sortable(),
-                TextColumn::make('order.order_number')->label('Ordine')->searchable(),
-                TextColumn::make('order.customer.display_name')->label('Cliente')->searchable(['company_name', 'first_name', 'last_name']),
+                TextColumn::make('order.order_number')->label('Ordine')->searchable()->placeholder('Bolla partner'),
+                TextColumn::make('recipient_name')->label('Ricevente'),
+                TextColumn::make('recipient_type')->label('Tipo')->badge()->color(fn (string $state): string => $state === 'Partner' ? 'warning' : 'info'),
                 TextColumn::make('issued_at')->label('Emessa il')->dateTime('d/m/Y H:i')->sortable(),
                 TextColumn::make('payment_method_snapshot')->label('Pagamento')->placeholder('Da concordare'),
                 TextColumn::make('discount_percentage')->label('Sconto')->suffix('%')->sortable(),
@@ -38,6 +40,10 @@ class DeliveryDocumentsTable
                     ->options(fn (): array => Customer::query()->orderBy('company_name')->get()->mapWithKeys(fn (Customer $customer): array => [$customer->id => $customer->display_name])->all())
                     ->searchable()
                     ->query(fn (Builder $query, array $data): Builder => $query->when($data['value'] ?? null, fn (Builder $documents, $customerId): Builder => $documents->whereHas('order', fn (Builder $orders): Builder => $orders->where('customer_id', $customerId)))),
+                SelectFilter::make('partner_id')
+                    ->label('Partner')
+                    ->options(fn (): array => Partner::query()->orderBy('name')->pluck('name', 'id')->all())
+                    ->searchable(),
                 Filter::make('issued_at')
                     ->label('Periodo')
                     ->schema([
@@ -51,7 +57,7 @@ class DeliveryDocumentsTable
             ->defaultSort('issued_at', 'desc')
             ->recordActions([
                 Action::make('download')->label('Scarica')->icon('heroicon-o-arrow-down-tray')->iconButton()->tooltip('Scarica bolla')
-                    ->url(fn (DeliveryDocument $record): string => route('admin.orders.delivery-document', $record->order_id))->openUrlInNewTab(),
+                    ->url(fn (DeliveryDocument $record): string => route('admin.delivery-documents.show', $record))->openUrlInNewTab(),
             ])
             ->toolbarActions([
                 Action::make('downloadFiltered')

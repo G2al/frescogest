@@ -7,6 +7,7 @@ use App\Filament\Resources\Partners\Pages\EditPartner;
 use App\Filament\Resources\Partners\Pages\ListPartners;
 use App\Filament\Resources\Partners\RelationManagers\DailyReceiptsRelationManager;
 use App\Filament\Resources\Partners\RelationManagers\DailyWastesRelationManager;
+use App\Filament\Resources\Partners\RelationManagers\DeliveryDocumentsRelationManager;
 use App\Filament\Resources\Partners\RelationManagers\ExpensesRelationManager;
 use App\Filament\Resources\Partners\RelationManagers\GoodsEntriesRelationManager;
 use App\Filament\Resources\Partners\RelationManagers\ProductPricesRelationManager;
@@ -87,6 +88,7 @@ class PartnerResource extends Resource
     {
         return [
             ProductPricesRelationManager::class,
+            DeliveryDocumentsRelationManager::class,
             GoodsEntriesRelationManager::class,
             DailyReceiptsRelationManager::class,
             DailyWastesRelationManager::class,

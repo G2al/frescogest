@@ -5,7 +5,6 @@ namespace App\Services\Documents;
 use App\Enums\OrderStatus;
 use App\Models\Company;
 use App\Models\DeliveryDocument;
-use App\Models\DocumentSequence;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Orders\RecordOrderPaymentService;
@@ -18,6 +17,7 @@ class CreateDeliveryDocumentService
     public function __construct(
         private readonly DeliveryDocumentSnapshotService $snapshots,
         private readonly RecordOrderPaymentService $payments,
+        private readonly DeliveryDocumentNumberService $numbers,
     ) {}
 
     public function create(Order $order, User $creator, array $data): DeliveryDocument
@@ -33,16 +33,8 @@ class CreateDeliveryDocumentService
         $company = Company::query()->where('vat_number', '02396610186')->where('active', true)->firstOrFail();
         $order->loadMissing(['customer', 'items.product', 'items.product.taxRate']);
         $issuedAt = Carbon::parse($data['issued_at']);
-        $year = (int) $issuedAt->format('Y');
 
-        return DB::transaction(function () use ($company, $creator, $data, $issuedAt, $order, $year): DeliveryDocument {
-            $sequence = DocumentSequence::query()->firstOrCreate(
-                ['document_type' => 'delivery_note', 'year' => $year],
-                ['last_number' => 0],
-            );
-            $sequence = DocumentSequence::query()->whereKey($sequence->id)->lockForUpdate()->firstOrFail();
-            $sequence->increment('last_number');
-
+        return DB::transaction(function () use ($company, $creator, $data, $issuedAt, $order): DeliveryDocument {
             if (($data['mark_as_paid'] ?? false) === true) {
                 $this->payments->record($order, $data);
             }
@@ -52,7 +44,7 @@ class CreateDeliveryDocumentService
             return DeliveryDocument::query()->create([
                 'order_id' => $order->id,
                 'created_by' => $creator->id,
-                'document_number' => sprintf('BC-%d-%06d', $year, $sequence->fresh()->last_number),
+                'document_number' => $this->numbers->next($issuedAt),
                 'issued_at' => $issuedAt,
                 'transport_reason' => 'Vendita',
                 'transport_method' => 'Mittente',

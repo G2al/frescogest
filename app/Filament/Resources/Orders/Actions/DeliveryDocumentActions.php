@@ -55,13 +55,13 @@ class DeliveryDocumentActions
                         app(CreateDeliveryDocumentService::class)->create($record, auth()->user(), $data);
                     });
                     Notification::make()->success()->title('Bolla di consegna generata')->send();
-                    $url = route('admin.orders.delivery-document', $record);
+                    $url = route('admin.delivery-documents.show', $record->deliveryDocument);
                     $livewire->js('window.open('.json_encode($url).', "_blank", "noopener,noreferrer")');
                 }),
             Action::make('downloadDeliveryDocument')
                 ->icon('heroicon-o-arrow-down-tray')->iconButton()->tooltip('Scarica bolla di consegna')->color('success')
                 ->visible(fn (Order $record): bool => $record->deliveryDocument()->exists())
-                ->url(fn (Order $record): string => route('admin.orders.delivery-document', $record))->openUrlInNewTab(),
+                ->url(fn (Order $record): string => route('admin.delivery-documents.show', $record->deliveryDocument))->openUrlInNewTab(),
         ];
     }
 }

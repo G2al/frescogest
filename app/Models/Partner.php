@@ -32,6 +32,11 @@ class Partner extends Model
         return $this->hasMany(PartnerGoodsEntry::class);
     }
 
+    public function deliveryDocuments(): HasMany
+    {
+        return $this->hasMany(DeliveryDocument::class);
+    }
+
     public function dailyReceipts(): HasMany
     {
         return $this->hasMany(PartnerDailyReceipt::class);

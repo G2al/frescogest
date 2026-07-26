@@ -33,4 +33,20 @@ class DeliveryDocumentFilenameServiceTest extends TestCase
             $filenames->forDocument($document),
         );
     }
+
+    public function test_partner_document_filename_contains_partner_name(): void
+    {
+        $document = new DeliveryDocument([
+            'document_number' => 'BC-2026-000002',
+            'partner_id' => 1,
+            'recipient_snapshot' => ['display_name' => 'Angela'],
+        ]);
+
+        $filenames = new DeliveryDocumentFilenameService;
+
+        $this->assertSame(
+            'bolla-bc-2026-000002-angela-partner.pdf',
+            $filenames->forDocument($document),
+        );
+    }
 }

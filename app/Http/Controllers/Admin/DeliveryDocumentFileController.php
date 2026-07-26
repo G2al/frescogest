@@ -9,26 +9,22 @@ use App\Services\Documents\DeliveryDocumentPdfService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class DeliveryDocumentExportController extends Controller
+class DeliveryDocumentFileController extends Controller
 {
     public function __invoke(
         Request $request,
+        DeliveryDocument $deliveryDocument,
         DeliveryDocumentPdfService $pdf,
         DeliveryDocumentFilenameService $filenames,
     ): Response {
         $user = $request->user('admin');
         abort_unless($user?->active && $user->can_access_panel, 403);
 
-        $ids = collect(explode(',', (string) $request->query('documents')))->filter()->map(fn ($id) => (int) $id)->unique();
-        abort_if($ids->isEmpty(), 404);
+        $deliveryDocument->loadMissing(['order.customer', 'partner']);
 
-        $documents = DeliveryDocument::query()
-            ->with(['order.customer', 'order.paymentMethod', 'partner'])
-            ->whereKey($ids)
-            ->orderBy('issued_at')
-            ->get();
-        abort_if($documents->isEmpty(), 404);
-
-        return $pdf->stream($documents, $filenames->forCollection($documents));
+        return $pdf->stream(
+            collect([$deliveryDocument]),
+            $filenames->forDocument($deliveryDocument),
+        );
     }
 }

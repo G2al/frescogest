@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Company;
+use App\Models\DeliveryDocument;
 use App\Models\Partner;
 use App\Models\PartnerDailyReceipt;
 use App\Models\PartnerDailyWaste;
@@ -13,6 +15,7 @@ use App\Models\ProductCategory;
 use App\Models\TaxRate;
 use App\Models\UnitOfMeasure;
 use App\Models\User;
+use App\Services\Documents\CreatePartnerDeliveryDocumentService;
 use App\Services\Partners\PartnerPriceListService;
 use App\Services\Partners\PartnerReportService;
 use Filament\Panel;
@@ -84,6 +87,53 @@ class PartnerManagementTest extends TestCase
         $this->assertSame('20.80', $entry->total_gross);
         $this->assertSame(33.2, $report['summary']['estimated_result']);
         $this->assertSame(55.33, $report['summary']['estimated_margin_percentage']);
+    }
+
+    public function test_partner_delivery_document_creates_the_document_and_goods_entries_together(): void
+    {
+        [$partner, $product] = $this->partnerAndProduct();
+        $admin = User::factory()->create([
+            'active' => true,
+            'can_access_panel' => true,
+            'panel_role' => 'admin',
+        ]);
+        Company::create([
+            'business_name' => 'Il Paradiso della Frutta di Castaldo Mariarosaria',
+            'vat_number' => '02396610186',
+            'active' => true,
+        ]);
+        PartnerProductPrice::query()
+            ->whereBelongsTo($partner)
+            ->whereBelongsTo($product)
+            ->firstOrFail()
+            ->update(['purchase_price_net' => 2]);
+
+        $document = app(CreatePartnerDeliveryDocumentService::class)->create(
+            $partner,
+            $admin,
+            [
+                'issued_at' => now(),
+                'payment_method_snapshot' => 'Contanti',
+                'items' => [[
+                    'product_id' => $product->id,
+                    'quantity' => 3,
+                    'unit_price_net' => 2,
+                ]],
+            ],
+        );
+
+        $entry = PartnerGoodsEntry::query()->firstOrFail();
+
+        $this->assertInstanceOf(DeliveryDocument::class, $document);
+        $this->assertNull($document->order_id);
+        $this->assertSame($partner->id, $document->partner_id);
+        $this->assertSame('Angela', $document->recipient_name);
+        $this->assertSame('6.00', $document->total_net);
+        $this->assertSame('0.24', $document->total_tax);
+        $this->assertSame('6.24', $document->total_gross);
+        $this->assertSame('Contanti', $document->payment_method_snapshot);
+        $this->assertSame($document->id, $entry->delivery_document_id);
+        $this->assertSame('6.24', $entry->total_gross);
     }
 
     public function test_panel_roles_keep_admin_and_partner_access_separate(): void

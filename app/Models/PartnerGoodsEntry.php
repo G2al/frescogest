@@ -9,6 +9,7 @@ class PartnerGoodsEntry extends Model
 {
     protected $fillable = [
         'partner_id',
+        'delivery_document_id',
         'product_id',
         'delivered_on',
         'quantity',
@@ -30,6 +31,11 @@ class PartnerGoodsEntry extends Model
         return $this->belongsTo(Product::class);
     }
 
+    public function deliveryDocument(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryDocument::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -46,7 +52,9 @@ class PartnerGoodsEntry extends Model
     protected static function booted(): void
     {
         static::saving(function (PartnerGoodsEntry $entry): void {
-            if (! $entry->exists || $entry->isDirty(['partner_id', 'product_id'])) {
+            if (($entry->exists && $entry->isDirty(['partner_id', 'product_id']))
+                || blank($entry->unit_purchase_price_net)
+                || blank($entry->tax_percentage)) {
                 $price = PartnerProductPrice::query()
                     ->where('partner_id', $entry->partner_id)
                     ->where('product_id', $entry->product_id)

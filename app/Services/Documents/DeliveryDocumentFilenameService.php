@@ -2,7 +2,6 @@
 
 namespace App\Services\Documents;
 
-use App\Models\Customer;
 use App\Models\DeliveryDocument;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -11,39 +10,52 @@ class DeliveryDocumentFilenameService
 {
     public function forDocument(DeliveryDocument $document): string
     {
-        $document->loadMissing('order.customer');
+        if ($document->exists) {
+            $document->loadMissing(['order.customer', 'partner']);
+        }
 
         return $this->build(
             'bolla-'.$document->document_number,
-            $document->order?->customer,
+            $document->recipient_name,
+            $document->partner_id
+                ? 'partner'
+                : ($document->order?->customer?->type?->label() ?? 'cliente'),
         );
     }
 
     public function forCollection(Collection $documents): string
     {
         $documents->each(
-            fn (DeliveryDocument $document) => $document->loadMissing('order.customer'),
+            fn (DeliveryDocument $document) => $document->exists
+                ? $document->loadMissing(['order.customer', 'partner'])
+                : $document,
         );
-        $customers = $documents
-            ->pluck('order.customer')
-            ->filter()
-            ->unique('id');
+        $recipients = $documents
+            ->map(fn (DeliveryDocument $document): array => [
+                'name' => $document->recipient_name,
+                'type' => $document->partner_id
+                    ? 'partner'
+                    : ($document->order?->customer?->type?->label() ?? 'cliente'),
+            ])
+            ->unique(fn (array $recipient): string => $recipient['type'].'|'.$recipient['name'])
+            ->values();
 
         return $this->build(
             'bolle-consegna-'.now()->format('Ymd-His'),
-            $customers->count() === 1 ? $customers->first() : null,
+            $recipients->count() === 1 ? $recipients->first()['name'] : null,
+            $recipients->count() === 1 ? $recipients->first()['type'] : null,
         );
     }
 
-    private function build(string $prefix, ?Customer $customer): string
+    private function build(string $prefix, ?string $recipientName, ?string $recipientType): string
     {
-        if (! $customer) {
+        if (! $recipientName) {
             return Str::slug($prefix).'.pdf';
         }
 
-        $customerName = Str::slug($customer->display_name) ?: 'cliente';
-        $customerType = Str::slug($customer->type?->label() ?? 'cliente');
+        $name = Str::slug($recipientName) ?: 'destinatario';
+        $type = Str::slug($recipientType ?? 'cliente');
 
-        return Str::slug($prefix.'-'.$customerName.'-'.$customerType).'.pdf';
+        return Str::slug($prefix.'-'.$name.'-'.$type).'.pdf';
     }
 }
