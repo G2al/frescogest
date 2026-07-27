@@ -172,74 +172,83 @@
 
             <div class="history-list">
                 @forelse ($recentShifts as $shift)
-                    <article class="attendance-record">
-                        <header class="attendance-record__header">
+                    <details class="attendance-record" @if ($loop->first) open @endif>
+                        <summary class="attendance-record__header">
                             <div>
                                 <span>Registrazione</span>
                                 <strong>{{ $shift->work_date->translatedFormat('l d F Y') }}</strong>
                             </div>
-                            <span class="status-badge status-badge--{{ $shift->status }}">
-                                {{ $shift->status === 'absent' ? 'Assente' : 'Presente' }}
-                            </span>
-                        </header>
-
-                        <div class="attendance-record__details">
-                            <div class="attendance-record__metric">
-                                <span class="attendance-record__icon" aria-hidden="true">
+                            <div class="attendance-record__header-actions">
+                                <span class="status-badge status-badge--{{ $shift->status }}">
+                                    {{ $shift->status === 'absent' ? 'Assente' : 'Presente' }}
+                                </span>
+                                <span class="attendance-record__chevron" aria-hidden="true">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <circle cx="12" cy="12" r="8"></circle>
-                                        <path d="M12 7v5l3 2"></path>
+                                        <path d="m7 10 5 5 5-5"></path>
                                     </svg>
                                 </span>
-                                <div>
-                                    <small>Orario</small>
-                                    <strong>
-                                        {{ $shift->status === 'absent' ? 'Non lavorato' : mb_substr($shift->started_at, 0, 5).' – '.mb_substr($shift->ended_at, 0, 5) }}
-                                    </strong>
+                            </div>
+                        </summary>
+
+                        <div class="attendance-record__content">
+                            <div class="attendance-record__details">
+                                <div class="attendance-record__metric">
+                                    <span class="attendance-record__icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <circle cx="12" cy="12" r="8"></circle>
+                                            <path d="M12 7v5l3 2"></path>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <small>Orario</small>
+                                        <strong>
+                                            {{ $shift->status === 'absent' ? 'Non lavorato' : mb_substr($shift->started_at, 0, 5).' – '.mb_substr($shift->ended_at, 0, 5) }}
+                                        </strong>
+                                    </div>
+                                </div>
+
+                                <div class="attendance-record__metric">
+                                    <span class="attendance-record__icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path d="M9 3h6M12 3v3"></path>
+                                            <circle cx="12" cy="14" r="7"></circle>
+                                            <path d="M12 10v4l2 2"></path>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <small>Ore lavorate</small>
+                                        <strong>{{ $shift->status === 'absent' ? '0h 00m' : $shift->worked_duration }}</strong>
+                                    </div>
+                                </div>
+
+                                <div class="attendance-record__metric">
+                                    <span class="attendance-record__icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                            <path d="M8 5v14M16 5v14"></path>
+                                        </svg>
+                                    </span>
+                                    <div>
+                                        <small>Pausa</small>
+                                        <strong>{{ $shift->status === 'absent' ? '—' : $shift->break_minutes.' min' }}</strong>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="attendance-record__metric">
-                                <span class="attendance-record__icon" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M9 3h6M12 3v3"></path>
-                                        <circle cx="12" cy="14" r="7"></circle>
-                                        <path d="M12 10v4l2 2"></path>
+                            @if ($shift->notes)
+                                <div class="attendance-record__note">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                        <path d="M6 4h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
                                     </svg>
-                                </span>
-                                <div>
-                                    <small>Ore lavorate</small>
-                                    <strong>{{ $shift->status === 'absent' ? '0h 00m' : $shift->worked_duration }}</strong>
+                                    <span>{{ $shift->notes }}</span>
                                 </div>
-                            </div>
+                            @endif
 
-                            <div class="attendance-record__metric">
-                                <span class="attendance-record__icon" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                        <path d="M8 5v14M16 5v14"></path>
-                                    </svg>
-                                </span>
-                                <div>
-                                    <small>Pausa</small>
-                                    <strong>{{ $shift->status === 'absent' ? '—' : $shift->break_minutes.' min' }}</strong>
-                                </div>
-                            </div>
+                            <footer class="attendance-record__footer">
+                                <span>Compenso della giornata</span>
+                                <strong>€ {{ number_format((float) $shift->pay_amount, 2, ',', '.') }}</strong>
+                            </footer>
                         </div>
-
-                        @if ($shift->notes)
-                            <div class="attendance-record__note">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                                    <path d="M6 4h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
-                                </svg>
-                                <span>{{ $shift->notes }}</span>
-                            </div>
-                        @endif
-
-                        <footer class="attendance-record__footer">
-                            <span>Compenso della giornata</span>
-                            <strong>€ {{ number_format((float) $shift->pay_amount, 2, ',', '.') }}</strong>
-                        </footer>
-                    </article>
+                    </details>
                 @empty
                     <p class="empty-state">Non ci sono ancora presenze registrate.</p>
                 @endforelse
