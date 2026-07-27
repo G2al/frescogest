@@ -166,6 +166,80 @@ class EmployeeManagementTest extends TestCase
         ]);
     }
 
+    public function test_employee_can_filter_personal_attendance_history_by_quick_periods(): void
+    {
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Luca',
+            'last_name' => 'Ottini',
+            'email' => 'luca.ottini@example.test',
+            'phone' => '3337654322',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Hourly->value,
+            'compensation_amount' => 5,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->subMonth()->toDateString(),
+            'active' => true,
+        ]);
+
+        foreach ([today(), today()->subDay(), today()->subDays(8)] as $date) {
+            EmployeeWorkShift::create([
+                'employee_id' => $employee->id,
+                'work_date' => $date->toDateString(),
+                'status' => 'absent',
+                'notes' => $date->toDateString(),
+            ]);
+        }
+
+        $this->actingAs($employee->user, 'employee')
+            ->get(route('employee.attendance', ['period' => 'today']))
+            ->assertOk()
+            ->assertViewHas('period', 'today')
+            ->assertViewHas('recentShifts', fn ($shifts): bool => $shifts->count() === 1
+                && $shifts->first()->work_date->isToday());
+
+        $this->actingAs($employee->user, 'employee')
+            ->get(route('employee.attendance', ['period' => 'yesterday']))
+            ->assertOk()
+            ->assertViewHas('recentShifts', fn ($shifts): bool => $shifts->count() === 1
+                && $shifts->first()->work_date->isYesterday());
+    }
+
+    public function test_employee_can_filter_personal_attendance_history_by_custom_dates(): void
+    {
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Luca',
+            'last_name' => 'Ottini',
+            'email' => 'luca.filtri@example.test',
+            'phone' => '3337654323',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Hourly->value,
+            'compensation_amount' => 5,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->subMonth()->toDateString(),
+            'active' => true,
+        ]);
+        $selectedDate = today()->subDays(4);
+
+        foreach ([$selectedDate, today()->subDays(10)] as $date) {
+            EmployeeWorkShift::create([
+                'employee_id' => $employee->id,
+                'work_date' => $date->toDateString(),
+                'status' => 'absent',
+            ]);
+        }
+
+        $this->actingAs($employee->user, 'employee')
+            ->get(route('employee.attendance', [
+                'period' => 'custom',
+                'from' => $selectedDate->toDateString(),
+                'to' => $selectedDate->toDateString(),
+            ]))
+            ->assertOk()
+            ->assertViewHas('period', 'custom')
+            ->assertViewHas('recentShifts', fn ($shifts): bool => $shifts->count() === 1
+                && $shifts->first()->work_date->isSameDay($selectedDate));
+    }
+
     public function test_employee_account_cannot_access_filament(): void
     {
         $employee = app(EmployeeAccountService::class)->create([
