@@ -6,11 +6,13 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -30,6 +32,13 @@ class WorkShiftsRelationManager extends RelationManager
                 ->columns(2)
                 ->schema([
                     DatePicker::make('work_date')->label('Giorno')->default(today())->required(),
+                    Select::make('status')
+                        ->label('Stato')
+                        ->options(['present' => 'Presente', 'absent' => 'Assente'])
+                        ->default('present')
+                        ->native(false)
+                        ->live()
+                        ->required(),
                     TextInput::make('break_minutes')
                         ->label('Pausa')
                         ->numeric()
@@ -37,9 +46,20 @@ class WorkShiftsRelationManager extends RelationManager
                         ->maxValue(1439)
                         ->default(0)
                         ->suffix('minuti')
-                        ->required(),
-                    TimePicker::make('started_at')->label('Inizio')->seconds(false)->native(false)->required(),
-                    TimePicker::make('ended_at')->label('Fine')->seconds(false)->native(false)->required(),
+                        ->required()
+                        ->visible(fn (Get $get): bool => $get('status') !== 'absent'),
+                    TimePicker::make('started_at')
+                        ->label('Inizio')
+                        ->seconds(false)
+                        ->native(false)
+                        ->required(fn (Get $get): bool => $get('status') !== 'absent')
+                        ->visible(fn (Get $get): bool => $get('status') !== 'absent'),
+                    TimePicker::make('ended_at')
+                        ->label('Fine')
+                        ->seconds(false)
+                        ->native(false)
+                        ->required(fn (Get $get): bool => $get('status') !== 'absent')
+                        ->visible(fn (Get $get): bool => $get('status') !== 'absent'),
                     Textarea::make('notes')->label('Note')->rows(3)->columnSpanFull(),
                 ]),
         ]);
@@ -50,6 +70,11 @@ class WorkShiftsRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('work_date')->label('Data')->date('d/m/Y')->sortable(),
+                TextColumn::make('status')
+                    ->label('Stato')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => $state === 'absent' ? 'Assente' : 'Presente')
+                    ->color(fn (string $state): string => $state === 'absent' ? 'danger' : 'success'),
                 TextColumn::make('started_at')->label('Ingresso')->time('H:i'),
                 TextColumn::make('ended_at')->label('Uscita')->time('H:i'),
                 TextColumn::make('break_minutes')->label('Pausa')->suffix(' min'),
@@ -59,6 +84,7 @@ class WorkShiftsRelationManager extends RelationManager
                     ->label('Differenza')
                     ->badge()
                     ->color(fn ($record): string => $record->variance_minutes >= 0 ? 'success' : 'danger'),
+                TextColumn::make('pay_amount')->label('Compenso')->money('EUR'),
                 TextColumn::make('notes')->label('Note')->limit(45)->toggleable(),
             ])
             ->filters([

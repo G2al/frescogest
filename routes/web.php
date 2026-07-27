@@ -3,9 +3,27 @@
 use App\Http\Controllers\Admin\DeliveryDocumentController;
 use App\Http\Controllers\Admin\DeliveryDocumentExportController;
 use App\Http\Controllers\Admin\DeliveryDocumentFileController;
+use App\Http\Controllers\Employees\EmployeeAttendanceController;
+use App\Http\Controllers\Employees\EmployeeAuthController;
 use App\Http\Controllers\StorefrontPageController;
 use App\Services\Storefront\StoreOpeningHours;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('dipendenti')->name('employee.')->group(function (): void {
+    Route::get('/', fn () => auth('employee')->check()
+        ? redirect()->route('employee.attendance')
+        : redirect()->route('employee.login'));
+    Route::get('/accesso', [EmployeeAuthController::class, 'create'])->name('login');
+    Route::post('/accesso', [EmployeeAuthController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('login.store');
+
+    Route::middleware(['auth:employee', 'employee.active'])->group(function (): void {
+        Route::get('/presenze', [EmployeeAttendanceController::class, 'index'])->name('attendance');
+        Route::post('/presenze', [EmployeeAttendanceController::class, 'store'])->name('attendance.store');
+        Route::post('/uscita', [EmployeeAuthController::class, 'destroy'])->name('logout');
+    });
+});
 
 Route::get('/admin/orders/{order}/delivery-document', DeliveryDocumentController::class)
     ->middleware('auth:admin')

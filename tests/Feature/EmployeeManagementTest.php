@@ -8,6 +8,7 @@ use App\Filament\Resources\Employees\EmployeeResource;
 use App\Models\Employee;
 use App\Models\EmployeeWorkShift;
 use App\Models\User;
+use App\Services\Employees\EmployeeAccountService;
 use App\Services\Employees\EmployeeCostService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -69,6 +70,118 @@ class EmployeeManagementTest extends TestCase
         ]);
 
         $this->assertSame(1600.0, app(EmployeeCostService::class)->forMonth(2026, 7));
+    }
+
+    public function test_hourly_compensation_uses_the_effective_worked_minutes(): void
+    {
+        $employee = $this->employee([
+            'compensation_type' => EmployeeCompensationType::Hourly,
+            'compensation_amount' => 5,
+        ]);
+
+        $shift = EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => '2026-07-26',
+            'started_at' => '08:00',
+            'ended_at' => '20:00',
+            'break_minutes' => 60,
+        ]);
+
+        $this->assertSame('55.00', $shift->pay_amount);
+        $this->assertSame(55.0, app(EmployeeCostService::class)->forMonth(2026, 7));
+    }
+
+    public function test_employee_can_login_and_record_the_daily_attendance(): void
+    {
+        $this->get(route('employee.login'))
+            ->assertOk()
+            ->assertSee('Accesso dipendenti');
+
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Mario',
+            'last_name' => 'Rossi',
+            'email' => 'mario.rossi@example.test',
+            'phone' => '3331234567',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Hourly->value,
+            'compensation_amount' => 5,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->toDateString(),
+            'active' => true,
+        ]);
+
+        $this->post(route('employee.login.store'), [
+            'email' => $employee->email,
+            'password' => 'password123',
+        ])->assertRedirect(route('employee.attendance'));
+
+        $this->get(route('employee.attendance'))
+            ->assertOk()
+            ->assertSee('Buongiorno, Mario.');
+
+        $this->actingAs($employee->user, 'employee')
+            ->post(route('employee.attendance.store'), [
+                'status' => 'present',
+                'started_at' => '08:00',
+                'ended_at' => '17:00',
+                'break_minutes' => 60,
+                'notes' => 'Giornata ordinaria',
+            ])
+            ->assertRedirect(route('employee.attendance'));
+
+        $shift = $employee->workShifts()->firstOrFail();
+        $this->assertSame(today()->toDateString(), $shift->work_date->toDateString());
+        $this->assertSame('present', $shift->status);
+        $this->assertSame(480, $shift->worked_minutes);
+        $this->assertSame('40.00', $shift->pay_amount);
+    }
+
+    public function test_employee_can_record_an_absence_without_working_times(): void
+    {
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Anna',
+            'last_name' => 'Verdi',
+            'email' => 'anna.verdi@example.test',
+            'phone' => '3337654321',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Daily->value,
+            'compensation_amount' => 80,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->toDateString(),
+            'active' => true,
+        ]);
+
+        $this->actingAs($employee->user, 'employee')
+            ->post(route('employee.attendance.store'), [
+                'status' => 'absent',
+                'notes' => 'Malattia',
+            ])
+            ->assertRedirect(route('employee.attendance'));
+
+        $this->assertDatabaseHas('employee_work_shifts', [
+            'employee_id' => $employee->id,
+            'status' => 'absent',
+            'worked_minutes' => 0,
+            'pay_amount' => 0,
+        ]);
+    }
+
+    public function test_employee_account_cannot_access_filament(): void
+    {
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Paolo',
+            'last_name' => 'Neri',
+            'email' => 'paolo.neri@example.test',
+            'phone' => '3339999999',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Daily->value,
+            'compensation_amount' => 80,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->toDateString(),
+            'active' => true,
+        ]);
+
+        $this->assertFalse($employee->user->canAccessPanel(filament()->getPanel('admin')));
     }
 
     public function test_personnel_cost_is_included_in_the_business_report_result(): void

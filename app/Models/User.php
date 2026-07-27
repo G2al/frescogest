@@ -62,6 +62,11 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasOne(Partner::class);
     }
 
+    public function employee(): HasOne
+    {
+        return $this->hasOne(Employee::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

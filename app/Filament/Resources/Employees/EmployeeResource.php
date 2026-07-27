@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Services\Employees\EmployeeCostService;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -19,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -50,8 +52,26 @@ class EmployeeResource extends Resource
                 ->schema([
                     TextInput::make('first_name')->label('Nome')->required()->maxLength(255),
                     TextInput::make('last_name')->label('Cognome')->required()->maxLength(255),
-                    TextInput::make('email')->label('Email')->email()->maxLength(255),
-                    TextInput::make('phone')->label('Telefono')->tel()->maxLength(50),
+                    TextInput::make('email')->label('Email di accesso')->email()->required()->maxLength(255),
+                    TextInput::make('phone')->label('Telefono')->tel()->required()->maxLength(50),
+                    TextInput::make('account_password')
+                        ->label('Password di accesso')
+                        ->helperText('Obbligatoria alla creazione. In modifica lasciala vuota per non cambiarla.')
+                        ->password()
+                        ->revealable()
+                        ->minLength(8)
+                        ->required(fn (string $operation): bool => $operation === 'create')
+                        ->dehydrated(),
+                    FileUpload::make('photo_path')
+                        ->label('Foto dipendente')
+                        ->helperText('Facoltativa. Formati immagine comuni, massimo 5 MB.')
+                        ->image()
+                        ->disk('public')
+                        ->visibility('public')
+                        ->directory('employees')
+                        ->maxSize(5120)
+                        ->imageEditor()
+                        ->columnSpanFull(),
                     DatePicker::make('hired_on')->label('Data di assunzione')->default(today())->required(),
                     DatePicker::make('terminated_on')
                         ->label('Data di cessazione')
@@ -71,7 +91,7 @@ class EmployeeResource extends Resource
                         ->required(),
                     TextInput::make('compensation_amount')
                         ->label('Importo della paga')
-                        ->helperText('Importo per giornata oppure per mese, in base al tipo selezionato.')
+                        ->helperText('Importo per ora, giornata oppure mese, in base al tipo selezionato.')
                         ->numeric()
                         ->minValue(0)
                         ->step(0.01)
@@ -98,7 +118,13 @@ class EmployeeResource extends Resource
     {
         return $table
             ->columns([
+                ImageColumn::make('photo_path')
+                    ->label('')
+                    ->disk('public')
+                    ->circular()
+                    ->defaultImageUrl(fn (Employee $record): string => 'https://ui-avatars.com/api/?name='.urlencode($record->full_name).'&background=dff5ea&color=053f32'),
                 TextColumn::make('full_name')->label('Dipendente')->searchable(['first_name', 'last_name'])->sortable(['last_name', 'first_name']),
+                TextColumn::make('email')->label('Account')->searchable()->description(fn (Employee $record): string => $record->user ? 'Accesso attivo' : 'Account non creato'),
                 TextColumn::make('compensation_type')
                     ->label('Paga')
                     ->badge()

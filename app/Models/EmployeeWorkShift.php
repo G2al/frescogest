@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EmployeeCompensationType;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,17 +13,47 @@ class EmployeeWorkShift extends Model
     protected $fillable = [
         'employee_id',
         'work_date',
+        'status',
         'started_at',
         'ended_at',
         'break_minutes',
         'expected_minutes',
         'worked_minutes',
+        'compensation_type',
+        'compensation_rate',
+        'pay_amount',
         'notes',
     ];
 
     protected static function booted(): void
     {
         static::saving(function (self $shift): void {
+            $employee = $shift->employee()->first();
+
+            if (! $employee) {
+                return;
+            }
+
+            $shift->expected_minutes = $shift->expected_minutes ?: (int) $employee->expected_daily_minutes;
+            $shift->compensation_type = $shift->compensation_type ?: $employee->compensation_type;
+            $shift->compensation_rate = $shift->compensation_rate ?? $employee->compensation_amount;
+
+            if ($shift->status === 'absent') {
+                $shift->started_at = null;
+                $shift->ended_at = null;
+                $shift->break_minutes = 0;
+                $shift->worked_minutes = 0;
+                $shift->pay_amount = 0;
+
+                return;
+            }
+
+            if (! $shift->started_at || ! $shift->ended_at) {
+                throw ValidationException::withMessages([
+                    'started_at' => 'Indica sia l’orario di inizio sia quello di fine.',
+                ]);
+            }
+
             $startedAt = self::time($shift->started_at);
             $endedAt = self::time($shift->ended_at);
 
@@ -45,10 +76,15 @@ class EmployeeWorkShift extends Model
             }
 
             $shift->worked_minutes = $duration - (int) $shift->break_minutes;
-
-            if (! $shift->expected_minutes) {
-                $shift->expected_minutes = (int) $shift->employee()->value('expected_daily_minutes');
-            }
+            $type = $shift->compensation_type instanceof EmployeeCompensationType
+                ? $shift->compensation_type
+                : EmployeeCompensationType::from((string) $shift->compensation_type);
+            $rate = (float) $shift->compensation_rate;
+            $shift->pay_amount = match ($type) {
+                EmployeeCompensationType::Hourly => round($rate * ($shift->worked_minutes / 60), 2),
+                EmployeeCompensationType::Daily => $rate,
+                EmployeeCompensationType::Monthly => 0,
+            };
         });
     }
 
@@ -69,7 +105,7 @@ class EmployeeWorkShift extends Model
 
     public function getVarianceMinutesAttribute(): int
     {
-        return $this->worked_minutes - $this->expected_minutes;
+        return (int) $this->worked_minutes - (int) $this->expected_minutes;
     }
 
     public function getVarianceDurationAttribute(): string
@@ -86,6 +122,9 @@ class EmployeeWorkShift extends Model
             'break_minutes' => 'integer',
             'expected_minutes' => 'integer',
             'worked_minutes' => 'integer',
+            'compensation_type' => EmployeeCompensationType::class,
+            'compensation_rate' => 'decimal:2',
+            'pay_amount' => 'decimal:2',
         ];
     }
 

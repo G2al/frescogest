@@ -70,13 +70,24 @@ class EmployeeCostService
 
     private function employeeCost(Employee $employee, CarbonImmutable $start, CarbonImmutable $end): float
     {
+        if ($employee->compensation_type === EmployeeCompensationType::Hourly) {
+            return (float) $employee->workShifts()
+                ->whereBetween('work_date', [$start->toDateString(), $end->toDateString()])
+                ->where('status', 'present')
+                ->get()
+                ->sum(fn ($shift): float => $shift->pay_amount !== null
+                    ? (float) $shift->pay_amount
+                    : round(((int) $shift->worked_minutes / 60) * (float) $employee->compensation_amount, 2));
+        }
+
         if ($employee->compensation_type === EmployeeCompensationType::Daily) {
             $workedDays = $employee->workShifts()
                 ->whereBetween('work_date', [$start->toDateString(), $end->toDateString()])
-                ->distinct()
-                ->count('work_date');
+                ->where('status', 'present')
+                ->get()
+                ->unique(fn ($shift): string => $shift->work_date->toDateString());
 
-            return $workedDays * (float) $employee->compensation_amount;
+            return (float) $workedDays->sum(fn ($shift): float => (float) ($shift->compensation_rate ?? $employee->compensation_amount));
         }
 
         $timezone = config('app.timezone');

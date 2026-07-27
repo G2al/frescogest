@@ -4,12 +4,14 @@ namespace App\Enums;
 
 enum EmployeeCompensationType: string
 {
+    case Hourly = 'hourly';
     case Daily = 'daily';
     case Monthly = 'monthly';
 
     public function label(): string
     {
         return match ($this) {
+            self::Hourly => 'Oraria',
             self::Daily => 'Giornaliera',
             self::Monthly => 'Mensile',
         };

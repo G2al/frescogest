@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnforceStoreOpeningHours;
+use App\Http\Middleware\EnsureUserHasActiveEmployee;
 use App\Http\Middleware\EnsureUserHasCustomer;
 use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Application;
@@ -16,12 +17,17 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->redirectGuestsTo(
-            fn (Request $request): string => $request->is('admin/*') ? '/admin/login' : '/login.html'
+            fn (Request $request): string => match (true) {
+                $request->is('admin/*') => '/admin/login',
+                $request->is('dipendenti*') => '/dipendenti/accesso',
+                default => '/login.html',
+            }
         );
 
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'customer' => EnsureUserHasCustomer::class,
+            'employee.active' => EnsureUserHasActiveEmployee::class,
             'store.open' => EnforceStoreOpeningHours::class,
         ]);
     })
