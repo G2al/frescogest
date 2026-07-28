@@ -45,6 +45,32 @@ class RegistryStructureTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_customer_global_search_uses_real_database_columns(): void
+    {
+        $administrator = User::factory()->create([
+            'active' => true,
+            'can_access_panel' => true,
+        ]);
+        Customer::factory()->create([
+            'company_name' => 'Ristorante Cipolle',
+            'email' => 'cipolle@example.com',
+        ]);
+
+        Filament::setCurrentPanel(Filament::getPanel('admin'));
+        $this->actingAs($administrator, 'admin');
+
+        $this->assertSame([
+            'company_name',
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'vat_number',
+            'tax_code',
+        ], CustomerResource::getGloballySearchableAttributes());
+        $this->assertCount(1, CustomerResource::getGlobalSearchResults('cipolle'));
+    }
+
     public function test_user_seeder_creates_the_verified_panel_administrator(): void
     {
         $this->seed(UserSeeder::class);

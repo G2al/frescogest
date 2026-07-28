@@ -19,6 +19,7 @@ class PromotionCode extends Model
         'ends_at',
         'single_use_per_customer',
         'active',
+        'featured_on_sticker',
     ];
 
     public function orders(): HasMany
@@ -41,6 +42,7 @@ class PromotionCode extends Model
             'ends_at' => 'datetime',
             'single_use_per_customer' => 'boolean',
             'active' => 'boolean',
+            'featured_on_sticker' => 'boolean',
         ];
     }
 
@@ -48,6 +50,17 @@ class PromotionCode extends Model
     {
         static::saving(function (PromotionCode $promotion): void {
             $promotion->code = strtoupper(preg_replace('/\s+/', '', trim($promotion->code)));
+        });
+
+        static::saved(function (PromotionCode $promotion): void {
+            if (! $promotion->featured_on_sticker) {
+                return;
+            }
+
+            static::query()
+                ->where('id', '!=', $promotion->getKey())
+                ->where('featured_on_sticker', true)
+                ->update(['featured_on_sticker' => false]);
         });
     }
 }

@@ -19,6 +19,88 @@ class PromotionCodeTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_active_featured_promotion_is_exposed_to_the_sticker(): void
+    {
+        $promotion = PromotionCode::query()->create([
+            'name' => 'Sconto dello sticker',
+            'code' => 'STICKER15',
+            'discount_percentage' => 15,
+            'audience' => PromotionAudience::Everyone,
+            'rule' => PromotionRule::FirstOrder,
+            'single_use_per_customer' => true,
+            'active' => true,
+            'featured_on_sticker' => true,
+        ]);
+
+        $this->getJson('/api/v1/promotions/sticker')
+            ->assertOk()
+            ->assertHeader('Pragma', 'no-cache')
+            ->assertJsonPath('data.code', $promotion->code)
+            ->assertJsonPath('data.name', $promotion->name)
+            ->assertJsonPath('data.discount_percentage', '15.00');
+    }
+
+    public function test_sticker_hides_inactive_expired_or_deleted_promotions(): void
+    {
+        $promotion = PromotionCode::query()->create([
+            'name' => 'Promozione scaduta',
+            'code' => 'SCADUTA10',
+            'discount_percentage' => 10,
+            'audience' => PromotionAudience::Everyone,
+            'rule' => PromotionRule::AnyOrder,
+            'ends_at' => now()->subMinute(),
+            'single_use_per_customer' => true,
+            'active' => true,
+            'featured_on_sticker' => true,
+        ]);
+
+        $this->getJson('/api/v1/promotions/sticker')
+            ->assertOk()
+            ->assertJsonPath('data', null);
+
+        $promotion->update([
+            'ends_at' => null,
+            'active' => false,
+        ]);
+
+        $this->getJson('/api/v1/promotions/sticker')
+            ->assertOk()
+            ->assertJsonPath('data', null);
+
+        $promotion->delete();
+
+        $this->getJson('/api/v1/promotions/sticker')
+            ->assertOk()
+            ->assertJsonPath('data', null);
+    }
+
+    public function test_only_one_promotion_can_be_featured_on_the_sticker(): void
+    {
+        $first = PromotionCode::query()->create([
+            'name' => 'Prima',
+            'code' => 'PRIMA10',
+            'discount_percentage' => 10,
+            'audience' => PromotionAudience::Everyone,
+            'rule' => PromotionRule::AnyOrder,
+            'single_use_per_customer' => true,
+            'active' => true,
+            'featured_on_sticker' => true,
+        ]);
+        $second = PromotionCode::query()->create([
+            'name' => 'Seconda',
+            'code' => 'SECONDA20',
+            'discount_percentage' => 20,
+            'audience' => PromotionAudience::Everyone,
+            'rule' => PromotionRule::AnyOrder,
+            'single_use_per_customer' => true,
+            'active' => true,
+            'featured_on_sticker' => true,
+        ]);
+
+        $this->assertFalse($first->fresh()->featured_on_sticker);
+        $this->assertTrue($second->fresh()->featured_on_sticker);
+    }
+
     public function test_first_order_code_is_validated_applied_and_recorded_once(): void
     {
         [$user, $product] = $this->customerAndProduct();

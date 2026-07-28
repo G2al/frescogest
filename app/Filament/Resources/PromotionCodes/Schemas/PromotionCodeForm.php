@@ -66,6 +66,10 @@ class PromotionCodeForm
                     Toggle::make('active')
                         ->label('Codice attivo')
                         ->default(true),
+                    Toggle::make('featured_on_sticker')
+                        ->label('Mostra nello sticker del sito')
+                        ->helperText('Può essere mostrata una sola promozione alla volta. Selezionandola sostituirai quella attuale.')
+                        ->default(false),
                 ])
                 ->columns(2),
         ]);

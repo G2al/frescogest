@@ -12,6 +12,23 @@ use Illuminate\Validation\ValidationException;
 
 class PromotionCodeService
 {
+    public function stickerPromotion(): ?PromotionCode
+    {
+        return PromotionCode::query()
+            ->where('featured_on_sticker', true)
+            ->where('active', true)
+            ->where(function ($query): void {
+                $query->whereNull('starts_at')
+                    ->orWhere('starts_at', '<=', now());
+            })
+            ->where(function ($query): void {
+                $query->whereNull('ends_at')
+                    ->orWhere('ends_at', '>=', now());
+            })
+            ->latest('updated_at')
+            ->first();
+    }
+
     public function validate(Customer $customer, string $code, bool $lock = false): PromotionCode
     {
         $query = PromotionCode::query()

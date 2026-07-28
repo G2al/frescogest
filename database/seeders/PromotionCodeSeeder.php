@@ -20,6 +20,7 @@ class PromotionCodeSeeder extends Seeder
                 'rule' => PromotionRule::FirstOrder,
                 'single_use_per_customer' => true,
                 'active' => true,
+                'featured_on_sticker' => true,
             ],
         );
     }

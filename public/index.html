@@ -78,7 +78,7 @@
             </div>
         </section>
 
-        <section class="promo-sticker-section catalog-container" aria-labelledby="promo-sticker-title">
+        <section id="promo-sticker-section" class="promo-sticker-section catalog-container hidden" aria-labelledby="promo-sticker-title">
             <div class="promo-sticker-copy">
                 <span class="eyebrow">Una sorpresa per te</span>
                 <h2 id="promo-sticker-title">Tira lo sticker e scopri il tuo codice promo</h2>
@@ -90,9 +90,9 @@
             </div>
             <div id="promo-sticker-stage" class="promo-sticker-stage">
                 <div id="promo-sticker-reward" class="promo-sticker-reward" aria-hidden="true">
-                    <span class="promo-reward-label">Codice sbloccato</span>
-                    <strong id="promo-code">PARADISO10</strong>
-                    <p>Comunicalo ad Antonio su WhatsApp per ricevere il vantaggio riservato.</p>
+                    <span id="promo-reward-label" class="promo-reward-label">Codice sbloccato</span>
+                    <strong id="promo-code"></strong>
+                    <p id="promo-description"></p>
                     <button id="copy-promo-code" type="button" disabled>
                         <i data-lucide="copy"></i>
                         <span>Copia il codice</span>
@@ -113,6 +113,6 @@
     <footer id="site-footer" class="footer"></footer>
     <script type="module" src="/assets/js/catalog.js?v=20260722.5"></script>
     <script type="module" src="/assets/js/cart.js?v=20260726.1"></script>
-    <script type="module" src="/assets/js/promo-sticker.js?v=20260725.1"></script>
+    <script type="module" src="/assets/js/promo-sticker.js?v=20260727.1"></script>
 </body>
 </html>

@@ -32,6 +32,9 @@ Route::prefix('api/v1')->middleware('store.open')->group(function (): void {
         Route::get('products/{slug}', [CatalogController::class, 'product']);
     });
 
+    Route::get('promotions/sticker', [PromotionCodeController::class, 'sticker'])
+        ->middleware('throttle:60,1');
+
     Route::middleware(['auth:customer', 'active', 'customer'])->group(function (): void {
         Route::get('profile', [ProfileController::class, 'show']);
         Route::patch('profile', [ProfileController::class, 'update']);

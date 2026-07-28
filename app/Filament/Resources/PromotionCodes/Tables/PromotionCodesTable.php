@@ -34,6 +34,7 @@ class PromotionCodesTable
                 TextColumn::make('ends_at')->label('Fino al')->dateTime('d/m/Y H:i')->placeholder('Senza scadenza')->sortable(),
                 TextColumn::make('usages_count')->label('Utilizzi')->counts('usages')->sortable(),
                 IconColumn::make('single_use_per_customer')->label('Uso singolo')->boolean(),
+                ToggleColumn::make('featured_on_sticker')->label('Sticker sito'),
                 ToggleColumn::make('active')->label('Attivo'),
             ])
             ->filters([

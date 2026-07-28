@@ -8,6 +8,26 @@ use Illuminate\Http\Request;
 
 class PromotionCodeController extends Controller
 {
+    public function sticker(PromotionCodeService $promotions)
+    {
+        $promotion = $promotions->stickerPromotion();
+
+        return response()->json([
+            'data' => $promotion ? [
+                'code' => $promotion->code,
+                'name' => $promotion->name,
+                'discount_percentage' => $promotion->discount_percentage,
+                'audience' => $promotion->audience->value,
+                'audience_label' => $promotion->audience->label(),
+                'rule' => $promotion->rule->value,
+                'rule_label' => $promotion->rule->label(),
+            ] : null,
+        ])->withHeaders([
+            'Cache-Control' => 'no-store, no-cache, must-revalidate',
+            'Pragma' => 'no-cache',
+        ]);
+    }
+
     public function validate(Request $request, PromotionCodeService $promotions)
     {
         $validated = $request->validate([

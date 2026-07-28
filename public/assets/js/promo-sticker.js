@@ -1,13 +1,75 @@
 import { notify, refreshIcons } from './ui.js?v=20260722.5';
 
+const section = document.querySelector('#promo-sticker-section');
+const title = document.querySelector('#promo-sticker-title');
 const stage = document.querySelector('#promo-sticker-stage');
 const sticker = document.querySelector('#promo-sticker');
 const reward = document.querySelector('#promo-sticker-reward');
+const rewardLabel = document.querySelector('#promo-reward-label');
+const description = document.querySelector('#promo-description');
 const status = document.querySelector('#promo-sticker-status');
 const copyButton = document.querySelector('#copy-promo-code');
 const promoCode = document.querySelector('#promo-code');
 
-if (stage && sticker && reward && status && copyButton && promoCode) {
+const promotionDescription = (promotion) => {
+    const discount = Number(promotion.discount_percentage).toLocaleString('it-IT', {
+        maximumFractionDigits: 2,
+    });
+    const rule = promotion.rule === 'first_order'
+        ? 'Valido sul tuo primo ordine'
+        : 'Valido sui tuoi ordini';
+    const audience = promotion.audience === 'all'
+        ? ''
+        : ` per ${promotion.audience_label.toLowerCase()}`;
+
+    return `${rule}${audience}: ${discount}% di sconto. Comunica il codice ad Antonio su WhatsApp.`;
+};
+
+const loadPromotion = async () => {
+    const response = await fetch('/api/v1/promotions/sticker', {
+        credentials: 'same-origin',
+        headers: {
+            Accept: 'application/json',
+            'Cache-Control': 'no-cache',
+        },
+    });
+
+    if (! response.ok) {
+        throw new Error('Promozione non disponibile.');
+    }
+
+    const payload = await response.json();
+
+    return payload.data;
+};
+
+const initializeSticker = async () => {
+    if (! section || ! title || ! stage || ! sticker || ! reward || ! rewardLabel || ! description || ! status || ! copyButton || ! promoCode) {
+        return;
+    }
+
+    let promotion;
+
+    try {
+        promotion = await loadPromotion();
+    } catch {
+        section.remove();
+
+        return;
+    }
+
+    if (! promotion) {
+        section.remove();
+
+        return;
+    }
+
+    title.textContent = promotion.name;
+    rewardLabel.textContent = promotion.name;
+    promoCode.textContent = promotion.code;
+    description.textContent = promotionDescription(promotion);
+    section.classList.remove('hidden');
+
     let revealed = false;
     let resetTimer;
 
@@ -41,12 +103,12 @@ if (stage && sticker && reward && status && copyButton && promoCode) {
 
     copyButton.addEventListener('click', async () => {
         try {
-            await navigator.clipboard.writeText(promoCode.textContent.trim());
+            await navigator.clipboard.writeText(promotion.code);
             copyButton.classList.add('is-copied');
             copyButton.querySelector('span').textContent = 'Codice copiato';
             notify('Codice promo copiato.', 'success');
         } catch {
-            notify(`Codice promo: ${promoCode.textContent.trim()}`, 'success');
+            notify(`Codice promo: ${promotion.code}`, 'success');
         }
     });
 
@@ -73,6 +135,7 @@ if (stage && sticker && reward && status && copyButton && promoCode) {
 
         if (progress >= 0.96 || event.detail?.willReset === false) {
             revealReward();
+
             return;
         }
 
@@ -176,4 +239,6 @@ if (stage && sticker && reward && status && copyButton && promoCode) {
     }
 
     refreshIcons(stage);
-}
+};
+
+initializeSticker();

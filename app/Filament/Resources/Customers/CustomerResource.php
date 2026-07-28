@@ -33,6 +33,19 @@ class CustomerResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'display_name';
 
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [
+            'company_name',
+            'first_name',
+            'last_name',
+            'email',
+            'phone',
+            'vat_number',
+            'tax_code',
+        ];
+    }
+
     public static function form(Schema $schema): Schema
     {
         return CustomerForm::configure($schema);
