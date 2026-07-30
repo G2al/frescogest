@@ -36,6 +36,10 @@ function discountedTotal(total) {
     return total * (1 - percentage / 100);
 }
 
+function cartProductsTotal() {
+    return getCart().reduce((sum, item) => sum + (Number(item.quantity) * Number(item.price_per_kg)), 0);
+}
+
 function promotionMarkup(context) {
     if (appliedPromotion) {
         return `<div class="promotion-applied">
@@ -171,20 +175,58 @@ function renderCartDrawer() {
         </article>`).join('')
         : '<div class="cart-drawer-empty"><span><i data-lucide="shopping-basket"></i></span><h3>Il carrello è vuoto</h3><p>Scegli i prodotti dal catalogo e aggiungili al tuo ordine.</p></div>';
 
-    const total = cart.reduce((sum, item) => sum + (item.quantity * item.price_per_kg), 0);
+    const total = cartProductsTotal();
     footer.innerHTML = cart.length
-        ? `<div class="commercial-terms-slot">${commercialTermsMarkup()}</div>${promotionMarkup('drawer')}<label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span>${totalMarkup(total)}</div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
+        ? `<div class="commercial-terms-slot">${commercialTermsMarkup(total)}</div>${promotionMarkup('drawer')}<label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span>${totalMarkup(total)}</div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
         : '<button class="btn btn-primary cart-drawer-continue" type="button"><i data-lucide="arrow-left"></i>Continua nel catalogo</button>';
     updateCartBadges();
     refreshIcons(document.querySelector('#cart-drawer'));
 }
 
-function commercialTermsMarkup() {
+function commercialTermsMarkup(total = cartProductsTotal()) {
     if (!commercialTerms) return '';
+
+    const minimum = Number(commercialTerms.minimum_order_gross || 0);
+    const freeShipping = Number(commercialTerms.free_shipping_threshold_gross || 0);
     const shippingTax = Number(commercialTerms.shipping_tax_percentage || 0);
     const shippingGross = Number(commercialTerms.shipping_fee_net) * (1 + shippingTax / 100);
+    const finalTarget = freeShipping > 0 ? freeShipping : minimum;
+    const progress = finalTarget > 0 ? Math.min(100, Math.max(0, total / finalTarget * 100)) : 100;
+    const minimumMarker = minimum > 0 && freeShipping > minimum
+        ? Math.min(100, Math.max(0, minimum / freeShipping * 100))
+        : 100;
+    let state = 'minimum';
+    let icon = 'shopping-basket';
+    let title = 'Spesa minima raggiunta';
+    let detail = `Consegna ${currency(shippingGross)}`;
 
-    return `<div class="commercial-terms"><i data-lucide="truck"></i><div><strong>Condizioni per il tuo ordine</strong><span>Spesa minima ${currency(commercialTerms.minimum_order_gross)} · consegna ${currency(shippingGross)} · gratuita da ${currency(commercialTerms.free_shipping_threshold_gross)}</span></div></div>`;
+    if (minimum > 0 && total < minimum) {
+        title = `Ci sei quasi: mancano ${currency(minimum - total)} al minimo`;
+        detail = `Ordine minimo ${currency(minimum)} · consegna ${currency(shippingGross)}`;
+    } else if (freeShipping > 0 && total < freeShipping) {
+        state = 'shipping';
+        icon = 'truck';
+        title = `Mancano ${currency(freeShipping - total)} alla consegna gratuita`;
+        detail = `Minimo raggiunto · consegna ${currency(shippingGross)}`;
+    } else if (freeShipping > 0) {
+        state = 'complete';
+        icon = 'badge-check';
+        title = 'Consegna gratuita raggiunta';
+        detail = `Hai superato la soglia di ${currency(freeShipping)}`;
+    }
+
+    return `<div class="commercial-terms is-${state}">
+        <span class="commercial-terms-icon"><i data-lucide="${icon}"></i></span>
+        <div class="commercial-terms-copy">
+            <small>Condizioni ordine</small>
+            <strong>${title}</strong>
+            <span>${detail}</span>
+        </div>
+        <div class="commercial-progress" role="progressbar" aria-label="${escapeHtml(title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}">
+            <span class="commercial-progress-fill" style="width:${progress.toFixed(2)}%"></span>
+            ${minimumMarker < 100 ? `<span class="commercial-progress-marker" style="left:${minimumMarker.toFixed(2)}%" aria-hidden="true"></span>` : ''}
+        </div>
+    </div>`;
 }
 
 async function loadCommercialTerms() {
@@ -192,10 +234,10 @@ async function loadCommercialTerms() {
 
     try {
         commercialTerms = (await api('/orders/commercial-terms')).data;
-        document.querySelectorAll('.commercial-terms-slot').forEach(node => { node.innerHTML = commercialTermsMarkup(); });
+        document.querySelectorAll('.commercial-terms-slot').forEach(node => { node.innerHTML = commercialTermsMarkup(cartProductsTotal()); });
         const form = document.querySelector('#order-form');
         if (form && !form.querySelector('.commercial-terms-slot')) {
-            form.insertAdjacentHTML('afterbegin', `<div class="commercial-terms-slot">${commercialTermsMarkup()}</div>`);
+            form.insertAdjacentHTML('afterbegin', `<div class="commercial-terms-slot">${commercialTermsMarkup(cartProductsTotal())}</div>`);
         }
         refreshIcons();
     } catch {}
@@ -374,9 +416,11 @@ async function renderCart() {
         }
     });
     document.querySelector('#order-form')?.classList.toggle('hidden', !cart.length);
-    const total = cart.reduce((sum, item) => sum + (item.quantity * item.price_per_kg), 0);
+    const total = cartProductsTotal();
     const totalRoot = document.querySelector('#cart-total');
     if (totalRoot) totalRoot.innerHTML = totalMarkup(total);
+    const commercialTermsRoot = document.querySelector('#order-form .commercial-terms-slot');
+    if (commercialTermsRoot) commercialTermsRoot.innerHTML = commercialTermsMarkup(total);
     const promotionRoot = document.querySelector('#cart-promotion');
     if (promotionRoot) {
         promotionRoot.innerHTML = promotionMarkup('page');
