@@ -21,15 +21,86 @@ use App\Models\TaxRate;
 use App\Models\UnitOfMeasure;
 use App\Models\User;
 use App\Services\Documents\PartnerDeliveryDocumentService;
+use App\Services\Partners\PartnerAccountService;
 use App\Services\Partners\PartnerPriceListService;
 use App\Services\Partners\PartnerReportService;
 use Filament\Panel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class PartnerManagementTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_admin_can_create_and_manage_partner_login_from_the_partner_record(): void
+    {
+        $service = app(PartnerAccountService::class);
+        $partner = $service->create([
+            'name' => 'Angela',
+            'email' => ' ANGELA@Example.com ',
+            'phone' => '3331234567',
+            'account_password' => 'password-partner',
+            'active' => true,
+        ]);
+
+        $user = $partner->user;
+
+        $this->assertNotNull($user);
+        $this->assertSame('angela@example.com', $partner->email);
+        $this->assertSame('angela@example.com', $user->email);
+        $this->assertSame('partner', $user->panel_role);
+        $this->assertTrue($user->active);
+        $this->assertTrue($user->can_access_panel);
+        $this->assertTrue(Hash::check('password-partner', $user->password));
+        $this->assertTrue($user->canAccessPanel(Panel::make()->id('partner')));
+
+        $service->update($partner, [
+            'name' => 'Angela Store',
+            'email' => 'store@example.com',
+            'phone' => '3337654321',
+            'account_password' => 'nuova-password',
+            'active' => false,
+        ]);
+
+        $partner->refresh();
+        $user->refresh();
+
+        $this->assertSame('Angela Store', $partner->name);
+        $this->assertSame('store@example.com', $partner->email);
+        $this->assertSame('Angela Store', $user->name);
+        $this->assertSame('store@example.com', $user->email);
+        $this->assertFalse($user->active);
+        $this->assertTrue(Hash::check('nuova-password', $user->password));
+        $this->assertFalse($user->canAccessPanel(Panel::make()->id('partner')));
+
+        $userId = $user->getKey();
+        $partner->delete();
+
+        $this->assertDatabaseMissing('partners', ['id' => $partner->getKey()]);
+        $this->assertDatabaseMissing('users', ['id' => $userId]);
+    }
+
+    public function test_partner_password_is_unchanged_when_the_edit_field_is_empty(): void
+    {
+        $service = app(PartnerAccountService::class);
+        $partner = $service->create([
+            'name' => 'Angela',
+            'email' => 'angela@example.com',
+            'account_password' => 'password-partner',
+            'active' => true,
+        ]);
+        $passwordHash = $partner->user->password;
+
+        $service->update($partner, [
+            'name' => 'Angela',
+            'email' => 'angela@example.com',
+            'account_password' => '',
+            'active' => true,
+        ]);
+
+        $this->assertSame($passwordHash, $partner->user->fresh()->password);
+    }
 
     public function test_partner_price_list_uses_shared_products_and_calculates_prices(): void
     {

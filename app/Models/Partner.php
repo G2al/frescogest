@@ -17,6 +17,16 @@ class Partner extends Model
         'active',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleted(function (self $partner): void {
+            User::query()
+                ->whereKey($partner->user_id)
+                ->where('panel_role', 'partner')
+                ->delete();
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -13,7 +13,6 @@ use App\Filament\Resources\Partners\RelationManagers\GoodsEntriesRelationManager
 use App\Filament\Resources\Partners\RelationManagers\ProductPricesRelationManager;
 use App\Models\Partner;
 use BackedEnum;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -49,19 +48,25 @@ class PartnerResource extends Resource
                 ->columns(2)
                 ->schema([
                     TextInput::make('name')->label('Nome')->required()->maxLength(255),
-                    Select::make('user_id')
-                        ->label('Account area partner')
-                        ->relationship(
-                            'user',
-                            'email',
-                            modifyQueryUsing: fn ($query) => $query->where('panel_role', 'partner'),
-                        )
-                        ->searchable()
-                        ->preload()
-                        ->unique(ignoreRecord: true),
-                    TextInput::make('email')->label('Email')->email()->maxLength(255),
+                    TextInput::make('email')
+                        ->label('Email di accesso')
+                        ->helperText('Il partner userà questa email per accedere all’area riservata.')
+                        ->email()
+                        ->required()
+                        ->maxLength(255),
+                    TextInput::make('account_password')
+                        ->label('Password di accesso')
+                        ->helperText('Obbligatoria alla creazione. In modifica lasciala vuota per mantenere quella attuale.')
+                        ->password()
+                        ->revealable()
+                        ->minLength(8)
+                        ->required(fn (string $operation, ?Partner $record): bool => $operation === 'create' || ! $record?->user_id)
+                        ->dehydrated(fn (?string $state): bool => filled($state)),
                     TextInput::make('phone')->label('Telefono')->tel()->maxLength(50),
-                    Toggle::make('active')->label('Attivo')->default(true),
+                    Toggle::make('active')
+                        ->label('Accesso partner attivo')
+                        ->helperText('Disattivandolo il partner non potrà accedere al pannello.')
+                        ->default(true),
                     Textarea::make('notes')->label('Note')->rows(3)->columnSpanFull(),
                 ]),
         ]);
