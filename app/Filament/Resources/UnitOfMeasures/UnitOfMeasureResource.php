@@ -7,15 +7,15 @@ use App\Filament\Resources\UnitOfMeasures\Pages\EditUnitOfMeasure;
 use App\Filament\Resources\UnitOfMeasures\Pages\ListUnitOfMeasures;
 use App\Filament\Resources\UnitOfMeasures\Schemas\UnitOfMeasureForm;
 use App\Filament\Resources\UnitOfMeasures\Tables\UnitOfMeasuresTable;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\UnitOfMeasure;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class UnitOfMeasureResource extends Resource
+class UnitOfMeasureResource extends AdminOnlyResource
 {
     protected static ?string $model = UnitOfMeasure::class;
 

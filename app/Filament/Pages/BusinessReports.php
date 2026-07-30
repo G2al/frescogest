@@ -37,6 +37,11 @@ class BusinessReports extends Page
 
     public string $customerType = 'all';
 
+    public static function canAccess(): bool
+    {
+        return auth('admin')->user()?->hasAdminPanelRole() === true;
+    }
+
     public function mount(): void
     {
         $this->month = now()->format('Y-m');

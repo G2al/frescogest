@@ -53,7 +53,7 @@ class PartnerManagementTest extends TestCase
         $this->assertTrue($user->active);
         $this->assertTrue($user->can_access_panel);
         $this->assertTrue(Hash::check('password-partner', $user->password));
-        $this->assertTrue($user->canAccessPanel(Panel::make()->id('partner')));
+        $this->assertTrue($user->canAccessPanel(Panel::make()->id('admin')));
 
         $service->update($partner, [
             'name' => 'Angela Store',
@@ -72,7 +72,7 @@ class PartnerManagementTest extends TestCase
         $this->assertSame('store@example.com', $user->email);
         $this->assertFalse($user->active);
         $this->assertTrue(Hash::check('nuova-password', $user->password));
-        $this->assertFalse($user->canAccessPanel(Panel::make()->id('partner')));
+        $this->assertFalse($user->canAccessPanel(Panel::make()->id('admin')));
 
         $userId = $user->getKey();
         $partner->delete();
@@ -305,11 +305,11 @@ class PartnerManagementTest extends TestCase
 
         $this->assertTrue($admin->canAccessPanel($adminPanel));
         $this->assertFalse($admin->canAccessPanel($partnerPanel));
-        $this->assertFalse($partnerUser->canAccessPanel($adminPanel));
-        $this->assertTrue($partnerUser->canAccessPanel($partnerPanel));
+        $this->assertTrue($partnerUser->canAccessPanel($adminPanel));
+        $this->assertFalse($partnerUser->canAccessPanel($partnerPanel));
     }
 
-    public function test_partner_can_open_only_the_dedicated_panel_pages(): void
+    public function test_partner_can_open_only_their_pages_inside_the_admin_panel(): void
     {
         $partnerUser = User::factory()->create([
             'active' => true,
@@ -333,19 +333,37 @@ class PartnerManagementTest extends TestCase
             'total_gross' => 10.4,
             'revision' => 1,
         ]);
+        $otherPartner = Partner::create(['name' => 'Altro partner', 'active' => true]);
+        DeliveryDocument::create([
+            'partner_id' => $otherPartner->id,
+            'document_number' => 'BC-2026-000002',
+            'issued_at' => now(),
+            'transport_reason' => 'Vendita',
+            'transport_method' => 'Mittente',
+            'sender_snapshot' => ['business_name' => 'Il Paradiso della Frutta'],
+            'recipient_name' => 'Altro partner',
+            'recipient_snapshot' => ['display_name' => 'Altro partner', 'type' => 'Partner'],
+            'destination_snapshot' => [],
+            'items_snapshot' => [],
+            'total_net' => 10,
+            'total_tax' => 0.4,
+            'total_gross' => 10.4,
+            'revision' => 1,
+        ]);
 
         $this->actingAs($partnerUser, 'admin');
 
-        $this->get('/partner')->assertRedirect('/partner/dashboard');
-        $this->get('/partner/dashboard')->assertOk();
-        $this->get('/partner/delivery-documents')->assertOk()->assertSee('BC-2026-000001');
-        $this->get(route('partner.delivery-documents.show', $document))->assertOk();
-        $this->get('/partner/daily-receipts')->assertNotFound();
-        $this->get('/partner/daily-wastes')->assertNotFound();
-        $this->get('/partner/expenses')->assertNotFound();
-        $this->get('/partner/goods-entries')->assertNotFound();
-        $this->get('/partner/product-prices')->assertNotFound();
-        $this->get('/admin')->assertForbidden();
+        $this->get('/admin')->assertRedirect('/admin/partner-reports');
+        $this->get('/admin/partner-reports')->assertOk();
+        $this->get('/admin/delivery-documents')
+            ->assertOk()
+            ->assertSee('BC-2026-000001')
+            ->assertDontSee('BC-2026-000002');
+        $this->get(route('admin.delivery-documents.show', $document))->assertOk();
+        $this->get('/admin/orders')->assertForbidden();
+        $this->get('/admin/products')->assertForbidden();
+        $this->get('/admin/business-reports')->assertForbidden();
+        $this->get('/partner')->assertNotFound();
     }
 
     public function test_partner_cannot_download_another_partners_delivery_document(): void
@@ -375,7 +393,7 @@ class PartnerManagementTest extends TestCase
         ]);
 
         $this->actingAs($partnerUser, 'admin')
-            ->get(route('partner.delivery-documents.show', $document))
+            ->get(route('admin.delivery-documents.show', $document))
             ->assertForbidden();
     }
 

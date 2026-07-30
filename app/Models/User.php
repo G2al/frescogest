@@ -45,11 +45,19 @@ class User extends Authenticatable implements FilamentUser
             return false;
         }
 
-        return match ($panel->getId()) {
-            'admin' => in_array($this->panel_role, [null, 'admin'], true),
-            'partner' => $this->panel_role === 'partner' && $this->partner?->active === true,
-            default => false,
-        };
+        return $panel->getId() === 'admin'
+            && ($this->hasAdminPanelRole() || $this->hasPartnerPanelRole());
+    }
+
+    public function hasAdminPanelRole(): bool
+    {
+        return in_array($this->panel_role, [null, 'admin'], true);
+    }
+
+    public function hasPartnerPanelRole(): bool
+    {
+        return $this->panel_role === 'partner'
+            && $this->partner?->active === true;
     }
 
     public function customer(): HasOne

@@ -7,15 +7,15 @@ use App\Filament\Resources\TaxRates\Pages\EditTaxRate;
 use App\Filament\Resources\TaxRates\Pages\ListTaxRates;
 use App\Filament\Resources\TaxRates\Schemas\TaxRateForm;
 use App\Filament\Resources\TaxRates\Tables\TaxRatesTable;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\TaxRate;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class TaxRateResource extends Resource
+class TaxRateResource extends AdminOnlyResource
 {
     protected static ?string $model = TaxRate::class;
 

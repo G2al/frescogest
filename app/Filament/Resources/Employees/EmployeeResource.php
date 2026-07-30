@@ -7,6 +7,7 @@ use App\Filament\Resources\Employees\Pages\CreateEmployee;
 use App\Filament\Resources\Employees\Pages\EditEmployee;
 use App\Filament\Resources\Employees\Pages\ListEmployees;
 use App\Filament\Resources\Employees\RelationManagers\WorkShiftsRelationManager;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\Employee;
 use App\Services\Employees\EmployeeCostService;
 use BackedEnum;
@@ -16,7 +17,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -27,7 +27,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class EmployeeResource extends Resource
+class EmployeeResource extends AdminOnlyResource
 {
     protected static ?string $model = Employee::class;
 

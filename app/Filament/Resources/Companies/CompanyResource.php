@@ -7,15 +7,15 @@ use App\Filament\Resources\Companies\Pages\EditCompany;
 use App\Filament\Resources\Companies\Pages\ListCompanies;
 use App\Filament\Resources\Companies\Schemas\CompanyForm;
 use App\Filament\Resources\Companies\Tables\CompaniesTable;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\Company;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class CompanyResource extends Resource
+class CompanyResource extends AdminOnlyResource
 {
     protected static ?string $model = Company::class;
 

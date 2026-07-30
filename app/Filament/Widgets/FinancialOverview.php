@@ -15,6 +15,11 @@ use Illuminate\Support\Facades\DB;
 
 class FinancialOverview extends StatsOverviewWidget
 {
+    public static function canView(): bool
+    {
+        return auth('admin')->user()?->hasAdminPanelRole() === true;
+    }
+
     protected function getStats(): array
     {
         $current = $this->summaryFor(now()->year, now()->month);

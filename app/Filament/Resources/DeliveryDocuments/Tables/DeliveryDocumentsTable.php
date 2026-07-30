@@ -40,11 +40,13 @@ class DeliveryDocumentsTable
             ->filters([
                 SelectFilter::make('customer_id')
                     ->label('Cliente')
+                    ->visible(fn (): bool => auth('admin')->user()?->hasAdminPanelRole() === true)
                     ->options(fn (): array => Customer::query()->orderBy('company_name')->get()->mapWithKeys(fn (Customer $customer): array => [$customer->id => $customer->display_name])->all())
                     ->searchable()
                     ->query(fn (Builder $query, array $data): Builder => $query->when($data['value'] ?? null, fn (Builder $documents, $customerId): Builder => $documents->whereHas('order', fn (Builder $orders): Builder => $orders->where('customer_id', $customerId)))),
                 SelectFilter::make('partner_id')
                     ->label('Partner')
+                    ->visible(fn (): bool => auth('admin')->user()?->hasAdminPanelRole() === true)
                     ->options(fn (): array => Partner::query()->orderBy('name')->pluck('name', 'id')->all())
                     ->searchable(),
                 Filter::make('issued_at')
@@ -61,14 +63,17 @@ class DeliveryDocumentsTable
             ->recordActions([
                 Action::make('download')->label('Scarica')->icon('heroicon-o-arrow-down-tray')->iconButton()->tooltip('Scarica bolla')
                     ->url(fn (DeliveryDocument $record): string => route('admin.delivery-documents.show', $record))->openUrlInNewTab(),
-                EditPartnerDeliveryDocumentAction::make(),
-                DeletePartnerDeliveryDocumentAction::make(),
+                EditPartnerDeliveryDocumentAction::make()
+                    ->visible(fn (): bool => auth('admin')->user()?->hasAdminPanelRole() === true),
+                DeletePartnerDeliveryDocumentAction::make()
+                    ->visible(fn (): bool => auth('admin')->user()?->hasAdminPanelRole() === true),
             ])
             ->toolbarActions([
                 Action::make('downloadFiltered')
                     ->label('Scarica PDF risultati filtrati')
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('success')
+                    ->visible(fn (): bool => auth('admin')->user()?->hasAdminPanelRole() === true)
                     ->action(function (ListRecords $livewire): void {
                         $ids = $livewire->getFilteredSortedTableQuery()?->pluck('delivery_documents.id')->all() ?? [];
 
@@ -83,6 +88,7 @@ class DeliveryDocumentsTable
                     ->label('Scarica PDF selezionati')
                     ->icon('heroicon-o-document-arrow-down')
                     ->color('success')
+                    ->visible(fn (): bool => auth('admin')->user()?->hasAdminPanelRole() === true)
                     ->action(function (Collection $records, Component $livewire): void {
                         $url = route('admin.delivery-documents.export', ['documents' => implode(',', $records->modelKeys())]);
                         $livewire->js('window.open('.json_encode($url).', "_blank", "noopener,noreferrer")');

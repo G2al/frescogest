@@ -7,15 +7,15 @@ use App\Filament\Resources\CommercialRules\Pages\EditCommercialRule;
 use App\Filament\Resources\CommercialRules\Pages\ListCommercialRules;
 use App\Filament\Resources\CommercialRules\Schemas\CommercialRuleForm;
 use App\Filament\Resources\CommercialRules\Tables\CommercialRulesTable;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\CommercialRule;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class CommercialRuleResource extends Resource
+class CommercialRuleResource extends AdminOnlyResource
 {
     protected static ?string $model = CommercialRule::class;
 

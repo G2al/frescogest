@@ -19,6 +19,11 @@ class DeliveryDocumentFileController extends Controller
     ): Response {
         $user = $request->user('admin');
         abort_unless($user?->active && $user->can_access_panel, 403);
+        abort_if(
+            $user->hasPartnerPanelRole()
+            && $deliveryDocument->partner_id !== $user->partner->getKey(),
+            403,
+        );
 
         $deliveryDocument->loadMissing(['order.customer', 'partner']);
 

@@ -11,12 +11,12 @@ use App\Filament\Resources\Partners\RelationManagers\DeliveryDocumentsRelationMa
 use App\Filament\Resources\Partners\RelationManagers\ExpensesRelationManager;
 use App\Filament\Resources\Partners\RelationManagers\GoodsEntriesRelationManager;
 use App\Filament\Resources\Partners\RelationManagers\ProductPricesRelationManager;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\Partner;
 use BackedEnum;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -24,7 +24,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class PartnerResource extends Resource
+class PartnerResource extends AdminOnlyResource
 {
     protected static ?string $model = Partner::class;
 

@@ -18,6 +18,11 @@ class CustomerTypeRevenueChart extends ChartWidget
 
     protected ?string $maxHeight = '350px';
 
+    public static function canView(): bool
+    {
+        return auth('admin')->user()?->hasAdminPanelRole() === true;
+    }
+
     protected function getData(): array
     {
         $periods = collect(range(5, 0))->map(fn (int $monthsAgo) => now()->startOfMonth()->subMonths($monthsAgo));

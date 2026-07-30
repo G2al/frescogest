@@ -7,15 +7,15 @@ use App\Filament\Resources\StoreClosureSchedules\Pages\EditStoreClosureSchedule;
 use App\Filament\Resources\StoreClosureSchedules\Pages\ListStoreClosureSchedules;
 use App\Filament\Resources\StoreClosureSchedules\Schemas\StoreClosureScheduleForm;
 use App\Filament\Resources\StoreClosureSchedules\Tables\StoreClosureSchedulesTable;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\StoreClosureSchedule;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class StoreClosureScheduleResource extends Resource
+class StoreClosureScheduleResource extends AdminOnlyResource
 {
     protected static ?string $model = StoreClosureSchedule::class;
 

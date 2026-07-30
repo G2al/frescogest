@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Dashboard;
 use App\Filament\Widgets\CustomerTypeRevenueChart;
 use App\Filament\Widgets\FinancialOverview;
 use App\Filament\Widgets\MonthlyPerformanceChart;
@@ -9,7 +10,6 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -42,7 +42,9 @@ class AdminPanelProvider extends PanelProvider
             )
             ->renderHook(
                 PanelsRenderHook::BODY_END,
-                fn (): string => view('filament.pending-orders-poller')->render(),
+                fn (): string => auth('admin')->user()?->hasAdminPanelRole()
+                    ? view('filament.pending-orders-poller')->render()
+                    : '',
             )
             ->colors([
                 'primary' => '#007060',

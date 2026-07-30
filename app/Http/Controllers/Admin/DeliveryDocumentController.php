@@ -18,7 +18,7 @@ class DeliveryDocumentController extends Controller
         DeliveryDocumentFilenameService $filenames,
     ): Response {
         $user = $request->user('admin');
-        abort_unless($user?->active && $user->can_access_panel, 403);
+        abort_unless($user?->hasAdminPanelRole() === true, 403);
 
         $order->loadMissing(['customer', 'deliveryDocument', 'paymentMethod']);
         abort_if(! $order->deliveryDocument, 404);

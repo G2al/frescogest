@@ -15,14 +15,16 @@
                     <p>Confronta merce caricata, incassi, scarti e spese nel periodo selezionato.</p>
                 </div>
             </div>
-            <div class="business-report-period">
-                <label for="partner-report-partner">Partner</label>
-                <select id="partner-report-partner" wire:model.live="partnerId">
-                    @foreach ($this->partnerOptions() as $value => $label)
-                        <option value="{{ $value }}">{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
+            @unless ($this->isPartnerAccount())
+                <div class="business-report-period">
+                    <label for="partner-report-partner">Partner</label>
+                    <select id="partner-report-partner" wire:model.live="partnerId">
+                        @foreach ($this->partnerOptions() as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endunless
             <div class="business-report-period">
                 <label for="partner-report-period">Raggruppamento</label>
                 <select id="partner-report-period" wire:model.live="period">

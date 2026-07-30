@@ -7,15 +7,15 @@ use App\Filament\Resources\ProductCategories\Pages\EditProductCategory;
 use App\Filament\Resources\ProductCategories\Pages\ListProductCategories;
 use App\Filament\Resources\ProductCategories\Schemas\ProductCategoryForm;
 use App\Filament\Resources\ProductCategories\Tables\ProductCategoriesTable;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\ProductCategory;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class ProductCategoryResource extends Resource
+class ProductCategoryResource extends AdminOnlyResource
 {
     protected static ?string $model = ProductCategory::class;
 

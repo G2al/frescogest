@@ -19,6 +19,11 @@ class MonthlyPerformanceChart extends ChartWidget
 
     protected ?string $maxHeight = '390px';
 
+    public static function canView(): bool
+    {
+        return auth('admin')->user()?->hasAdminPanelRole() === true;
+    }
+
     protected function getData(): array
     {
         $periods = collect(range(11, 0))->map(fn (int $monthsAgo) => now()->startOfMonth()->subMonths($monthsAgo))

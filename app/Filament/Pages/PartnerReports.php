@@ -33,18 +33,43 @@ class PartnerReports extends Page
 
     public function mount(): void
     {
-        $this->partnerId = Partner::query()->where('active', true)->value('id');
+        $this->partnerId = $this->authenticatedPartner()?->getKey()
+            ?? Partner::query()->where('active', true)->value('id');
         $this->referenceDate = now()->toDateString();
+    }
+
+    public static function canAccess(): bool
+    {
+        $user = auth('admin')->user();
+
+        return $user?->hasAdminPanelRole() === true
+            || $user?->hasPartnerPanelRole() === true;
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return auth('admin')->user()?->hasPartnerPanelRole()
+            ? 'La mia analisi'
+            : 'Analisi partner';
+    }
+
+    public function isPartnerAccount(): bool
+    {
+        return auth('admin')->user()?->hasPartnerPanelRole() === true;
     }
 
     public function partnerOptions(): array
     {
+        if ($partner = $this->authenticatedPartner()) {
+            return [$partner->getKey() => $partner->name];
+        }
+
         return Partner::query()->where('active', true)->orderBy('name')->pluck('name', 'id')->all();
     }
 
     public function report(): array
     {
-        $partner = Partner::query()->find($this->partnerId);
+        $partner = $this->selectedPartner();
 
         if (! $partner) {
             return $this->emptyReport();
@@ -64,7 +89,7 @@ class PartnerReports extends Page
 
     public function trends(): array
     {
-        $partner = Partner::query()->find($this->partnerId);
+        $partner = $this->selectedPartner();
 
         if (! $partner) {
             return [];
@@ -95,6 +120,19 @@ class PartnerReports extends Page
         return $this->period === 'week'
             ? [$date->startOfWeek(), $date->endOfWeek()]
             : [$date->startOfMonth(), $date->endOfMonth()];
+    }
+
+    private function selectedPartner(): ?Partner
+    {
+        return $this->authenticatedPartner()
+            ?? Partner::query()->find($this->partnerId);
+    }
+
+    private function authenticatedPartner(): ?Partner
+    {
+        $user = auth('admin')->user();
+
+        return $user?->hasPartnerPanelRole() ? $user->partner : null;
     }
 
     private function previousRange(CarbonImmutable $from, CarbonImmutable $to): array

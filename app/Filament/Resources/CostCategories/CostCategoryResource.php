@@ -6,11 +6,11 @@ use App\Filament\Resources\CostCategories\Pages\CreateCostCategory;
 use App\Filament\Resources\CostCategories\Pages\EditCostCategory;
 use App\Filament\Resources\CostCategories\Pages\ListCostCategories;
 use App\Filament\Resources\CostCategories\RelationManagers\MovementsRelationManager;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\CostCategory;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -18,7 +18,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class CostCategoryResource extends Resource
+class CostCategoryResource extends AdminOnlyResource
 {
     protected static ?string $model = CostCategory::class;
 

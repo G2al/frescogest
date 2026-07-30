@@ -7,15 +7,15 @@ use App\Filament\Resources\PromotionCodes\Pages\EditPromotionCode;
 use App\Filament\Resources\PromotionCodes\Pages\ListPromotionCodes;
 use App\Filament\Resources\PromotionCodes\Schemas\PromotionCodeForm;
 use App\Filament\Resources\PromotionCodes\Tables\PromotionCodesTable;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\PromotionCode;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class PromotionCodeResource extends Resource
+class PromotionCodeResource extends AdminOnlyResource
 {
     protected static ?string $model = PromotionCode::class;
 

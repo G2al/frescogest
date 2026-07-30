@@ -9,15 +9,15 @@ use App\Filament\Resources\Customers\RelationManagers\OrdersRelationManager;
 use App\Filament\Resources\Customers\RelationManagers\PriceListRelationManager;
 use App\Filament\Resources\Customers\Schemas\CustomerForm;
 use App\Filament\Resources\Customers\Tables\CustomersTable;
+use App\Filament\Support\AdminOnlyResource;
 use App\Models\Customer;
 use BackedEnum;
-use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
-class CustomerResource extends Resource
+class CustomerResource extends AdminOnlyResource
 {
     protected static ?string $model = Customer::class;
 
