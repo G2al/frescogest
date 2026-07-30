@@ -349,6 +349,8 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 }
 
 .commercial-terms {
+    position: relative;
+    isolation: isolate;
     display: grid;
     grid-template-columns: 30px minmax(0, 1fr);
     gap: 2px 10px;
@@ -361,7 +363,8 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
     background: #f1faf6;
     font-size: .7rem;
     line-height: 1.3;
-    transition: border-color .25s ease, background .25s ease;
+    overflow: hidden;
+    transition: border-color .45s ease, background .45s ease, box-shadow .45s ease, transform .45s cubic-bezier(.2,.8,.2,1);
 }
 
 .commercial-terms-icon {
@@ -372,6 +375,7 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
     border-radius: 9px;
     color: #078361;
     background: rgba(7,131,97,.1);
+    transition: color .4s ease, background .4s ease, box-shadow .4s ease, transform .4s cubic-bezier(.2,.8,.2,1);
 }
 
 .commercial-terms-icon svg { width: 17px; height: 17px; }
@@ -391,12 +395,23 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 }
 
 .commercial-progress-fill {
+    position: relative;
     display: block;
     height: 100%;
+    overflow: hidden;
     border-radius: inherit;
     background: linear-gradient(90deg,#078361,#20bc7d);
     box-shadow: 0 0 10px rgba(32,188,125,.22);
-    transition: width .35s ease;
+    will-change: width;
+    transition: width .85s cubic-bezier(.22,1,.36,1), background .45s ease, box-shadow .45s ease;
+}
+
+.commercial-progress-fill > i {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg,transparent 20%,rgba(255,255,255,.48) 48%,transparent 76%);
+    transform: translateX(-120%);
+    animation: commercial-progress-shine 2.6s ease-in-out infinite;
 }
 
 .commercial-progress-marker {
@@ -410,9 +425,72 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 }
 
 .commercial-terms.is-shipping { border-color: rgba(18,139,107,.22); background: #effaf5; }
-.commercial-terms.is-complete { border-color: rgba(32,188,125,.3); background: #e9faf2; }
-.commercial-terms.is-complete .commercial-terms-icon { color: #fff; background: #159b6b; }
-.commercial-terms.is-complete .commercial-progress-fill { background: linear-gradient(90deg,#159b6b,#28c985); }
+.commercial-terms.is-shipping .commercial-progress-fill { background: linear-gradient(90deg,#078361,#39c990,#82d9aa); }
+.commercial-terms.is-complete {
+    border-color: rgba(190,136,22,.38);
+    color: #74520d;
+    background: linear-gradient(135deg,#fffdf4 0%,#fff4c9 56%,#ffefb2 100%);
+    box-shadow: 0 8px 24px rgba(190,136,22,.13), inset 0 1px 0 rgba(255,255,255,.85);
+}
+.commercial-terms.is-complete .commercial-terms-icon {
+    color: #fff9df;
+    background: linear-gradient(145deg,#d9a827,#a97108);
+    box-shadow: 0 5px 14px rgba(169,113,8,.25);
+}
+.commercial-terms.is-complete .commercial-terms-copy small { color: #9b741e; }
+.commercial-terms.is-complete .commercial-terms-copy strong { color: #684700; }
+.commercial-terms.is-complete .commercial-terms-copy > span { color: #806222; }
+.commercial-terms.is-complete .commercial-progress { background: rgba(137,91,0,.13); }
+.commercial-terms.is-complete .commercial-progress-fill {
+    background: linear-gradient(90deg,#aa7205,#e0ad2b 52%,#ffd96b);
+    box-shadow: 0 0 15px rgba(224,173,43,.42);
+}
+.commercial-terms.is-complete .commercial-progress-marker { opacity: 0; }
+.commercial-terms.is-celebrating { animation: commercial-unlock .75s cubic-bezier(.2,.9,.25,1); }
+.commercial-terms.is-celebrating .commercial-terms-icon { animation: commercial-crown .9s cubic-bezier(.2,.9,.25,1); }
+
+.commercial-sparkles { position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; }
+.commercial-sparkles i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #e1ad2c; box-shadow: 0 0 9px rgba(225,173,44,.65); }
+.commercial-sparkles i:nth-child(1) { top: 17%; right: 12%; }
+.commercial-sparkles i:nth-child(2) { top: 53%; right: 5%; width: 3px; height: 3px; }
+.commercial-sparkles i:nth-child(3) { right: 24%; bottom: 12%; width: 4px; height: 4px; }
+.commercial-terms.is-celebrating .commercial-sparkles { opacity: 1; }
+.commercial-terms.is-celebrating .commercial-sparkles i { animation: commercial-sparkle 1.15s ease-out both; }
+.commercial-terms.is-celebrating .commercial-sparkles i:nth-child(2) { animation-delay: .12s; }
+.commercial-terms.is-celebrating .commercial-sparkles i:nth-child(3) { animation-delay: .23s; }
+
+@keyframes commercial-progress-shine {
+    0%,45% { transform: translateX(-120%); }
+    75%,100% { transform: translateX(120%); }
+}
+
+@keyframes commercial-unlock {
+    0% { transform: scale(.985); }
+    42% { transform: scale(1.018); }
+    100% { transform: scale(1); }
+}
+
+@keyframes commercial-crown {
+    0% { transform: scale(.75) rotate(-12deg); }
+    48% { transform: scale(1.18) rotate(7deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes commercial-sparkle {
+    0% { opacity: 0; transform: scale(.2) translateY(8px); }
+    35% { opacity: 1; transform: scale(1.45) translateY(-5px); }
+    100% { opacity: 0; transform: scale(.5) translateY(-15px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .commercial-terms,
+    .commercial-terms-icon,
+    .commercial-progress-fill { transition-duration: .01ms; }
+    .commercial-progress-fill > i,
+    .commercial-terms.is-celebrating,
+    .commercial-terms.is-celebrating .commercial-terms-icon,
+    .commercial-terms.is-celebrating .commercial-sparkles i { animation: none; }
+}
 
 @media (max-height: 700px) {
     .cart-drawer { grid-template-rows: auto minmax(145px,1fr) auto; }

@@ -155,6 +155,7 @@ function renderCartDrawer() {
     const cart = getCart();
     const content = document.querySelector('#cart-drawer-content');
     const footer = document.querySelector('#cart-drawer-footer');
+    const commercialSnapshot = commercialTermsSnapshot(footer);
 
     content.innerHTML = cart.length
         ? cart.map((item, index) => `<article class="cart-drawer-item">
@@ -177,13 +178,61 @@ function renderCartDrawer() {
 
     const total = cartProductsTotal();
     footer.innerHTML = cart.length
-        ? `<div class="commercial-terms-slot">${commercialTermsMarkup(total)}</div>${promotionMarkup('drawer')}<label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span>${totalMarkup(total)}</div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
+        ? `<div class="commercial-terms-slot">${commercialTermsMarkup(total, commercialSnapshot.progress)}</div>${promotionMarkup('drawer')}<label class="cart-drawer-notes"><span><i data-lucide="message-square-text"></i>Note per Antonio</span><textarea id="cart-drawer-notes" rows="2" placeholder="Preferenze o indicazioni sulla consegna">${escapeHtml(drawerNotes)}</textarea></label><div class="cart-drawer-total"><span>Totale indicativo</span>${totalMarkup(total)}</div><button class="btn cart-drawer-whatsapp" type="button"><i data-lucide="message-circle"></i>Conferma su WhatsApp</button><a class="btn cart-drawer-checkout" href="/cart.html"><i data-lucide="shopping-bag"></i>Apri il carrello completo</a><button class="cart-drawer-continue" type="button">Continua gli acquisti</button>`
         : '<button class="btn btn-primary cart-drawer-continue" type="button"><i data-lucide="arrow-left"></i>Continua nel catalogo</button>';
     updateCartBadges();
     refreshIcons(document.querySelector('#cart-drawer'));
+    activateCommercialTerms(footer, commercialSnapshot.state);
 }
 
-function commercialTermsMarkup(total = cartProductsTotal()) {
+function commercialTermsSnapshot(root) {
+    const terms = root?.querySelector?.('.commercial-terms');
+    const track = terms?.querySelector('.commercial-progress');
+    const fill = terms?.querySelector('.commercial-progress-fill');
+
+    if (!terms || !track || !fill) return { progress: 0, state: null };
+
+    const trackWidth = track.getBoundingClientRect().width;
+    const fillWidth = fill.getBoundingClientRect().width;
+    const fallback = Number(fill.dataset.progress || 0);
+
+    return {
+        progress: trackWidth > 0 ? Math.min(100, Math.max(0, fillWidth / trackWidth * 100)) : fallback,
+        state: terms.dataset.state || null,
+    };
+}
+
+function activateCommercialTerms(root, previousState = null) {
+    const terms = root?.querySelector?.('.commercial-terms');
+    const fill = terms?.querySelector('.commercial-progress-fill');
+
+    if (!terms || !fill) return;
+
+    const target = Number(fill.dataset.progress || 0);
+
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            fill.style.width = `${target}%`;
+            terms.classList.add('is-updating');
+
+            if (terms.dataset.state === 'complete' && previousState !== 'complete') {
+                terms.classList.add('is-celebrating');
+                window.setTimeout(() => terms.classList.remove('is-celebrating'), 1500);
+            }
+        });
+    });
+}
+
+function renderCommercialTerms(root, total = cartProductsTotal()) {
+    if (!root) return;
+
+    const snapshot = commercialTermsSnapshot(root);
+    root.innerHTML = commercialTermsMarkup(total, snapshot.progress);
+    refreshIcons(root);
+    activateCommercialTerms(root, snapshot.state);
+}
+
+function commercialTermsMarkup(total = cartProductsTotal(), initialProgress = 0) {
     if (!commercialTerms) return '';
 
     const minimum = Number(commercialTerms.minimum_order_gross || 0);
@@ -210,12 +259,15 @@ function commercialTermsMarkup(total = cartProductsTotal()) {
         detail = `Minimo raggiunto · consegna ${currency(shippingGross)}`;
     } else if (freeShipping > 0) {
         state = 'complete';
-        icon = 'badge-check';
-        title = 'Consegna gratuita raggiunta';
-        detail = `Hai superato la soglia di ${currency(freeShipping)}`;
+        icon = 'crown';
+        title = 'Consegna gratuita sbloccata';
+        detail = `Obiettivo raggiunto · hai superato ${currency(freeShipping)}`;
     }
 
-    return `<div class="commercial-terms is-${state}">
+    const startProgress = Math.min(100, Math.max(0, Number(initialProgress) || 0));
+
+    return `<div class="commercial-terms is-${state}" data-state="${state}" data-progress="${progress.toFixed(2)}" aria-live="polite">
+        <span class="commercial-sparkles" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="commercial-terms-icon"><i data-lucide="${icon}"></i></span>
         <div class="commercial-terms-copy">
             <small>Condizioni ordine</small>
@@ -223,7 +275,7 @@ function commercialTermsMarkup(total = cartProductsTotal()) {
             <span>${detail}</span>
         </div>
         <div class="commercial-progress" role="progressbar" aria-label="${escapeHtml(title)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(progress)}">
-            <span class="commercial-progress-fill" style="width:${progress.toFixed(2)}%"></span>
+            <span class="commercial-progress-fill" data-progress="${progress.toFixed(2)}" style="width:${startProgress.toFixed(2)}%"><i aria-hidden="true"></i></span>
             ${minimumMarker < 100 ? `<span class="commercial-progress-marker" style="left:${minimumMarker.toFixed(2)}%" aria-hidden="true"></span>` : ''}
         </div>
     </div>`;
@@ -234,12 +286,12 @@ async function loadCommercialTerms() {
 
     try {
         commercialTerms = (await api('/orders/commercial-terms')).data;
-        document.querySelectorAll('.commercial-terms-slot').forEach(node => { node.innerHTML = commercialTermsMarkup(cartProductsTotal()); });
+        document.querySelectorAll('.commercial-terms-slot').forEach(node => renderCommercialTerms(node));
         const form = document.querySelector('#order-form');
         if (form && !form.querySelector('.commercial-terms-slot')) {
-            form.insertAdjacentHTML('afterbegin', `<div class="commercial-terms-slot">${commercialTermsMarkup(cartProductsTotal())}</div>`);
+            form.insertAdjacentHTML('afterbegin', '<div class="commercial-terms-slot"></div>');
+            renderCommercialTerms(form.querySelector('.commercial-terms-slot'));
         }
-        refreshIcons();
     } catch {}
 }
 
@@ -420,7 +472,7 @@ async function renderCart() {
     const totalRoot = document.querySelector('#cart-total');
     if (totalRoot) totalRoot.innerHTML = totalMarkup(total);
     const commercialTermsRoot = document.querySelector('#order-form .commercial-terms-slot');
-    if (commercialTermsRoot) commercialTermsRoot.innerHTML = commercialTermsMarkup(total);
+    if (commercialTermsRoot) renderCommercialTerms(commercialTermsRoot, total);
     const promotionRoot = document.querySelector('#cart-promotion');
     if (promotionRoot) {
         promotionRoot.innerHTML = promotionMarkup('page');
