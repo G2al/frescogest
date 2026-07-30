@@ -18,8 +18,8 @@ class EmployeeAttendanceService
             $shift->fill([
                 'work_date' => today()->toDateString(),
                 'status' => $data['status'],
-                'started_at' => $data['status'] === 'present' ? $data['started_at'] : null,
-                'ended_at' => $data['status'] === 'present' ? $data['ended_at'] : null,
+                'started_at' => $data['status'] === 'present' ? ($data['started_at'] ?? null) : null,
+                'ended_at' => $data['status'] === 'present' ? ($data['ended_at'] ?? null) : null,
                 'break_minutes' => $data['status'] === 'present' ? (int) ($data['break_minutes'] ?? 0) : 0,
                 'expected_minutes' => $employee->expected_daily_minutes,
                 'notes' => $data['notes'] ?? null,

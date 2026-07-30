@@ -16,7 +16,7 @@ class StoreEmployeeAttendanceRequest extends FormRequest
         return [
             'status' => ['required', 'in:present,absent'],
             'started_at' => ['nullable', 'required_if:status,present', 'date_format:H:i'],
-            'ended_at' => ['nullable', 'required_if:status,present', 'date_format:H:i'],
+            'ended_at' => ['nullable', 'date_format:H:i'],
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:1439'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
@@ -26,7 +26,6 @@ class StoreEmployeeAttendanceRequest extends FormRequest
     {
         return [
             'started_at.required_if' => 'Indica l’orario di inizio.',
-            'ended_at.required_if' => 'Indica l’orario di fine.',
         ];
     }
 }

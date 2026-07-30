@@ -6,6 +6,7 @@ use App\Models\TaxRate;
 use App\Services\Pricing\ProductListPriceCalculator;
 use App\Services\Pricing\PurchaseCostCalculator;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -37,11 +38,19 @@ class ProductForm
                         ->label('Costo di acquisto IVA inclusa')
                         ->helperText('Inserisci il costo realmente pagato, già comprensivo di IVA, per ogni unità selezionata.')
                         ->numeric()->minValue(0)->step(0.0001)->prefix('€')->required()->live(debounce: 500)
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateNetCostAndPrices($get, $set)),
+                        ->afterStateUpdated(function (Get $get, Set $set): void {
+                            $set('purchase_cost_input_source', 'gross');
+                            self::updateNetCostAndPrices($get, $set);
+                        }),
                     TextInput::make('purchase_cost_per_unit')
                         ->label('Costo di acquisto netto')
-                        ->helperText('Calcolato automaticamente scorporando l’IVA dal costo pagato.')
-                        ->numeric()->prefix('€')->disabled()->dehydrated(false),
+                        ->helperText('Puoi inserirlo manualmente: il costo IVA inclusa verrà ricalcolato.')
+                        ->numeric()->minValue(0)->step(0.0001)->prefix('€')->required()->live(debounce: 500)
+                        ->afterStateUpdated(function (Get $get, Set $set): void {
+                            $set('purchase_cost_input_source', 'net');
+                            self::updateGrossCostAndPrices($get, $set);
+                        }),
+                    Hidden::make('purchase_cost_input_source')->default('gross')->dehydrated(false),
                     Textarea::make('description')->label('Descrizione')->rows(3)->columnSpanFull(),
                     Textarea::make('notes')->label('Note')->rows(3)->columnSpanFull(),
                     Textarea::make('public_description')->label('Descrizione pubblica')->rows(3)->columnSpanFull(),
@@ -91,7 +100,15 @@ class ProductForm
                 ->schema([
                     Select::make('product_category_id')->label('Categoria')->relationship('productCategory', 'name')->searchable()->preload()->required(),
                     Select::make('tax_rate_id')->label('Aliquota IVA')->relationship('taxRate', 'name')->searchable()->preload()->required()->live()
-                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateNetCostAndPrices($get, $set)),
+                        ->afterStateUpdated(function (Get $get, Set $set): void {
+                            if ($get('purchase_cost_input_source') === 'net') {
+                                self::updateGrossCostAndPrices($get, $set);
+
+                                return;
+                            }
+
+                            self::updateNetCostAndPrices($get, $set);
+                        }),
                     Select::make('default_unit_of_measure_id')->label('Unità di misura predefinita')->relationship('defaultUnitOfMeasure', 'name')->searchable()->preload()->required(),
                 ])->columns(2),
         ]);
@@ -112,6 +129,16 @@ class ProductForm
         );
 
         $set('purchase_cost_per_unit', number_format($netCost, 4, '.', ''));
+        self::updatePricesFromMarkups($get, $set, $netCost);
+    }
+
+    private static function updateGrossCostAndPrices(Get $get, Set $set): void
+    {
+        $percentage = TaxRate::query()->whereKey($get('tax_rate_id'))->value('percentage') ?? 0;
+        $netCost = $get('purchase_cost_per_unit');
+        $grossCost = app(PurchaseCostCalculator::class)->grossFromNet($netCost, $percentage);
+
+        $set('purchase_cost_per_unit_gross', number_format($grossCost, 4, '.', ''));
         self::updatePricesFromMarkups($get, $set, $netCost);
     }
 

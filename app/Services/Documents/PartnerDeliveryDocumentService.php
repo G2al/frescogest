@@ -18,6 +18,7 @@ class PartnerDeliveryDocumentService
     public function __construct(
         private readonly DeliveryDocumentNumberService $numbers,
         private readonly PriceCalculator $calculator,
+        private readonly DeliveryDocumentSnapshotService $snapshots,
     ) {}
 
     public function create(Partner $partner, User $creator, array $data): DeliveryDocument
@@ -104,8 +105,8 @@ class PartnerDeliveryDocumentService
                 'province',
                 'logo_path',
             ]),
-            'recipient_snapshot' => ['display_name' => $partner->name],
-            'destination_snapshot' => [],
+            'recipient_snapshot' => $this->snapshots->partner($partner),
+            'destination_snapshot' => $this->snapshots->partner($partner),
             'items_snapshot' => $items,
             'subtotal_net' => $totalNet,
             'discount_percentage' => 0,

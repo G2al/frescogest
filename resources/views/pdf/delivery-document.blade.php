@@ -40,7 +40,7 @@
 
 <table class="parties"><tr>
     <td><div class="label">Cedente</div><div class="party">Il Paradiso della Frutta</div><div>di Castaldo Mariarosaria</div><div>Via dei Caduti Genovesi, 8</div><div>Bornasco (PV)</div><div>P. IVA 02396610186</div></td>
-    <td><div class="label">Ricevente</div><div class="party">{{ $document->recipient_snapshot['display_name'] }}</div></td>
+    <td><div class="label">Ricevente</div>@include('pdf.partials.recipient', ['document' => $document])</td>
 </tr></table>
 
 <div class="payment"><strong>Pagamento:</strong> {{ $document->payment_method_snapshot ?: 'Da concordare' }}</div>

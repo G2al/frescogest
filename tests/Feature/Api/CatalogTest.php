@@ -37,6 +37,10 @@ class CatalogTest extends TestCase
             ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.slug', 'mele');
         $this->getJson('/api/v1/catalog/products?category=frutta')->assertOk()->assertJsonCount(1, 'data');
         $this->getJson('/api/v1/catalog/products?search=mele')->assertOk()->assertJsonCount(1, 'data');
+        $this->getJson('/api/v1/catalog/products?search=mela')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.slug', 'mele');
         $this->getJson('/api/v1/catalog/products?seasonal=1')->assertOk()->assertJsonCount(1, 'data');
         $this->getJson('/api/v1/catalog/products/segreto')->assertNotFound();
 
@@ -158,5 +162,10 @@ class CatalogTest extends TestCase
         $this->getJson('/api/v1/catalog/products?min_price=5&max_price=2')
             ->assertUnprocessable()
             ->assertJsonPath('errors.max_price.0', 'Il prezzo massimo deve essere maggiore o uguale al prezzo minimo.');
+
+        $this->getJson('/api/v1/catalog/products?search=pera')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.slug', 'pere');
     }
 }

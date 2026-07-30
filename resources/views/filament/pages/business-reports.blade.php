@@ -44,7 +44,8 @@
                 <label id="business-report-customer-type-label">Tipologia cliente</label>
                 <div
                     class="business-report-select"
-                    x-data="{ open: false, value: @js($customerType), options: @js($this->customerTypeOptions()) }"
+                    wire:key="business-report-customer-type-select"
+                    x-data="{ open: false, value: $wire.entangle('customerType').live, options: @js($this->customerTypeOptions()) }"
                     x-on:click.outside="open = false"
                     x-on:keydown.escape.window="open = false"
                 >
@@ -54,7 +55,7 @@
                         type="button"
                         aria-labelledby="business-report-customer-type-label business-report-customer-type"
                         x-bind:aria-expanded="open"
-                        x-on:click="open = ! open"
+                        x-on:click.stop="open = ! open"
                     >
                         <span x-text="options[value]"></span>
                         <x-heroicon-m-chevron-down x-bind:class="{ 'is-open': open }" />
@@ -67,7 +68,7 @@
                                 role="option"
                                 x-bind:class="{ 'is-selected': value === @js($value) }"
                                 x-bind:aria-selected="value === @js($value)"
-                                x-on:click="value = @js($value); open = false; $wire.set('customerType', value)"
+                                x-on:click.stop="value = @js($value); open = false"
                             >
                                 <span>{{ $label }}</span>
                                 <x-heroicon-m-check />

@@ -48,10 +48,17 @@ class EmployeeWorkShift extends Model
                 return;
             }
 
-            if (! $shift->started_at || ! $shift->ended_at) {
+            if (! $shift->started_at) {
                 throw ValidationException::withMessages([
-                    'started_at' => 'Indica sia l’orario di inizio sia quello di fine.',
+                    'started_at' => 'Indica l’orario di inizio.',
                 ]);
+            }
+
+            if (! $shift->ended_at) {
+                $shift->worked_minutes = 0;
+                $shift->pay_amount = 0;
+
+                return;
             }
 
             $startedAt = self::time($shift->started_at);
@@ -96,6 +103,11 @@ class EmployeeWorkShift extends Model
     public function getWorkedDurationAttribute(): string
     {
         return self::duration($this->worked_minutes);
+    }
+
+    public function getIsOpenAttribute(): bool
+    {
+        return $this->status === 'present' && filled($this->started_at) && blank($this->ended_at);
     }
 
     public function getExpectedDurationAttribute(): string

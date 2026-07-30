@@ -143,6 +143,11 @@ class OrderTest extends TestCase
         $this->assertSame(0.6, $summary['purchaseTax']);
         $this->assertSame(0.3, round($summary['vatBalance'], 2));
         $this->assertSame(3.0, $summary['grossMargin']);
+
+        $product->update(['purchase_cost_per_unit' => 10]);
+
+        $this->assertSame('10.0000', $product->fresh()->purchase_cost_per_unit);
+        $this->assertSame('11.0000', $product->fresh()->purchase_cost_per_unit_gross);
     }
 
     public function test_order_status_updates_manage_the_confirmed_and_whatsapp_states(): void

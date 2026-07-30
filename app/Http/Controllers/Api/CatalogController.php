@@ -9,6 +9,7 @@ use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\UnitOfMeasure;
+use App\Services\Catalog\CatalogSearchService;
 use App\Services\Pricing\ProductPricingService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -54,7 +55,7 @@ class CatalogController extends Controller
         ]);
     }
 
-    public function products(CatalogProductRequest $request, ProductPricingService $pricing)
+    public function products(CatalogProductRequest $request, ProductPricingService $pricing, CatalogSearchService $searchService)
     {
         $query = Product::query()
             ->publicCatalog()
@@ -63,13 +64,18 @@ class CatalogController extends Controller
                 'productCategory',
                 fn ($category) => $category->where('slug', $request->string('category')->toString()),
             ))
-            ->when($request->filled('search'), function ($query) use ($request): void {
-                $search = '%'.$request->string('search')->trim()->toString().'%';
-                $query->where(function ($products) use ($search): void {
-                    $products
-                        ->where('name', 'like', $search)
-                        ->orWhere('code', 'like', $search)
-                        ->orWhere('public_description', 'like', $search);
+            ->when($request->filled('search'), function ($query) use ($request, $searchService): void {
+                $terms = $searchService->terms($request->string('search')->toString());
+                $query->where(function ($products) use ($terms): void {
+                    foreach ($terms as $term) {
+                        $search = '%'.$term.'%';
+                        $products->orWhere(function ($variant) use ($search): void {
+                            $variant
+                                ->where('name', 'like', $search)
+                                ->orWhere('code', 'like', $search)
+                                ->orWhere('public_description', 'like', $search);
+                        });
+                    }
                 });
             })
             ->when($request->boolean('seasonal'), fn ($query) => $query->where('is_seasonal', true))

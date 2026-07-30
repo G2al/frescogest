@@ -245,17 +245,67 @@ class PartnerManagementTest extends TestCase
             'can_access_panel' => true,
             'panel_role' => 'partner',
         ]);
-        Partner::create(['user_id' => $partnerUser->id, 'name' => 'Angela', 'active' => true]);
+        $partner = Partner::create(['user_id' => $partnerUser->id, 'name' => 'Angela', 'active' => true]);
+        $document = DeliveryDocument::create([
+            'partner_id' => $partner->id,
+            'document_number' => 'BC-2026-000001',
+            'issued_at' => now(),
+            'transport_reason' => 'Vendita',
+            'transport_method' => 'Mittente',
+            'sender_snapshot' => ['business_name' => 'Il Paradiso della Frutta'],
+            'recipient_name' => 'Angela',
+            'recipient_snapshot' => ['display_name' => 'Angela', 'type' => 'Partner'],
+            'destination_snapshot' => [],
+            'items_snapshot' => [],
+            'total_net' => 10,
+            'total_tax' => 0.4,
+            'total_gross' => 10.4,
+            'revision' => 1,
+        ]);
 
         $this->actingAs($partnerUser, 'admin');
 
+        $this->get('/partner')->assertRedirect('/partner/dashboard');
         $this->get('/partner/dashboard')->assertOk();
-        $this->get('/partner/daily-receipts')->assertOk();
-        $this->get('/partner/daily-wastes')->assertOk();
-        $this->get('/partner/expenses')->assertOk();
-        $this->get('/partner/goods-entries')->assertOk();
-        $this->get('/partner/product-prices')->assertOk();
+        $this->get('/partner/delivery-documents')->assertOk()->assertSee('BC-2026-000001');
+        $this->get(route('partner.delivery-documents.show', $document))->assertOk();
+        $this->get('/partner/daily-receipts')->assertNotFound();
+        $this->get('/partner/daily-wastes')->assertNotFound();
+        $this->get('/partner/expenses')->assertNotFound();
+        $this->get('/partner/goods-entries')->assertNotFound();
+        $this->get('/partner/product-prices')->assertNotFound();
         $this->get('/admin')->assertForbidden();
+    }
+
+    public function test_partner_cannot_download_another_partners_delivery_document(): void
+    {
+        $partnerUser = User::factory()->create([
+            'active' => true,
+            'can_access_panel' => true,
+            'panel_role' => 'partner',
+        ]);
+        Partner::create(['user_id' => $partnerUser->id, 'name' => 'Angela', 'active' => true]);
+        $otherPartner = Partner::create(['name' => 'Altro partner', 'active' => true]);
+        $document = DeliveryDocument::create([
+            'partner_id' => $otherPartner->id,
+            'document_number' => 'BC-2026-000002',
+            'issued_at' => now(),
+            'transport_reason' => 'Vendita',
+            'transport_method' => 'Mittente',
+            'sender_snapshot' => ['business_name' => 'Il Paradiso della Frutta'],
+            'recipient_name' => 'Altro partner',
+            'recipient_snapshot' => ['display_name' => 'Altro partner', 'type' => 'Partner'],
+            'destination_snapshot' => [],
+            'items_snapshot' => [],
+            'total_net' => 10,
+            'total_tax' => 0.4,
+            'total_gross' => 10.4,
+            'revision' => 1,
+        ]);
+
+        $this->actingAs($partnerUser, 'admin')
+            ->get(route('partner.delivery-documents.show', $document))
+            ->assertForbidden();
     }
 
     private function partnerAndProduct(): array

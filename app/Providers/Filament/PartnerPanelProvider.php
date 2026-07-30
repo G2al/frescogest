@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Partner\Pages\Dashboard;
+use App\Filament\Partner\Resources\DeliveryDocuments\DeliveryDocumentResource;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -36,10 +37,7 @@ class PartnerPanelProvider extends PanelProvider
                 fn (): string => view('filament.admin-login-branding')->render(),
             )
             ->colors(['primary' => '#007060'])
-            ->discoverResources(
-                in: app_path('Filament/Partner/Resources'),
-                for: 'App\Filament\Partner\Resources',
-            )
+            ->resources([DeliveryDocumentResource::class])
             ->pages([Dashboard::class])
             ->middleware([
                 EncryptCookies::class,

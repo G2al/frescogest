@@ -30,6 +30,7 @@ class OrdersTable
                 TextColumn::make('customer.display_name')
                     ->label('Cliente')
                     ->placeholder('Cliente eliminato')
+                    ->description(fn (Order $record): string => $record->customer?->type?->label() ?? 'Anagrafica eliminata')
                     ->searchable(['company_name', 'first_name', 'last_name']),
                 TextColumn::make('status')
                     ->label('Stato')

@@ -64,7 +64,7 @@
                     </div>
                     @if ($todayShift)
                         <span class="status-badge status-badge--{{ $todayShift->status }}">
-                            {{ $todayShift->status === 'absent' ? 'Assente' : 'Registrata' }}
+                            {{ $todayShift->status === 'absent' ? 'Assente' : ($todayShift->is_open ? 'In corso' : 'Registrata') }}
                         </span>
                     @endif
                 </div>
@@ -76,7 +76,7 @@
                     <div class="status-choice">
                         <label>
                             <input type="radio" name="status" value="present" @checked($currentStatus === 'present')>
-                            <span><strong>Presente</strong><small>Inserisci inizio, fine e pausa</small></span>
+                            <span><strong>Presente</strong><small>Registra l’inizio e completa la fine quando termini</small></span>
                         </label>
                         <label>
                             <input type="radio" name="status" value="absent" @checked($currentStatus === 'absent')>
@@ -90,7 +90,7 @@
                             <input type="time" name="started_at" value="{{ old('started_at', $todayShift?->started_at ? mb_substr($todayShift->started_at, 0, 5) : '') }}">
                         </label>
                         <label class="field">
-                            <span>Fine lavoro</span>
+                            <span>Fine lavoro <small>(facoltativa fino al termine)</small></span>
                             <input type="time" name="ended_at" value="{{ old('ended_at', $todayShift?->ended_at ? mb_substr($todayShift->ended_at, 0, 5) : '') }}">
                         </label>
                         <label class="field">
@@ -115,10 +115,10 @@
 
             <aside class="day-summary">
                 <p class="eyebrow">Riepilogo odierno</p>
-                <h2>{{ $todayShift ? $todayShift->worked_duration : 'Non registrato' }}</h2>
+                <h2>{{ $todayShift ? ($todayShift->is_open ? 'Turno in corso' : $todayShift->worked_duration) : 'Non registrato' }}</h2>
                 <dl>
                     <div><dt>Ore previste</dt><dd>{{ number_format($employee->expected_daily_minutes / 60, 2, ',', '.') }}</dd></div>
-                    <div><dt>Stato</dt><dd>{{ $todayShift ? ($todayShift->status === 'absent' ? 'Assente' : 'Presente') : 'Da compilare' }}</dd></div>
+                    <div><dt>Stato</dt><dd>{{ $todayShift ? ($todayShift->status === 'absent' ? 'Assente' : ($todayShift->is_open ? 'In corso' : 'Presente')) : 'Da compilare' }}</dd></div>
                     <div>
                         <dt>Compenso giornata</dt>
                         <dd>€ {{ number_format((float) ($todayShift?->pay_amount ?? 0), 2, ',', '.') }}</dd>
@@ -180,7 +180,7 @@
                             </div>
                             <div class="attendance-record__header-actions">
                                 <span class="status-badge status-badge--{{ $shift->status }}">
-                                    {{ $shift->status === 'absent' ? 'Assente' : 'Presente' }}
+                                    {{ $shift->status === 'absent' ? 'Assente' : ($shift->is_open ? 'In corso' : 'Presente') }}
                                 </span>
                                 <span class="attendance-record__chevron" aria-hidden="true">
                                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -202,7 +202,7 @@
                                     <div>
                                         <small>Orario</small>
                                         <strong>
-                                            {{ $shift->status === 'absent' ? 'Non lavorato' : mb_substr($shift->started_at, 0, 5).' – '.mb_substr($shift->ended_at, 0, 5) }}
+                                            {{ $shift->status === 'absent' ? 'Non lavorato' : mb_substr($shift->started_at, 0, 5).' – '.($shift->ended_at ? mb_substr($shift->ended_at, 0, 5) : 'In corso') }}
                                         </strong>
                                     </div>
                                 </div>
@@ -217,7 +217,7 @@
                                     </span>
                                     <div>
                                         <small>Ore lavorate</small>
-                                        <strong>{{ $shift->status === 'absent' ? '0h 00m' : $shift->worked_duration }}</strong>
+                                        <strong>{{ $shift->status === 'absent' ? '0h 00m' : ($shift->is_open ? 'Da calcolare' : $shift->worked_duration) }}</strong>
                                     </div>
                                 </div>
 

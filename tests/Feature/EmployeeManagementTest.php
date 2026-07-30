@@ -136,6 +136,53 @@ class EmployeeManagementTest extends TestCase
         $this->assertSame('40.00', $shift->pay_amount);
     }
 
+    public function test_employee_can_start_the_shift_and_close_it_later(): void
+    {
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Paolo',
+            'last_name' => 'Bianchi',
+            'email' => 'paolo.bianchi@example.test',
+            'phone' => '3339876543',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Hourly->value,
+            'compensation_amount' => 6,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->toDateString(),
+            'active' => true,
+        ]);
+
+        $this->actingAs($employee->user, 'employee')
+            ->post(route('employee.attendance.store'), [
+                'status' => 'present',
+                'started_at' => '08:00',
+                'break_minutes' => 0,
+            ])
+            ->assertRedirect(route('employee.attendance'));
+
+        $openShift = $employee->workShifts()->firstOrFail();
+
+        $this->assertTrue($openShift->is_open);
+        $this->assertNull($openShift->ended_at);
+        $this->assertSame(0, $openShift->worked_minutes);
+        $this->assertSame('0.00', $openShift->pay_amount);
+
+        $this->actingAs($employee->user, 'employee')
+            ->post(route('employee.attendance.store'), [
+                'status' => 'present',
+                'started_at' => '08:00',
+                'ended_at' => '17:00',
+                'break_minutes' => 60,
+            ])
+            ->assertRedirect(route('employee.attendance'));
+
+        $closedShift = $openShift->fresh();
+
+        $this->assertFalse($closedShift->is_open);
+        $this->assertSame('17:00', $closedShift->ended_at);
+        $this->assertSame(480, $closedShift->worked_minutes);
+        $this->assertSame('48.00', $closedShift->pay_amount);
+    }
+
     public function test_employee_can_record_an_absence_without_working_times(): void
     {
         $employee = app(EmployeeAccountService::class)->create([
