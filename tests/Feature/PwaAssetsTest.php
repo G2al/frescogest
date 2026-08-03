@@ -72,6 +72,7 @@ class PwaAssetsTest extends TestCase
 
         $this->assertStringContainsString('env(safe-area-inset-top, 0px)', $head);
         $this->assertStringContainsString('env(safe-area-inset-bottom, 0px)', $head);
+        $this->assertStringContainsString('padding-top: calc(env(safe-area-inset-top, 0px) + .75rem)', $head);
         $this->assertStringContainsString('fi-admin-pwa-standalone', $script);
         $this->assertStringContainsString("window.navigator.standalone === true", $script);
     }

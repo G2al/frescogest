@@ -21,6 +21,7 @@
         }
 
         html.fi-admin-pwa-standalone .fi-sidebar {
+            padding-top: calc(env(safe-area-inset-top, 0px) + .75rem);
             padding-bottom: env(safe-area-inset-bottom, 0px);
         }
 

@@ -220,6 +220,7 @@
 .business-report-period {
     position: relative;
     display: grid;
+    min-width: 0;
     gap: .4rem;
 }
 
@@ -233,6 +234,8 @@
 
 .business-report-period input,
 .business-report-period select {
+    box-sizing: border-box;
+    max-width: 100%;
     min-width: 13rem;
     padding: .72rem .85rem;
     border: 1px solid var(--br-border);
@@ -244,6 +247,14 @@
     font-size: .85rem;
     font-weight: 650;
     box-shadow: 0 3px 10px rgba(8, 74, 62, .04);
+}
+
+.business-report-period input[type="date"],
+.business-report-period input[type="month"] {
+    display: block;
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: 100%;
 }
 
 .business-report-period select {
@@ -844,7 +855,9 @@
     .business-report-period input,
     .business-report-period select,
     .business-report-select {
+        box-sizing: border-box;
         width: 100%;
+        max-width: 100%;
         min-width: 0;
     }
 
