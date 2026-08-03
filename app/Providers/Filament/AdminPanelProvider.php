@@ -41,6 +41,10 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => view('filament.admin-login-branding')->render(),
             )
             ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): string => view('filament.admin-pwa')->render(),
+            )
+            ->renderHook(
                 PanelsRenderHook::BODY_END,
                 fn (): string => auth('admin')->user()?->hasAdminPanelRole()
                     ? view('filament.pending-orders-poller')->render()

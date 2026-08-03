@@ -1,0 +1,54 @@
+{
+    "id": "/admin/",
+    "name": "Il Paradiso della Frutta — Gestionale",
+    "short_name": "Paradiso Admin",
+    "description": "Gestionale amministrativo de Il Paradiso della Frutta.",
+    "lang": "it-IT",
+    "start_url": "/admin?source=pwa",
+    "scope": "/admin",
+    "display": "standalone",
+    "display_override": ["standalone"],
+    "orientation": "any",
+    "background_color": "#18181b",
+    "theme_color": "#18181b",
+    "icons": [
+        {
+            "src": "/assets/pwa/admin/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/pwa/admin/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/pwa/admin/maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/assets/pwa/admin/maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Ordini",
+            "short_name": "Ordini",
+            "url": "/admin/orders",
+            "icons": [{"src": "/assets/pwa/admin/icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Prodotti",
+            "short_name": "Prodotti",
+            "url": "/admin/products",
+            "icons": [{"src": "/assets/pwa/admin/icon-192.png", "sizes": "192x192"}]
+        }
+    ]
+}

@@ -1,0 +1,60 @@
+{
+    "id": "/",
+    "name": "Il Paradiso della Frutta",
+    "short_name": "Il Paradiso",
+    "description": "Catalogo, carrello e ordini de Il Paradiso della Frutta.",
+    "lang": "it-IT",
+    "start_url": "/index.html?source=pwa",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": ["standalone"],
+    "orientation": "any",
+    "background_color": "#ffffff",
+    "theme_color": "#ffffff",
+    "icons": [
+        {
+            "src": "/assets/pwa/frontend/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/pwa/frontend/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/pwa/frontend/maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/assets/pwa/frontend/maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Catalogo",
+            "short_name": "Catalogo",
+            "url": "/index.html?source=pwa-shortcut",
+            "icons": [{"src": "/assets/pwa/frontend/icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "I miei ordini",
+            "short_name": "Ordini",
+            "url": "/orders.html?source=pwa-shortcut",
+            "icons": [{"src": "/assets/pwa/frontend/icon-192.png", "sizes": "192x192"}]
+        },
+        {
+            "name": "Carrello",
+            "short_name": "Carrello",
+            "url": "/cart.html?source=pwa-shortcut",
+            "icons": [{"src": "/assets/pwa/frontend/icon-192.png", "sizes": "192x192"}]
+        }
+    ]
+}

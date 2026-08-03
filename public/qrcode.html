@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
 
-    <!-- Zoom consentito: nessun user-scalable=no e nessun maximum-scale=1 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 
     <title>Il Paradiso della Frutta</title>
 
@@ -13,6 +12,12 @@
         content="Frutta, verdura e prodotti tipici campani selezionati ogni giorno."
     >
     <meta name="theme-color" content="#103f2f">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Il Paradiso">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="apple-touch-icon" href="/assets/pwa/frontend/apple-touch-icon.png">
 
     <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2188,5 +2193,6 @@
             return Math.random() * (max - min) + min;
         }
     </script>
+    <script type="module" src="/assets/js/pwa.js?v=20260803.1"></script>
 </body>
 </html>
