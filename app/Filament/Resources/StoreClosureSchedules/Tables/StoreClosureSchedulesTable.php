@@ -32,10 +32,12 @@ class StoreClosureSchedulesTable
                 TextColumn::make('starts_at')
                     ->label('Dalle')
                     ->time('H:i')
+                    ->placeholder('Giornata intera')
                     ->sortable(),
                 TextColumn::make('ends_at')
                     ->label('Alle')
                     ->time('H:i')
+                    ->placeholder('Giornata intera')
                     ->sortable(),
                 ToggleColumn::make('active')
                     ->label('Attiva'),

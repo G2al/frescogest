@@ -58,6 +58,16 @@ class StoreOpeningHours
             ->where('active', true)
             ->get()
             ->each(function (StoreClosureSchedule $schedule) use (&$periods, $now): void {
+                if (
+                    $schedule->type === StoreClosureType::FullDayRange
+                    && $schedule->closure_date
+                    && $schedule->closure_end_date
+                ) {
+                    $periods[] = $this->fullDayPeriod($schedule);
+
+                    return;
+                }
+
                 if ($schedule->type === StoreClosureType::SpecificDate && $schedule->closure_date) {
                     $periods[] = $this->periodForDate($schedule, $schedule->closure_date->toImmutable());
 
@@ -101,6 +111,17 @@ class StoreOpeningHours
             'starts_at' => $startsAt,
             'ends_at' => $endsAt,
             'message' => $schedule->message,
+        ];
+    }
+
+    private function fullDayPeriod(StoreClosureSchedule $schedule): array
+    {
+        $timezone = (string) config('storefront.daily_closure.timezone', 'Europe/Rome');
+
+        return [
+            'starts_at' => CarbonImmutable::parse($schedule->closure_date->format('Y-m-d'), $timezone)->startOfDay(),
+            'ends_at' => CarbonImmutable::parse($schedule->closure_end_date->format('Y-m-d'), $timezone)->addDay()->startOfDay(),
+            'message' => $schedule->message ?: $schedule->name,
         ];
     }
 

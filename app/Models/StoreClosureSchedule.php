@@ -12,6 +12,7 @@ class StoreClosureSchedule extends Model
         'type',
         'weekdays',
         'closure_date',
+        'closure_end_date',
         'starts_at',
         'ends_at',
         'message',
@@ -33,6 +34,20 @@ class StoreClosureSchedule extends Model
 
     public function getScheduleDescriptionAttribute(): string
     {
+        if ($this->type === StoreClosureType::FullDayRange) {
+            if (! $this->closure_date || ! $this->closure_end_date) {
+                return 'Periodo non impostato';
+            }
+
+            return $this->closure_date->isSameDay($this->closure_end_date)
+                ? $this->closure_date->format('d/m/Y').' · tutto il giorno'
+                : sprintf(
+                    'Dal %s al %s · giorni interi',
+                    $this->closure_date->format('d/m/Y'),
+                    $this->closure_end_date->format('d/m/Y'),
+                );
+        }
+
         if ($this->type === StoreClosureType::SpecificDate) {
             return $this->closure_date?->format('d/m/Y') ?? 'Data non impostata';
         }
@@ -51,6 +66,7 @@ class StoreClosureSchedule extends Model
             'type' => StoreClosureType::class,
             'weekdays' => 'array',
             'closure_date' => 'date',
+            'closure_end_date' => 'date',
             'active' => 'boolean',
         ];
     }

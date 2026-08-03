@@ -43,21 +43,31 @@ class StoreClosureScheduleForm
                         ->visible(fn (Get $get): bool => self::isType($get, StoreClosureType::Recurring))
                         ->columnSpanFull(),
                     DatePicker::make('closure_date')
-                        ->label('Data della chiusura')
+                        ->label(fn (Get $get): string => self::isType($get, StoreClosureType::FullDayRange) ? 'Dal giorno' : 'Data della chiusura')
                         ->native(false)
                         ->displayFormat('d/m/Y')
-                        ->required(fn (Get $get): bool => self::isType($get, StoreClosureType::SpecificDate))
-                        ->visible(fn (Get $get): bool => self::isType($get, StoreClosureType::SpecificDate)),
+                        ->required(fn (Get $get): bool => self::isDatedType($get))
+                        ->visible(fn (Get $get): bool => self::isDatedType($get)),
+                    DatePicker::make('closure_end_date')
+                        ->label('Al giorno compreso')
+                        ->helperText('Il negozio riaprirà alle 00:00 del giorno successivo.')
+                        ->native(false)
+                        ->displayFormat('d/m/Y')
+                        ->required(fn (Get $get): bool => self::isType($get, StoreClosureType::FullDayRange))
+                        ->afterOrEqual('closure_date')
+                        ->visible(fn (Get $get): bool => self::isType($get, StoreClosureType::FullDayRange)),
                     TimePicker::make('starts_at')
                         ->label('Chiuso dalle')
                         ->seconds(false)
-                        ->required(),
+                        ->required(fn (Get $get): bool => ! self::isType($get, StoreClosureType::FullDayRange))
+                        ->visible(fn (Get $get): bool => ! self::isType($get, StoreClosureType::FullDayRange)),
                     TimePicker::make('ends_at')
                         ->label('Riapertura alle')
                         ->helperText('Se è precedente all’ora di chiusura, la riapertura avverrà il giorno successivo.')
                         ->seconds(false)
-                        ->required()
-                        ->different('starts_at'),
+                        ->required(fn (Get $get): bool => ! self::isType($get, StoreClosureType::FullDayRange))
+                        ->different('starts_at')
+                        ->visible(fn (Get $get): bool => ! self::isType($get, StoreClosureType::FullDayRange)),
                     TextInput::make('message')
                         ->label('Messaggio per i clienti')
                         ->placeholder('Antonio sta aggiornando prezzi e disponibilità.')
@@ -76,5 +86,11 @@ class StoreClosureScheduleForm
         $state = $get('type');
 
         return ($state instanceof StoreClosureType ? $state->value : $state) === $type->value;
+    }
+
+    private static function isDatedType(Get $get): bool
+    {
+        return self::isType($get, StoreClosureType::SpecificDate)
+            || self::isType($get, StoreClosureType::FullDayRange);
     }
 }

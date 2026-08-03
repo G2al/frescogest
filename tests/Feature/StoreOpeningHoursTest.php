@@ -111,6 +111,33 @@ class StoreOpeningHoursTest extends TestCase
             ->assertJsonPath('data.message', 'Chiusura straordinaria del negozio.');
     }
 
+    public function test_a_full_day_range_closes_the_store_for_holidays_and_reopens_after_the_last_day(): void
+    {
+        StoreClosureSchedule::query()->where('type', StoreClosureType::Recurring)->update(['active' => false]);
+        StoreClosureSchedule::query()->create([
+            'name' => 'Ferie estive',
+            'type' => StoreClosureType::FullDayRange,
+            'closure_date' => '2026-08-10',
+            'closure_end_date' => '2026-08-18',
+            'message' => 'Siamo chiusi per ferie.',
+            'active' => true,
+        ]);
+
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-08-14 12:00:00', 'Europe/Rome'));
+
+        $this->getJson('/api/v1/store/status')
+            ->assertOk()
+            ->assertJsonPath('data.is_closed', true)
+            ->assertJsonPath('data.reopens_at', '2026-08-19T00:00:00+02:00')
+            ->assertJsonPath('data.message', 'Siamo chiusi per ferie.');
+
+        CarbonImmutable::setTestNow(CarbonImmutable::parse('2026-08-19 00:00:00', 'Europe/Rome'));
+
+        $this->getJson('/api/v1/store/status')
+            ->assertOk()
+            ->assertJsonPath('data.is_closed', false);
+    }
+
     public function test_a_disabled_schedule_does_not_close_the_storefront(): void
     {
         StoreClosureSchedule::query()->update(['active' => false]);
