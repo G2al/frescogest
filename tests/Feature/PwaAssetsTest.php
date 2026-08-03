@@ -65,6 +65,17 @@ class PwaAssetsTest extends TestCase
         }
     }
 
+    public function test_admin_pwa_respects_mobile_safe_areas(): void
+    {
+        $head = file_get_contents(resource_path('views/filament/admin-pwa.blade.php'));
+        $script = file_get_contents(public_path('assets/js/admin-pwa.js'));
+
+        $this->assertStringContainsString('env(safe-area-inset-top, 0px)', $head);
+        $this->assertStringContainsString('env(safe-area-inset-bottom, 0px)', $head);
+        $this->assertStringContainsString('fi-admin-pwa-standalone', $script);
+        $this->assertStringContainsString("window.navigator.standalone === true", $script);
+    }
+
     private function manifest(string $file): array
     {
         $manifest = json_decode(file_get_contents(public_path($file)), true, flags: JSON_THROW_ON_ERROR);
