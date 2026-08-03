@@ -58,6 +58,8 @@ class StoreOpeningHoursTest extends TestCase
             ->assertSee('Il negozio è temporaneamente chiuso')
             ->assertSee('11:30')
             ->assertSee('/assets/images/new-logo-primary.png', false)
+            ->assertSee('user-scalable=no', false)
+            ->assertSee('/assets/js/pwa.js', false)
             ->assertDontSee('__REOPENING_AT__')
             ->assertDontSee('__SERVER_TIME__');
 

@@ -53,6 +53,27 @@ class PwaAssetsTest extends TestCase
         }
     }
 
+    public function test_store_closure_page_uses_the_same_zoom_lock_as_the_storefront(): void
+    {
+        $content = file_get_contents(resource_path('storefront/store-closed.html'));
+
+        $this->assertStringContainsString('maximum-scale=1', $content);
+        $this->assertStringContainsString('user-scalable=no', $content);
+        $this->assertStringContainsString('viewport-fit=cover', $content);
+        $this->assertStringContainsString('/assets/js/pwa.js', $content);
+    }
+
+    public function test_storefront_zoom_lock_covers_touch_gestures_and_keyboard_shortcuts(): void
+    {
+        $script = file_get_contents(public_path('assets/js/pwa.js'));
+
+        $this->assertStringContainsString("document.documentElement.style.touchAction = 'pan-x pan-y'", $script);
+        $this->assertStringContainsString("document.addEventListener('gesturestart'", $script);
+        $this->assertStringContainsString("document.addEventListener('touchmove'", $script);
+        $this->assertStringContainsString("document.addEventListener('wheel'", $script);
+        $this->assertStringContainsString("document.addEventListener('keydown'", $script);
+    }
+
     public function test_service_workers_and_offline_pages_exist(): void
     {
         foreach ([
@@ -74,7 +95,7 @@ class PwaAssetsTest extends TestCase
         $this->assertStringContainsString('env(safe-area-inset-bottom, 0px)', $head);
         $this->assertStringContainsString('padding-top: calc(env(safe-area-inset-top, 0px) + .75rem)', $head);
         $this->assertStringContainsString('fi-admin-pwa-standalone', $script);
-        $this->assertStringContainsString("window.navigator.standalone === true", $script);
+        $this->assertStringContainsString('window.navigator.standalone === true', $script);
     }
 
     private function manifest(string $file): array
