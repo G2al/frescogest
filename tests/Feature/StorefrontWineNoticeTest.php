@@ -17,4 +17,18 @@ class StorefrontWineNoticeTest extends TestCase
         $this->assertStringContainsString('function isWineCategory(category)', $script);
         $this->assertStringContainsString("wineNoticeRoot?.classList.toggle('hidden', !showWineNotice)", $script);
     }
+
+    public function test_wine_images_use_the_dedicated_portrait_layout(): void
+    {
+        $catalog = file_get_contents(public_path('assets/js/catalog.js'));
+        $product = file_get_contents(public_path('assets/js/product.js'));
+        $ui = file_get_contents(public_path('assets/js/ui.js'));
+        $styles = file_get_contents(public_path('assets/css/app.css'));
+
+        $this->assertStringContainsString("isWineCategory(product.category) ? ' wine-product'", $catalog);
+        $this->assertStringContainsString("? ' wine-product' : ''", $product);
+        $this->assertStringContainsString('const wineClass = isWine', $ui);
+        $this->assertStringContainsString('.product-media.wine-product > img:not(.quality-seal)', $styles);
+        $this->assertStringContainsString('object-position: 50% 55%', $styles);
+    }
 }
