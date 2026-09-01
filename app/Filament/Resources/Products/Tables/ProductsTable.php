@@ -58,6 +58,15 @@ class ProductsTable
                     ->label('Listino ristoratori')
                     ->money('EUR')
                     ->sortable(),
+                TextColumn::make('partner_price_per_unit')
+                    ->label('Listino partner')
+                    ->money('EUR')
+                    ->sortable(),
+                TextColumn::make('partner_markup_percentage')
+                    ->label('Ricarico partner')
+                    ->suffix('%')
+                    ->sortable()
+                    ->toggleable(),
                 ToggleColumn::make('active')
                     ->label('Attivo')
                     ->sortable(),

@@ -3,6 +3,7 @@
 namespace App\Services\Pricing;
 
 use App\Enums\CustomerType;
+use App\Enums\SpecialPriceAudience;
 use App\Models\Customer;
 use App\Models\CustomerProductPrice;
 use App\Models\Product;
@@ -10,7 +11,10 @@ use Illuminate\Support\Collection;
 
 class ProductPricingService
 {
-    public function __construct(private readonly PriceCalculator $calculator) {}
+    public function __construct(
+        private readonly PriceCalculator $calculator,
+        private readonly SpecialPriceRuleResolver $specialPrices,
+    ) {}
 
     public function apply(Collection $products, ?Customer $customer): Collection
     {
@@ -53,13 +57,17 @@ class ProductPricingService
     private function calculate(Product $product, ?Customer $customer): array
     {
         $restaurant = $customer?->type === CustomerType::Restaurant;
-        $listPrice = $restaurant
-            ? $product->restaurant_price_per_unit
-            : $product->base_price_per_unit;
+        $listDetails = $this->specialPrices->details(
+            $product,
+            $restaurant ? SpecialPriceAudience::Restaurants : SpecialPriceAudience::PrivateCustomers,
+        );
+        $listPrice = $listDetails['price'];
         $minimum = $restaurant
             ? $product->restaurant_minimum_quantity
             : $product->base_minimum_quantity;
-        $listSource = $restaurant ? 'restaurant' : 'base';
+        $listSource = str_starts_with($listDetails['source'], 'special_')
+            ? $listDetails['source']
+            : ($restaurant ? 'restaurant' : 'base');
 
         if ($customer === null) {
             return $this->result($listPrice, $minimum, $listSource);
@@ -120,7 +128,7 @@ class ProductPricingService
         $product->setAttribute('effective_price_per_unit', $details['price']);
         $product->setAttribute('effective_price_per_kg', $details['price']);
         $product->setAttribute('minimum_quantity', $details['minimum_quantity']);
-        $product->setAttribute('has_personalized_price', in_array($details['source'], ['product', 'category', 'global', 'minimum'], true));
+        $product->setAttribute('has_personalized_price', in_array($details['source'], ['product', 'category', 'global', 'minimum', 'special_product', 'special_category'], true));
         $product->setAttribute('pricing_source', $details['source']);
         $product->setAttribute('discount_percentage', $details['discount_percentage']);
     }

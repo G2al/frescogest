@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260722.5';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260901.2';
 
 const categoriesRoot = document.querySelector('#categories');
 const previousCategoriesButton = document.querySelector('#categories-previous');
@@ -23,6 +23,7 @@ const activeFilterCount = document.querySelector('#active-filter-count');
 const sortSelect = document.querySelector('#catalog-sort');
 const titleRoot = document.querySelector('#catalog-title');
 const countRoot = document.querySelector('#product-count');
+const wineNoticeRoot = document.querySelector('#wine-order-notice');
 const paginationRoot = document.querySelector('#catalog-pagination');
 const previousProductsButton = document.querySelector('#products-prev');
 const nextProductsButton = document.querySelector('#products-next');
@@ -57,7 +58,14 @@ const categoryIcons = {
     'Frutta secca': 'nut',
     Legumi: 'bean',
     'Spezie ed erbe': 'sprout',
+    Vini: 'wine',
 };
+
+function isWineCategory(category) {
+    const categoryName = `${category?.name || ''} ${category?.slug || ''}`.toLocaleLowerCase('it-IT');
+
+    return ['vino', 'vini', 'wine', 'cantina', 'enoteca'].some(alias => categoryName.includes(alias));
+}
 
 function escapeHtml(value) {
     const node = document.createElement('span');
@@ -187,6 +195,10 @@ function renderCategories() {
     refreshIcons(categoriesRoot);
     const selected = categories.find(category => category.slug === state.category);
     titleRoot.textContent = selected ? selected.name : 'Tutti i prodotti';
+    const showWineNotice = isWineCategory(selected);
+    wineNoticeRoot?.classList.toggle('hidden', !showWineNotice);
+    wineNoticeRoot?.setAttribute('aria-hidden', String(!showWineNotice));
+    if (showWineNotice) refreshIcons(wineNoticeRoot);
     syncHeaderCategoryState();
     requestAnimationFrame(() => {
         categoriesRoot.querySelector('.category-tab.active')?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });

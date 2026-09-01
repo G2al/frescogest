@@ -64,7 +64,7 @@ class ProductForm
                     TextInput::make('markup_percentage')
                         ->label('Ricarico privati sul costo')
                         ->helperText('Modificando il ricarico viene aggiornato automaticamente il prezzo privati.')
-                        ->numeric()->minValue(0)->maxValue(10000)->step(0.01)->suffix('%')->default(100)->required()->live(debounce: 500)
+                        ->numeric()->minValue(0)->maxValue(10000)->step(0.01)->suffix('%')->default(75)->required()->live(debounce: 500)
                         ->afterStateUpdated(fn (Get $get, Set $set) => self::updatePriceFromMarkup($get, $set, 'markup_percentage', 'base_price_per_unit')),
                     TextInput::make('base_price_per_unit')
                         ->label('Prezzo privati netto')
@@ -83,7 +83,7 @@ class ProductForm
                     TextInput::make('restaurant_markup_percentage')
                         ->label('Ricarico ristoratori sul costo')
                         ->helperText('È indipendente dal ricarico privati e aggiorna solo il prezzo ristoratori.')
-                        ->numeric()->minValue(0)->maxValue(10000)->step(0.01)->suffix('%')->default(100)->required()->live(debounce: 500)
+                        ->numeric()->minValue(0)->maxValue(10000)->step(0.01)->suffix('%')->default(45)->required()->live(debounce: 500)
                         ->afterStateUpdated(fn (Get $get, Set $set) => self::updatePriceFromMarkup($get, $set, 'restaurant_markup_percentage', 'restaurant_price_per_unit')),
                     TextInput::make('restaurant_price_per_unit')
                         ->label('Prezzo ristoratori netto')
@@ -95,6 +95,21 @@ class ProductForm
                         ->helperText('Quantità minima acquistabile da un ristoratore nell’unità selezionata.')
                         ->numeric()->minValue(0.001)->step(0.001)->required(),
                 ])->columns(3),
+            Section::make('Listino partner')
+                ->description('Prezzo che Angela o un altro partner paga ad Antonio. Il prezzo di rivendita del partner resta gestito nel suo listino.')
+                ->columnSpanFull()
+                ->schema([
+                    TextInput::make('partner_markup_percentage')
+                        ->label('Ricarico partner sul costo')
+                        ->helperText('Il valore predefinito è 35% e aggiorna il prezzo che il partner paga ad Antonio.')
+                        ->numeric()->minValue(0)->maxValue(10000)->step(0.01)->suffix('%')->default(35)->required()->live(debounce: 500)
+                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updatePriceFromMarkup($get, $set, 'partner_markup_percentage', 'partner_price_per_unit')),
+                    TextInput::make('partner_price_per_unit')
+                        ->label('Prezzo partner netto')
+                        ->helperText('Puoi inserirlo manualmente: il ricarico partner verrà ricalcolato automaticamente.')
+                        ->numeric()->minValue(0)->step(0.01)->prefix('€')->required()->live(debounce: 500)
+                        ->afterStateUpdated(fn (Get $get, Set $set) => self::updateMarkupFromPrice($get, $set, 'partner_price_per_unit', 'partner_markup_percentage')),
+                ])->columns(2),
             Section::make('Classificazione')
                 ->columnSpanFull()
                 ->schema([
@@ -118,6 +133,7 @@ class ProductForm
     {
         self::updatePriceFromMarkup($get, $set, 'markup_percentage', 'base_price_per_unit', $purchaseCost);
         self::updatePriceFromMarkup($get, $set, 'restaurant_markup_percentage', 'restaurant_price_per_unit', $purchaseCost);
+        self::updatePriceFromMarkup($get, $set, 'partner_markup_percentage', 'partner_price_per_unit', $purchaseCost);
     }
 
     private static function updateNetCostAndPrices(Get $get, Set $set): void

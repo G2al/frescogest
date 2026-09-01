@@ -1,6 +1,6 @@
 import { api } from './api.js?v=20260720.5';
 import { addToCart, normalizeProductQuantity } from './cart.js?v=20260730.2';
-import { notify } from './ui.js?v=20260722.5';
+import { notify } from './ui.js?v=20260901.2';
 
 const slug = new URLSearchParams(location.search).get('slug');
 

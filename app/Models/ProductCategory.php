@@ -32,6 +32,11 @@ class ProductCategory extends Model
         return $this->hasMany(CustomerCategoryDiscount::class);
     }
 
+    public function specialPriceRules(): HasMany
+    {
+        return $this->hasMany(SpecialPriceRule::class);
+    }
+
     public function scopePublicCatalog(Builder $query): Builder
     {
         return $query

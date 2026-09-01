@@ -30,8 +30,10 @@ class Product extends Model
         'purchase_cost_per_unit_gross',
         'markup_percentage',
         'restaurant_markup_percentage',
+        'partner_markup_percentage',
         'base_price_per_unit',
         'restaurant_price_per_unit',
+        'partner_price_per_unit',
         'base_minimum_quantity',
         'restaurant_minimum_quantity',
         'is_public',
@@ -76,6 +78,11 @@ class Product extends Model
         return $this->hasMany(PartnerGoodsEntry::class);
     }
 
+    public function specialPriceRules(): HasMany
+    {
+        return $this->hasMany(SpecialPriceRule::class);
+    }
+
     public function scopePublicCatalog(Builder $query): Builder
     {
         return $query
@@ -101,8 +108,10 @@ class Product extends Model
             'purchase_cost_per_unit_gross' => 'decimal:4',
             'markup_percentage' => 'decimal:2',
             'restaurant_markup_percentage' => 'decimal:2',
+            'partner_markup_percentage' => 'decimal:2',
             'base_price_per_unit' => 'decimal:4',
             'restaurant_price_per_unit' => 'decimal:4',
+            'partner_price_per_unit' => 'decimal:4',
             'base_minimum_quantity' => 'decimal:3',
             'restaurant_minimum_quantity' => 'decimal:3',
         ];
@@ -128,8 +137,22 @@ class Product extends Model
                 );
             }
 
-            if (! $product->exists && ! array_key_exists('restaurant_markup_percentage', $product->getAttributes())) {
-                $product->restaurant_markup_percentage = $product->markup_percentage ?? 0;
+            if (! $product->exists
+                && ! array_key_exists('markup_percentage', $product->getAttributes())
+                && ! array_key_exists('base_price_per_unit', $product->getAttributes())) {
+                $product->markup_percentage = 75;
+            }
+
+            if (! $product->exists
+                && ! array_key_exists('restaurant_markup_percentage', $product->getAttributes())
+                && ! array_key_exists('restaurant_price_per_unit', $product->getAttributes())) {
+                $product->restaurant_markup_percentage = 45;
+            }
+
+            if (! $product->exists
+                && ! array_key_exists('partner_markup_percentage', $product->getAttributes())
+                && ! array_key_exists('partner_price_per_unit', $product->getAttributes())) {
+                $product->partner_markup_percentage = 35;
             }
 
             if ($product->isDirty('base_price_per_unit') && ! $product->isDirty('markup_percentage')) {
@@ -142,6 +165,12 @@ class Product extends Model
                 $product->restaurant_markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->restaurant_price_per_unit);
             } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('restaurant_markup_percentage') || ! $product->exists) {
                 $product->restaurant_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->restaurant_markup_percentage ?? $product->markup_percentage);
+            }
+
+            if ($product->isDirty('partner_price_per_unit') && ! $product->isDirty('partner_markup_percentage')) {
+                $product->partner_markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->partner_price_per_unit);
+            } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('partner_markup_percentage') || ! $product->exists) {
+                $product->partner_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->partner_markup_percentage ?? 35);
             }
 
             $product->price_per_kg = $product->base_price_per_unit;

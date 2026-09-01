@@ -62,6 +62,11 @@ class Partner extends Model
         return $this->hasMany(PartnerExpense::class);
     }
 
+    public function specialPriceRules(): HasMany
+    {
+        return $this->hasMany(SpecialPriceRule::class);
+    }
+
     protected function casts(): array
     {
         return [

@@ -69,6 +69,11 @@ class ProductPricesRelationManager extends RelationManager
                 TextColumn::make('product.name')->label('Prodotto')->searchable()->sortable(),
                 TextColumn::make('product.productCategory.name')->label('Categoria')->sortable(),
                 TextColumn::make('purchase_price_net')->label('Paga netto')->money('EUR')->sortable(),
+                TextColumn::make('purchase_price_is_custom')
+                    ->label('Origine prezzo')
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Personalizzato' : 'Automatico')
+                    ->color(fn (bool $state): string => $state ? 'warning' : 'success'),
                 TextColumn::make('purchase_price_gross')->label('Paga IVA inclusa')->money('EUR'),
                 TextColumn::make('sale_price_net')->label('Vende netto')->money('EUR')->sortable(),
                 TextColumn::make('sale_price_gross')->label('Vende IVA inclusa')->money('EUR'),

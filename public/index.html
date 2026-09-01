@@ -13,7 +13,7 @@
     <link rel="icon" type="image/png" href="/assets/images/icona-web.png">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="apple-touch-icon" href="/assets/pwa/frontend/apple-touch-icon.png">
-    <link rel="stylesheet" href="/assets/css/app.css?v=20260803.1">
+    <link rel="stylesheet" href="/assets/css/app.css?v=20260901.3">
 </head>
 <body class="catalog-page">
     <header id="site-header"></header>
@@ -79,6 +79,15 @@
                             <div class="catalog-carousel-controls" aria-label="Navigazione prodotti"><button id="products-prev" type="button" aria-label="Prodotti precedenti"><i data-lucide="arrow-left"></i></button><button id="products-next" type="button" aria-label="Prodotti successivi"><i data-lucide="arrow-right"></i></button></div>
                         </div>
                     </div>
+                    <aside id="wine-order-notice" class="wine-order-notice hidden" aria-live="polite" aria-hidden="true">
+                        <span class="wine-order-notice-icon"><i data-lucide="calendar-clock"></i></span>
+                        <div>
+                            <span class="wine-order-notice-label">Informazione importante</span>
+                            <strong>Ordina i vini con almeno 2 giorni di anticipo</strong>
+                            <p>Per riceverli il 5 settembre, invia l’ordine entro il 3 settembre.</p>
+                        </div>
+                        <i class="wine-order-notice-bottle" data-lucide="wine" aria-hidden="true"></i>
+                    </aside>
                     <section id="products" class="catalog-grid" aria-live="polite"></section>
                     <nav id="catalog-pagination" class="catalog-pagination hidden" aria-label="Pagine del catalogo"></nav>
                 </section>
@@ -118,9 +127,9 @@
         </section>
     </main>
     <footer id="site-footer" class="footer"></footer>
-    <script type="module" src="/assets/js/catalog.js?v=20260722.5"></script>
-    <script type="module" src="/assets/js/cart.js?v=20260730.2"></script>
-    <script type="module" src="/assets/js/promo-sticker.js?v=20260727.1"></script>
+    <script type="module" src="/assets/js/catalog.js?v=20260901.3"></script>
+    <script type="module" src="/assets/js/cart.js?v=20260901.2"></script>
+    <script type="module" src="/assets/js/promo-sticker.js?v=20260901.2"></script>
     <script type="module" src="/assets/js/pwa.js?v=20260803.2"></script>
 </body>
 </html>

@@ -2,14 +2,19 @@
 
 namespace App\Services\Partners;
 
+use App\Enums\SpecialPriceAudience;
 use App\Models\Partner;
 use App\Models\PartnerProductPrice;
 use App\Models\Product;
 use App\Services\Pricing\PriceCalculator;
+use App\Services\Pricing\SpecialPriceRuleResolver;
 
 class PartnerDeliveryDocumentPricingService
 {
-    public function __construct(private readonly PriceCalculator $calculator) {}
+    public function __construct(
+        private readonly PriceCalculator $calculator,
+        private readonly SpecialPriceRuleResolver $specialPrices,
+    ) {}
 
     public function product(Partner $partner, int|string|null $productId): array
     {
@@ -29,10 +34,13 @@ class PartnerDeliveryDocumentPricingService
         $price = PartnerProductPrice::query()
             ->whereBelongsTo($partner)
             ->whereBelongsTo($product)
-            ->value('purchase_price_net');
+            ->first();
+        $effectivePrice = $price?->purchase_price_is_custom
+            ? $price->purchase_price_net
+            : $this->specialPrices->details($product, SpecialPriceAudience::Partners, $partner)['price'];
 
         return [
-            'price' => number_format((float) ($price ?? $product->base_price_per_unit), 4, '.', ''),
+            'price' => number_format((float) $effectivePrice, 4, '.', ''),
             'unit_symbol' => $product->defaultUnitOfMeasure->symbol,
         ];
     }

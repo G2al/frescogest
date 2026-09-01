@@ -125,7 +125,7 @@ class CatalogTest extends TestCase
         $customer = Customer::factory()->create(['user_id' => $user->id, 'type' => CustomerType::Restaurant]);
 
         $this->actingAs($user, 'customer')->getJson('/api/v1/catalog/products/pomodori')
-            ->assertOk()->assertJsonPath('data.price_per_unit', '2.00')->assertJsonPath('data.minimum_quantity', '5.000');
+            ->assertOk()->assertJsonPath('data.price_per_unit', '1.45')->assertJsonPath('data.minimum_quantity', '5.000');
 
         $customer->productPrices()->where('product_id', $product->id)->update([
             'custom_price_per_unit' => 4.50,

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\SpecialPriceAudience;
+use App\Services\Pricing\SpecialPriceRuleResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -75,9 +77,15 @@ class PartnerGoodsEntry extends Model
                     ->with('taxRate')
                     ->first();
 
-                $entry->unit_purchase_price_net = $price?->purchase_price_net
-                    ?? $product?->base_price_per_unit
-                    ?? 0;
+                $entry->unit_purchase_price_net = $price?->purchase_price_is_custom
+                    ? $price->purchase_price_net
+                    : ($product
+                        ? app(SpecialPriceRuleResolver::class)->details(
+                            $product,
+                            SpecialPriceAudience::Partners,
+                            Partner::query()->find($entry->partner_id),
+                        )['price']
+                        : 0);
                 $entry->tax_percentage = $product?->taxRate?->percentage ?? 0;
             }
 

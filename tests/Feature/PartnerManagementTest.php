@@ -111,13 +111,13 @@ class PartnerManagementTest extends TestCase
         $price = PartnerProductPrice::query()->firstOrFail();
 
         $this->assertSame($product->id, $price->product_id);
-        $this->assertSame('2.0000', $price->purchase_price_net);
-        $this->assertSame('4.0000', $price->sale_price_net);
-        $this->assertSame(4.16, $price->sale_price_gross);
+        $this->assertSame('1.3500', $price->purchase_price_net);
+        $this->assertSame('2.7000', $price->sale_price_net);
+        $this->assertSame(2.808, $price->sale_price_gross);
 
         $price->update(['sale_price_net' => 5]);
 
-        $this->assertSame('150.00', $price->fresh()->markup_percentage);
+        $this->assertSame('270.37', $price->fresh()->markup_percentage);
     }
 
     public function test_goods_entry_snapshots_partner_price_and_report_totals(): void

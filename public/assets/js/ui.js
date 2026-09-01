@@ -120,6 +120,14 @@ export async function mountLayout() {
                         ? `<a class="${catalogActive && !activeCategory ? 'active' : ''}" data-catalog-root href="/index.html" ${catalogActive && !activeCategory ? 'aria-current="page"' : ''}><span>Catalogo</span></a><a class="catalog-category-link ${activeCategory === 'frutta' ? 'active' : ''}" data-category="frutta" href="/index.html?category=frutta" ${activeCategory === 'frutta' ? 'aria-current="page"' : ''}><span>Frutta</span></a><a class="catalog-category-link ${activeCategory === 'verdura' ? 'active' : ''}" data-category="verdura" href="/index.html?category=verdura" ${activeCategory === 'verdura' ? 'aria-current="page"' : ''}><span>Verdura</span></a><a class="catalog-category-link ${activeCategory === 'latticini' ? 'active' : ''}" data-category="latticini" href="/index.html?category=latticini" ${activeCategory === 'latticini' ? 'aria-current="page"' : ''}><span>Latticini</span></a><a class="${ordersActive ? 'active' : ''}" href="/orders.html" ${ordersActive ? 'aria-current="page"' : ''}><span>I miei ordini</span></a>`
                         : `<a href="/"><i data-lucide="layout-grid"></i><span>Catalogo</span></a><a href="/orders.html"><i data-lucide="receipt-text"></i><span>I miei ordini</span></a>`}
                 </nav>
+                <div class="header-socials" aria-label="Profili social">
+                    <a class="header-social-link header-social-instagram" href="https://www.instagram.com/il.paradiso.della.frutta/" target="_blank" rel="noopener noreferrer" aria-label="Apri Instagram" title="Instagram">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"></circle></svg>
+                    </a>
+                    <a class="header-social-link header-social-tiktok" href="https://www.tiktok.com/@il.paradiso.della.frutta" target="_blank" rel="noopener noreferrer" aria-label="Apri TikTok" title="TikTok">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a5.12 5.12 0 0 1-3.68-3.08A5.03 5.03 0 0 1 15.57 2h-3.38v13.61a2.86 2.86 0 1 1-2.86-2.86c.28 0 .56.04.82.12V9.42a6.2 6.2 0 1 0 5.37 6.14V8.11a8.5 8.5 0 0 0 4.8 1.54V6.27c-.25 0-.49-.03-.73-.08Z"></path></svg>
+                    </a>
+                </div>
                 <div class="nav-actions">
                     ${catalogActive ? '<label class="catalog-header-search"><span class="sr-only">Cerca prodotti</span><input type="search" placeholder="Cerca prodotti…" autocomplete="off"><i data-lucide="search"></i></label>' : ''}
                     <a class="header-cart" href="/cart.html" aria-label="Apri carrello" title="Carrello">
@@ -161,6 +169,20 @@ export async function mountLayout() {
                         <img class="footer-logo" src="/assets/images/new-logo-white.png" alt="Il Paradiso della Frutta">
                     </a>
                     <p>Prodotti freschi selezionati ogni giorno per privati e ristoratori.</p>
+                    <div class="footer-socials" aria-label="Seguici sui social">
+                        <a class="footer-social-link footer-social-instagram" href="https://www.instagram.com/il.paradiso.della.frutta/" target="_blank" rel="noopener noreferrer" aria-label="Seguici su Instagram" title="Instagram">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"></circle>
+                            </svg>
+                        </a>
+                        <a class="footer-social-link footer-social-tiktok" href="https://www.tiktok.com/@il.paradiso.della.frutta" target="_blank" rel="noopener noreferrer" aria-label="Seguici su TikTok" title="TikTok">
+                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                                <path d="M19.59 6.69a5.12 5.12 0 0 1-3.68-3.08A5.03 5.03 0 0 1 15.57 2h-3.38v13.61a2.86 2.86 0 1 1-2.86-2.86c.28 0 .56.04.82.12V9.42a6.2 6.2 0 1 0 5.37 6.14V8.11a8.5 8.5 0 0 0 4.8 1.54V6.27c-.25 0-.49-.03-.73-.08Z"></path>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
                 <div class="footer-column">
                     <h2>Esplora</h2>

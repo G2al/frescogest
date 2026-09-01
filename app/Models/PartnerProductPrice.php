@@ -12,6 +12,7 @@ class PartnerProductPrice extends Model
         'partner_id',
         'product_id',
         'purchase_price_net',
+        'purchase_price_is_custom',
         'sale_price_net',
         'markup_percentage',
     ];
@@ -45,6 +46,7 @@ class PartnerProductPrice extends Model
     {
         return [
             'purchase_price_net' => 'decimal:4',
+            'purchase_price_is_custom' => 'boolean',
             'sale_price_net' => 'decimal:4',
             'markup_percentage' => 'decimal:2',
         ];
@@ -54,6 +56,12 @@ class PartnerProductPrice extends Model
     {
         static::saving(function (PartnerProductPrice $price): void {
             $calculator = app(ProductListPriceCalculator::class);
+
+            if ($price->exists
+                && $price->isDirty('purchase_price_net')
+                && ! $price->isDirty('purchase_price_is_custom')) {
+                $price->purchase_price_is_custom = true;
+            }
 
             if ($price->isDirty('sale_price_net') && ! $price->isDirty('markup_percentage')) {
                 $price->markup_percentage = $calculator->markupFromPrice(
