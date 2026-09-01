@@ -29,6 +29,8 @@ class StorefrontWineNoticeTest extends TestCase
         $this->assertStringContainsString("? ' wine-product' : ''", $product);
         $this->assertStringContainsString('const wineClass = isWine', $ui);
         $this->assertStringContainsString('.product-media.wine-product > img:not(.quality-seal)', $styles);
-        $this->assertStringContainsString('object-position: 50% 55%', $styles);
+        $this->assertStringContainsString('.catalog-page .catalog-grid .product-media.wine-product { height: auto; aspect-ratio: 4 / 5;', $styles);
+        $this->assertStringContainsString('aspect-ratio: 3 / 5', $styles);
+        $this->assertStringContainsString('object-fit: contain', $styles);
     }
 }
