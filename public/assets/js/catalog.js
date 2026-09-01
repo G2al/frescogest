@@ -196,6 +196,7 @@ function renderCategories() {
     const selected = categories.find(category => category.slug === state.category);
     titleRoot.textContent = selected ? selected.name : 'Tutti i prodotti';
     const showWineNotice = isWineCategory(selected);
+    document.body.classList.toggle('wine-catalog-active', showWineNotice);
     wineNoticeRoot?.classList.toggle('hidden', !showWineNotice);
     wineNoticeRoot?.setAttribute('aria-hidden', String(!showWineNotice));
     if (showWineNotice) refreshIcons(wineNoticeRoot);

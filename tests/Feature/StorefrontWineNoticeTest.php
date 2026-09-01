@@ -16,6 +16,7 @@ class StorefrontWineNoticeTest extends TestCase
         $this->assertStringContainsString('Per riceverli il 5 settembre, invia l’ordine entro il 3 settembre.', $catalog);
         $this->assertStringContainsString('function isWineCategory(category)', $script);
         $this->assertStringContainsString("wineNoticeRoot?.classList.toggle('hidden', !showWineNotice)", $script);
+        $this->assertStringContainsString("document.body.classList.toggle('wine-catalog-active', showWineNotice)", $script);
     }
 
     public function test_wine_images_use_the_dedicated_portrait_layout(): void
@@ -32,5 +33,6 @@ class StorefrontWineNoticeTest extends TestCase
         $this->assertStringContainsString('.catalog-page .catalog-grid .product-media.wine-product { height: auto; aspect-ratio: 4 / 5;', $styles);
         $this->assertStringContainsString('aspect-ratio: 3 / 5', $styles);
         $this->assertStringContainsString('object-fit: contain', $styles);
+        $this->assertStringContainsString('.wine-catalog-active .catalog-grid { grid-template-columns: repeat(3', $styles);
     }
 }

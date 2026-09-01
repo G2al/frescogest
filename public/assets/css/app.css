@@ -567,6 +567,7 @@ input:focus, textarea:focus { border-color: var(--green); box-shadow: 0 0 0 3px 
 .result-count { color: var(--muted); font-size: .9rem; font-weight: 700; }
 
 .catalog-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 22px; }
+.wine-catalog-active .catalog-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
 .catalog-grid .product-card { min-width: 0; display: flex; overflow: hidden; flex-direction: column; border-color: rgba(0,112,96,.1); border-radius: 22px; box-shadow: 0 10px 32px rgba(0,67,56,.07); }
 .catalog-grid .product-card:hover { transform: translateY(-7px); box-shadow: 0 22px 48px rgba(0,67,56,.13); }
 .product-media { height: 270px; display: grid; flex: 0 0 auto; place-items: center; overflow: hidden; position: relative; margin: 12px 12px 0; border-radius: 16px; background: linear-gradient(145deg,#fbfdfc,#eef6f2); }
