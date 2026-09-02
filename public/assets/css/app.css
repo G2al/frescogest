@@ -1100,7 +1100,7 @@ body.catalog-filters-open { overflow: hidden; }
 .producer-tab.active small { background: rgba(255,255,255,.25); }
 .producer-tab.is-all { --_producer-bg: #f1f4f2; --_producer-border: #dbe6e0; color: #3c5148; }
 .producer-tab.is-all .producer-tab-dot { display: none; }
-.producer-tab.is-all.active { background: linear-gradient(135deg,#4a5c54,#2f3e38); box-shadow: 0 10px 24px rgba(47,62,56,.28); }
+.producer-tab.is-all.active { color: #fff; background: linear-gradient(135deg,#4a5c54,#2f3e38); box-shadow: 0 10px 24px rgba(47,62,56,.28); }
 
 @media (max-width: 600px) {
     .producer-tab { padding: 8px 14px 8px 11px; font-size: .76rem; }

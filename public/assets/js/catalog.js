@@ -65,7 +65,7 @@ const categoryIcons = {
     Vini: 'wine',
 };
 
-const producerPalette = ['#7d2e46', '#b3742c', '#3e6b52', '#5b4b8a', '#2f6f76', '#a1462f', '#8a6d1f', '#45527a'];
+const producerPalette = ['#8b2942', '#c98a2b', '#2d6f8e', '#7a3f8a', '#3e7d4f', '#b8522f', '#4a5a8a', '#8a6d1f'];
 
 function isWineCategory(category) {
     const categoryName = `${category?.name || ''} ${category?.slug || ''}`.toLocaleLowerCase('it-IT');
