@@ -491,3 +491,23 @@
         grid-template-columns: 1fr;
     }
 }
+
+@media (max-width: 360px) {
+    .cerino-home .fashion-header .header-login,
+    .catalog-page .fashion-header .header-login,
+    .catalog-site-header .header-login {
+        width: 38px;
+        min-width: 38px;
+        padding-inline: 8px;
+    }
+
+    .cerino-home .fashion-header .header-login .nav-action-label,
+    .catalog-page .fashion-header .header-login .nav-action-label,
+    .catalog-site-header .header-login .nav-action-label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+    }
+}
