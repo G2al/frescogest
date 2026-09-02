@@ -109,9 +109,9 @@ class Product extends Model
             'markup_percentage' => 'decimal:2',
             'restaurant_markup_percentage' => 'decimal:2',
             'partner_markup_percentage' => 'decimal:2',
-            'base_price_per_unit' => 'decimal:4',
-            'restaurant_price_per_unit' => 'decimal:4',
-            'partner_price_per_unit' => 'decimal:4',
+            'base_price_per_unit' => 'decimal:2',
+            'restaurant_price_per_unit' => 'decimal:2',
+            'partner_price_per_unit' => 'decimal:2',
             'base_minimum_quantity' => 'decimal:3',
             'restaurant_minimum_quantity' => 'decimal:3',
         ];

@@ -19,7 +19,7 @@ class ProductListPriceCalculator
         $cost = max(0, (float) $purchaseCost);
         $markup = max(0, (float) $markupPercentage);
 
-        return round($cost * (1 + ($markup / 100)), 4);
+        return round($cost * (1 + ($markup / 100)), 2);
     }
 
     public function markupFromPrice(string|int|float|null $purchaseCost, string|int|float|null $price): float
