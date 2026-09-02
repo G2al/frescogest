@@ -1090,6 +1090,12 @@ body.catalog-filters-open { overflow: hidden; }
 .wine-order-notice strong { display: block; font-size: 1.05rem; line-height: 1.35; }
 .wine-order-notice p { margin: 5px 0 0; color: #765d4b; font-size: .83rem; line-height: 1.5; }
 .wine-order-notice-bottle { width: 36px; height: 36px; margin-right: 4px; color: rgba(114,51,41,.28); stroke-width: 1.35; transform: rotate(5deg); }
+.producer-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.producer-tab { display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px; cursor: pointer; border: 1px solid #dbe9e3; border-radius: 999px; color: #244f47; background: rgba(255,255,255,.75); font: inherit; font-size: .78rem; font-weight: 750; transition: .18s ease; }
+.producer-tab:hover { border-color: rgba(0,112,96,.25); background: #f1f8f5; }
+.producer-tab.active { color: #fff; border-color: var(--brand-teal); background: linear-gradient(135deg,#007b5d,#00966c); box-shadow: 0 7px 16px rgba(0,112,96,.2); }
+.producer-tab small { padding: 1px 6px; border-radius: 999px; color: inherit; background: rgba(0,0,0,.08); font-size: .68rem; font-weight: 800; }
+.producer-tab.active small { background: rgba(255,255,255,.24); }
 .catalog-sort { min-width: 210px; display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: .73rem; font-weight: 750; }
 .catalog-sort select { min-width: 142px; }
 .catalog-products-column .catalog-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }

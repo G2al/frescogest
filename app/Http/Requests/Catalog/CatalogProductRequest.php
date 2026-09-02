@@ -11,6 +11,7 @@ class CatalogProductRequest extends FormRequest
     {
         $this->merge([
             'category' => trim((string) $this->input('category')),
+            'producer' => trim((string) $this->input('producer')),
             'search' => trim((string) $this->input('search')),
         ]);
     }
@@ -24,6 +25,7 @@ class CatalogProductRequest extends FormRequest
     {
         return [
             'category' => ['nullable', 'string', 'max:255'],
+            'producer' => ['nullable', 'string', 'max:255'],
             'search' => ['nullable', 'string', 'max:100'],
             'seasonal' => ['nullable', 'boolean'],
             'unit' => ['nullable', 'integer', Rule::exists('unit_of_measures', 'id')->where('active', true)],

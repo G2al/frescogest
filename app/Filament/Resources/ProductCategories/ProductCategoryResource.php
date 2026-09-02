@@ -5,6 +5,7 @@ namespace App\Filament\Resources\ProductCategories;
 use App\Filament\Resources\ProductCategories\Pages\CreateProductCategory;
 use App\Filament\Resources\ProductCategories\Pages\EditProductCategory;
 use App\Filament\Resources\ProductCategories\Pages\ListProductCategories;
+use App\Filament\Resources\ProductCategories\RelationManagers\ProducersRelationManager;
 use App\Filament\Resources\ProductCategories\Schemas\ProductCategoryForm;
 use App\Filament\Resources\ProductCategories\Tables\ProductCategoriesTable;
 use App\Filament\Support\AdminOnlyResource;
@@ -39,6 +40,11 @@ class ProductCategoryResource extends AdminOnlyResource
     public static function table(Table $table): Table
     {
         return ProductCategoriesTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [ProducersRelationManager::class];
     }
 
     public static function getPages(): array

@@ -17,6 +17,7 @@ class Product extends Model
 
     protected $fillable = [
         'product_category_id',
+        'producer_id',
         'tax_rate_id',
         'default_unit_of_measure_id',
         'name',
@@ -46,6 +47,11 @@ class Product extends Model
     public function productCategory(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class);
+    }
+
+    public function producer(): BelongsTo
+    {
+        return $this->belongsTo(Producer::class);
     }
 
     public function taxRate(): BelongsTo

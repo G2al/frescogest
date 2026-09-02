@@ -24,6 +24,7 @@ const sortSelect = document.querySelector('#catalog-sort');
 const titleRoot = document.querySelector('#catalog-title');
 const countRoot = document.querySelector('#product-count');
 const wineNoticeRoot = document.querySelector('#wine-order-notice');
+const producerTabsRoot = document.querySelector('#producer-tabs');
 const paginationRoot = document.querySelector('#catalog-pagination');
 const previousProductsButton = document.querySelector('#products-prev');
 const nextProductsButton = document.querySelector('#products-next');
@@ -37,9 +38,12 @@ let categoryDragged = false;
 let categoryDragPointerId = null;
 let catalogSnapshot = '';
 let categoriesSnapshot = '';
+let producers = [];
+let producersRequestId = 0;
 
 const state = {
     category: new URLSearchParams(location.search).get('category') || '',
+    producer: new URLSearchParams(location.search).get('producer') || '',
     search: new URLSearchParams(location.search).get('search') || '',
     seasonal: new URLSearchParams(location.search).get('seasonal') === '1',
     unit: new URLSearchParams(location.search).get('unit') || '',
@@ -199,11 +203,59 @@ function renderCategories() {
     wineNoticeRoot?.classList.toggle('hidden', !showWineNotice);
     wineNoticeRoot?.setAttribute('aria-hidden', String(!showWineNotice));
     if (showWineNotice) refreshIcons(wineNoticeRoot);
+    if (showWineNotice) {
+        loadProducers(selected.slug);
+    } else {
+        producers = [];
+        renderProducerTabs();
+    }
     syncHeaderCategoryState();
     requestAnimationFrame(() => {
         categoriesRoot.querySelector('.category-tab.active')?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         updateCategoryCarouselControls();
     });
+}
+
+async function loadProducers(categorySlug) {
+    const currentRequest = ++producersRequestId;
+
+    try {
+        const payload = await api(`/catalog/producers?category=${encodeURIComponent(categorySlug)}`);
+        if (currentRequest !== producersRequestId) return;
+        producers = payload.data || [];
+        if (!producers.some(producer => producer.slug === state.producer)) state.producer = '';
+        renderProducerTabs();
+    } catch {
+        // I filtri per casa produttrice sono un extra: se falliscono il catalogo resta comunque utilizzabile.
+    }
+}
+
+function renderProducerTabs() {
+    if (!producerTabsRoot) return;
+
+    if (!producers.length) {
+        producerTabsRoot.classList.add('hidden');
+        producerTabsRoot.innerHTML = '';
+        return;
+    }
+
+    producerTabsRoot.classList.remove('hidden');
+    const tabs = [{ name: 'Tutte le case produttrici', slug: '' }, ...producers];
+    producerTabsRoot.innerHTML = tabs.map(producer => {
+        const active = state.producer === producer.slug;
+        const name = escapeHtml(producer.name);
+        const count = producer.slug ? Number(producer.products_count || 0) : null;
+
+        return `<button class="producer-tab ${active ? 'active' : ''}" type="button" data-producer="${escapeHtml(producer.slug)}" aria-pressed="${active}">${name}${count !== null ? `<small>${count}</small>` : ''}</button>`;
+    }).join('');
+}
+
+function selectProducer(producer) {
+    state.producer = state.producer === producer ? '' : producer;
+    state.page = 1;
+    renderProducerTabs();
+    updateUrl();
+    loadProducts();
 }
 
 function syncHeaderCategoryState() {
@@ -224,6 +276,7 @@ function syncHeaderCategoryState() {
 
 function selectCategory(category, toggleCurrent = false) {
     state.category = toggleCurrent && state.category === category ? '' : category;
+    state.producer = '';
     state.page = 1;
     renderCategories();
     syncFilterControls();
@@ -300,6 +353,7 @@ function closeFilters() {
 function updateUrl() {
     const params = new URLSearchParams();
     if (state.category) params.set('category', state.category);
+    if (state.producer) params.set('producer', state.producer);
     if (state.search) params.set('search', state.search);
     if (state.seasonal) params.set('seasonal', '1');
     if (state.unit) params.set('unit', state.unit);
@@ -367,6 +421,7 @@ async function loadProducts({ silent = false } = {}) {
     }
     const params = new URLSearchParams();
     if (state.category) params.set('category', state.category);
+    if (state.producer) params.set('producer', state.producer);
     if (state.search) params.set('search', state.search);
     if (state.seasonal) params.set('seasonal', '1');
     if (state.unit) params.set('unit', state.unit);
@@ -491,6 +546,12 @@ document.addEventListener('click', event => {
     event.preventDefault();
     selectCategory(link.dataset.category || '');
     document.querySelector('#catalog-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+producerTabsRoot?.addEventListener('click', event => {
+    const tab = event.target.closest('.producer-tab');
+    if (!tab) return;
+    selectProducer(tab.dataset.producer);
 });
 
 previousCategoriesButton?.addEventListener('click', () => scrollCategories(-1));

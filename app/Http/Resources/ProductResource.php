@@ -29,6 +29,10 @@ class ProductResource extends JsonResource
             'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
             'is_seasonal' => $this->is_seasonal,
             'category' => ProductCategoryResource::make($this->whenLoaded('productCategory')),
+            'producer' => $this->whenLoaded('producer', fn () => $this->producer ? [
+                'name' => $this->producer->name,
+                'slug' => $this->producer->slug,
+            ] : null),
             'unit_of_measure' => [
                 'name' => $this->defaultUnitOfMeasure?->name,
                 'symbol' => $this->defaultUnitOfMeasure?->symbol,

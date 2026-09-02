@@ -42,6 +42,10 @@ class ProductCategoryForm
                             ->label('Ordine visualizzazione')
                             ->numeric()
                             ->default(0),
+                        Toggle::make('sort_alphabetically')
+                            ->label('Ordina i prodotti alfabeticamente (A-Z)')
+                            ->helperText('Se attivo, nel catalogo pubblico questa categoria mostra i prodotti in ordine alfabetico per nome invece che nell’ordine manuale impostato sui singoli prodotti.')
+                            ->default(false),
                         FileUpload::make('image_path')
                             ->label('Immagine pubblica')
                             ->image()

@@ -15,6 +15,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class ProductForm
@@ -113,7 +114,21 @@ class ProductForm
             Section::make('Classificazione')
                 ->columnSpanFull()
                 ->schema([
-                    Select::make('product_category_id')->label('Categoria')->relationship('productCategory', 'name')->searchable()->preload()->required(),
+                    Select::make('product_category_id')->label('Categoria')->relationship('productCategory', 'name')->searchable()->preload()->required()->live()
+                        ->afterStateUpdated(fn (Set $set) => $set('producer_id', null)),
+                    Select::make('producer_id')
+                        ->label('Casa produttrice')
+                        ->helperText('Facoltativo: da gestire nella scheda della categoria (es. Vini & Liquori → Case produttrici).')
+                        ->relationship(
+                            'producer',
+                            'name',
+                            fn (Builder $query, Get $get) => $query->when(
+                                $get('product_category_id'),
+                                fn (Builder $query, $categoryId) => $query->where('product_category_id', $categoryId),
+                            ),
+                        )
+                        ->searchable()
+                        ->preload(),
                     Select::make('tax_rate_id')->label('Aliquota IVA')->relationship('taxRate', 'name')->searchable()->preload()->required()->live()
                         ->afterStateUpdated(function (Get $get, Set $set): void {
                             if ($get('purchase_cost_input_source') === 'net') {

@@ -19,12 +19,18 @@ class ProductCategory extends Model
         'catalog_color',
         'is_public',
         'sort_order',
+        'sort_alphabetically',
         'active',
     ];
 
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    public function producers(): HasMany
+    {
+        return $this->hasMany(Producer::class);
     }
 
     public function customerDiscounts(): HasMany
@@ -50,6 +56,7 @@ class ProductCategory extends Model
         return [
             'active' => 'boolean',
             'is_public' => 'boolean',
+            'sort_alphabetically' => 'boolean',
         ];
     }
 }

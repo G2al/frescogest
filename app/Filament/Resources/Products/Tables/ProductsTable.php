@@ -32,6 +32,12 @@ class ProductsTable
                     ->label('Categoria')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('producer.name')
+                    ->label('Casa produttrice')
+                    ->searchable()
+                    ->sortable()
+                    ->toggleable()
+                    ->placeholder('—'),
                 TextColumn::make('taxRate.name')
                     ->label('Aliquota IVA')
                     ->sortable(),

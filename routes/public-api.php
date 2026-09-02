@@ -27,6 +27,7 @@ Route::prefix('api/v1')->middleware('store.open')->group(function (): void {
 
     Route::prefix('catalog')->group(function (): void {
         Route::get('categories', [CatalogController::class, 'categories']);
+        Route::get('producers', [CatalogController::class, 'producers']);
         Route::get('filters', [CatalogController::class, 'filters']);
         Route::get('products', [CatalogController::class, 'products']);
         Route::get('products/{slug}', [CatalogController::class, 'product']);
