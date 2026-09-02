@@ -82,6 +82,7 @@ function closeProductModal() {
     const modal = document.querySelector('#home-product-modal');
     const backdrop = document.querySelector('#home-product-modal-backdrop');
     modal?.classList.remove('open');
+    modal?.classList.remove('is-image-expanded');
     backdrop?.classList.remove('open');
     modal?.setAttribute('aria-hidden', 'true');
     backdrop?.setAttribute('aria-hidden', 'true');
@@ -118,9 +119,21 @@ async function showProductModal(slug, trigger) {
             style: 'currency',
             currency: 'EUR',
         });
+        const productImages = Array.isArray(product.image_urls) && product.image_urls.length
+            ? product.image_urls
+            : [productImage(product)];
 
         content.innerHTML = `
-            <div class="product-modal-media"><img src="${productImage(product)}" alt="${escapeHtml(product.name)}"></div>
+            <div class="product-modal-media${productImages.length > 1 ? ' has-thumbnails' : ''}">
+                <button class="product-modal-image-open" type="button" aria-label="Apri la foto a schermo intero" aria-pressed="false">
+                    <img class="product-modal-main-image" src="${productImages[0]}" alt="${escapeHtml(product.name)}">
+                    <span class="product-modal-zoom-hint"><i data-lucide="maximize-2"></i></span>
+                </button>
+                ${productImages.length > 1 ? `<div class="product-modal-thumbnails" aria-label="Foto del prodotto">${productImages.map((image, index) => `
+                    <button class="product-modal-thumbnail${index === 0 ? ' is-active' : ''}" type="button" data-image="${escapeHtml(image)}" aria-label="Mostra foto ${index + 1}" aria-pressed="${index === 0}">
+                        <img src="${escapeHtml(image)}" alt="">
+                    </button>`).join('')}</div>` : ''}
+            </div>
             <div class="product-modal-copy">
                 <span class="eyebrow">${escapeHtml(product.brand || product.category?.name || 'Cerino Store')}</span>
                 <h2 id="home-product-modal-title">${escapeHtml(product.name)}</h2>
@@ -170,13 +183,40 @@ productsRoot?.addEventListener('click', event => {
 });
 document.addEventListener('cart:added', closeProductModal);
 document.addEventListener('click', event => {
+    const imageTrigger = event.target.closest('#home-product-modal .product-modal-image-open');
+    if (imageTrigger) {
+        const modal = document.querySelector('#home-product-modal');
+        const isExpanded = modal.classList.toggle('is-image-expanded');
+        imageTrigger.setAttribute('aria-pressed', String(isExpanded));
+        imageTrigger.setAttribute('aria-label', isExpanded ? 'Riduci la foto' : 'Apri la foto a schermo intero');
+        return;
+    }
+
+    const thumbnail = event.target.closest('#home-product-modal .product-modal-thumbnail');
+    if (thumbnail) {
+        const modal = document.querySelector('#home-product-modal');
+        modal.querySelector('.product-modal-main-image').src = thumbnail.dataset.image;
+        modal.querySelectorAll('.product-modal-thumbnail').forEach(item => {
+            const isActive = item === thumbnail;
+            item.classList.toggle('is-active', isActive);
+            item.setAttribute('aria-pressed', String(isActive));
+        });
+        return;
+    }
+
     if (event.target.closest('#home-product-modal .product-modal-close, #home-product-modal-backdrop')) {
         closeProductModal();
     }
 });
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && document.querySelector('#home-product-modal.open')) {
-        closeProductModal();
+        const modal = document.querySelector('#home-product-modal');
+        if (modal.classList.contains('is-image-expanded')) {
+            modal.classList.remove('is-image-expanded');
+            modal.querySelector('.product-modal-image-open')?.setAttribute('aria-pressed', 'false');
+        } else {
+            closeProductModal();
+        }
     }
 });
 refreshIcons();

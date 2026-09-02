@@ -159,6 +159,12 @@
 }
 
 @media (max-width: 640px) {
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: clip;
+    }
+
     .fashion-announcement,
     .catalog-site-header .fashion-announcement {
         min-height: 34px;
@@ -168,22 +174,165 @@
     .cerino-home .fashion-header .nav,
     .catalog-page .fashion-header .nav,
     .catalog-site-header .nav {
-        grid-template-columns: 92px minmax(0, 1fr);
+        width: calc(100% - 20px);
+        grid-template-columns: 112px minmax(0, 1fr);
+        gap: 6px;
     }
 
     .cerino-home .fashion-header .brand,
     .catalog-page .fashion-header .brand,
     .catalog-site-header .brand {
-        width: 92px;
+        width: 112px;
         height: 48px;
-        flex-basis: 92px;
+        position: relative;
+        z-index: 2;
+        flex-basis: 112px;
     }
 
     .cerino-home .fashion-header .brand-logo,
     .catalog-page .fashion-header .brand-logo,
     .catalog-site-header .brand-logo {
-        width: 88px;
+        width: 108px;
         height: 44px;
+        position: static;
+    }
+
+    .cerino-home .fashion-header .nav-actions,
+    .catalog-page .fashion-header .nav-actions,
+    .catalog-site-header .nav-actions {
+        min-width: 0;
+        gap: 5px;
+    }
+
+    .cerino-home .fashion-header .header-login,
+    .catalog-page .fashion-header .header-login,
+    .catalog-site-header .header-login {
+        width: auto;
+        min-width: 58px;
+        gap: 4px;
+        padding-inline: 6px;
+    }
+
+    .cerino-home .fashion-header .header-login .nav-action-label,
+    .catalog-page .fashion-header .header-login .nav-action-label,
+    .catalog-site-header .header-login .nav-action-label {
+        width: auto;
+        height: auto;
+        position: static;
+        display: inline;
+        overflow: visible;
+        clip: auto;
+        font-size: .56rem;
+        white-space: nowrap;
+    }
+
+    .cerino-home .fashion-header .header-register,
+    .catalog-page .fashion-header .header-register,
+    .catalog-site-header .header-register {
+        min-height: 36px;
+        padding-inline: 7px;
+        font-size: .54rem;
+    }
+
+    .cerino-home .fashion-header .nav-links a,
+    .catalog-page .fashion-header .nav-links a,
+    .catalog-site-header .nav-links a {
+        min-height: 36px;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .cerino-home .fashion-header .nav-links a.active,
+    .catalog-page .fashion-header .nav-links a.active,
+    .catalog-site-header .nav-links a.active {
+        color: inherit;
+        background: rgba(255, 255, 255, .16);
+        box-shadow: inset 0 -2px currentColor;
+    }
+
+    .fashion-announcement,
+    .catalog-site-header .fashion-announcement {
+        min-height: 28px;
+    }
+
+    .cerino-home .product-modal {
+        padding-top: 3dvh;
+    }
+
+    .cerino-home .product-modal-panel {
+        height: 97dvh;
+        max-height: 97dvh;
+    }
+
+    .cerino-home .product-modal-media {
+        height: clamp(310px, 49dvh, 440px);
+        min-height: 310px;
+        padding: 14px;
+    }
+
+    .cerino-home .product-modal-media.has-thumbnails {
+        padding-bottom: 10px;
+    }
+
+    .cerino-home .product-modal-copy {
+        padding-top: 24px;
+    }
+
+    .cerino-home .product-modal-copy h2 {
+        font-size: clamp(2rem, 10vw, 2.7rem);
+    }
+
+    .cerino-home .product-modal.is-image-expanded {
+        align-items: stretch;
+        padding: 0;
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-panel {
+        width: 100vw;
+        height: 100dvh;
+        max-height: 100dvh;
+        border: 0;
+        border-radius: 0;
+        background: #111;
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-content,
+    .cerino-home .product-modal.is-image-expanded .product-modal-media {
+        width: 100%;
+        height: 100%;
+        min-height: 100%;
+        padding: 0;
+        background: #111;
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-media.has-thumbnails {
+        padding: 0 0 calc(18px + env(safe-area-inset-bottom));
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-copy {
+        display: none;
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-image-open {
+        cursor: zoom-out;
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-main-image {
+        object-fit: contain;
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-zoom-hint {
+        display: none;
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-thumbnails {
+        position: relative;
+        z-index: 2;
+    }
+
+    .cerino-home .product-modal.is-image-expanded .product-modal-close {
+        color: #171412;
+        background: rgba(255, 255, 255, .94);
     }
 
     .auth-editorial {
@@ -322,20 +471,20 @@
     .cerino-home .fashion-header .nav,
     .catalog-page .fashion-header .nav,
     .catalog-site-header .nav {
-        grid-template-columns: 78px minmax(0, 1fr);
+        grid-template-columns: 100px minmax(0, 1fr);
     }
 
     .cerino-home .fashion-header .brand,
     .catalog-page .fashion-header .brand,
     .catalog-site-header .brand {
-        width: 78px;
-        flex-basis: 78px;
+        width: 100px;
+        flex-basis: 100px;
     }
 
     .cerino-home .fashion-header .brand-logo,
     .catalog-page .fashion-header .brand-logo,
     .catalog-site-header .brand-logo {
-        width: 76px;
+        width: 96px;
     }
 
     .footer .footer-content {
