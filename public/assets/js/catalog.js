@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260901.3';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260902.1';
 
 const categoriesRoot = document.querySelector('#categories');
 const previousCategoriesButton = document.querySelector('#categories-previous');
@@ -134,7 +134,7 @@ async function showProductModal(slug, trigger) {
             ? `<img src="${product.image_url}" alt="${product.name}">`
             : '<span class="product-modal-placeholder"><i data-lucide="image"></i></span>';
         content.innerHTML = `
-            <div class="product-modal-media${isWineCategory(product.category) ? ' wine-product' : ''}">${image}${product.is_seasonal ? '<span class="seasonal-badge"><i data-lucide="sparkles"></i>Stagionale</span>' : ''}</div>
+            <div class="product-modal-media">${image}${product.is_seasonal ? '<span class="seasonal-badge"><i data-lucide="sparkles"></i>Stagionale</span>' : ''}</div>
             <div class="product-modal-copy">
                 <span class="eyebrow">${product.category?.name || 'Catalogo'}</span>
                 <h2 id="product-modal-title">${product.name}</h2>
@@ -196,7 +196,6 @@ function renderCategories() {
     const selected = categories.find(category => category.slug === state.category);
     titleRoot.textContent = selected ? selected.name : 'Tutti i prodotti';
     const showWineNotice = isWineCategory(selected);
-    document.body.classList.toggle('wine-catalog-active', showWineNotice);
     wineNoticeRoot?.classList.toggle('hidden', !showWineNotice);
     wineNoticeRoot?.setAttribute('aria-hidden', String(!showWineNotice));
     if (showWineNotice) refreshIcons(wineNoticeRoot);
