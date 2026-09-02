@@ -65,6 +65,8 @@ const categoryIcons = {
     Vini: 'wine',
 };
 
+const producerPalette = ['#7d2e46', '#b3742c', '#3e6b52', '#5b4b8a', '#2f6f76', '#a1462f', '#8a6d1f', '#45527a'];
+
 function isWineCategory(category) {
     const categoryName = `${category?.name || ''} ${category?.slug || ''}`.toLocaleLowerCase('it-IT');
 
@@ -241,12 +243,14 @@ function renderProducerTabs() {
 
     producerTabsRoot.classList.remove('hidden');
     const tabs = [{ name: 'Tutte le case produttrici', slug: '' }, ...producers];
-    producerTabsRoot.innerHTML = tabs.map(producer => {
+    producerTabsRoot.innerHTML = tabs.map((producer, index) => {
         const active = state.producer === producer.slug;
         const name = escapeHtml(producer.name);
         const count = producer.slug ? Number(producer.products_count || 0) : null;
+        const color = producer.slug ? producerPalette[(index - 1) % producerPalette.length] : null;
+        const style = color ? ` style="--producer-color:${color}"` : '';
 
-        return `<button class="producer-tab ${active ? 'active' : ''}" type="button" data-producer="${escapeHtml(producer.slug)}" aria-pressed="${active}">${name}${count !== null ? `<small>${count}</small>` : ''}</button>`;
+        return `<button class="producer-tab ${active ? 'active' : ''}${producer.slug ? '' : ' is-all'}" type="button" data-producer="${escapeHtml(producer.slug)}" aria-pressed="${active}"${style}><span class="producer-tab-dot" aria-hidden="true"></span><span class="producer-tab-name">${name}</span>${count !== null ? `<small>${count}</small>` : ''}</button>`;
     }).join('');
 }
 

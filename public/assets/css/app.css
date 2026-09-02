@@ -1090,12 +1090,21 @@ body.catalog-filters-open { overflow: hidden; }
 .wine-order-notice strong { display: block; font-size: 1.05rem; line-height: 1.35; }
 .wine-order-notice p { margin: 5px 0 0; color: #765d4b; font-size: .83rem; line-height: 1.5; }
 .wine-order-notice-bottle { width: 36px; height: 36px; margin-right: 4px; color: rgba(114,51,41,.28); stroke-width: 1.35; transform: rotate(5deg); }
-.producer-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
-.producer-tab { display: inline-flex; align-items: center; gap: 7px; padding: 8px 15px; cursor: pointer; border: 1px solid #dbe9e3; border-radius: 999px; color: #244f47; background: rgba(255,255,255,.75); font: inherit; font-size: .78rem; font-weight: 750; transition: .18s ease; }
-.producer-tab:hover { border-color: rgba(0,112,96,.25); background: #f1f8f5; }
-.producer-tab.active { color: #fff; border-color: var(--brand-teal); background: linear-gradient(135deg,#007b5d,#00966c); box-shadow: 0 7px 16px rgba(0,112,96,.2); }
-.producer-tab small { padding: 1px 6px; border-radius: 999px; color: inherit; background: rgba(0,0,0,.08); font-size: .68rem; font-weight: 800; }
-.producer-tab.active small { background: rgba(255,255,255,.24); }
+.producer-tabs { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 24px; }
+.producer-tab { --_producer-bg: color-mix(in srgb,var(--producer-color,#5b6b64) 13%,#fff); --_producer-border: color-mix(in srgb,var(--producer-color,#5b6b64) 42%,#dbe9e3); display: inline-flex; align-items: center; gap: 9px; padding: 9px 17px 9px 13px; cursor: pointer; border: 1.5px solid var(--_producer-border); border-radius: 999px; color: color-mix(in srgb,var(--producer-color,#244f47) 80%,#1c2b26); background: var(--_producer-bg); font: inherit; font-size: .8rem; font-weight: 800; letter-spacing: .01em; transition: .2s ease; }
+.producer-tab-dot { width: 9px; height: 9px; flex-shrink: 0; border-radius: 50%; background: var(--producer-color,#8aa79a); box-shadow: 0 0 0 3px color-mix(in srgb,var(--producer-color,#8aa79a) 22%,transparent); }
+.producer-tab:hover { transform: translateY(-1px); border-color: color-mix(in srgb,var(--producer-color,#5b6b64) 65%,#dbe9e3); box-shadow: 0 8px 16px color-mix(in srgb,var(--producer-color,#5b6b64) 22%,transparent); }
+.producer-tab.active { color: #fff; border-color: transparent; background: linear-gradient(135deg,var(--producer-color,#0d7a5f),color-mix(in srgb,var(--producer-color,#0d7a5f) 62%,#000)); box-shadow: 0 10px 24px color-mix(in srgb,var(--producer-color,#0d7a5f) 45%,transparent); }
+.producer-tab.active .producer-tab-dot { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,.35); }
+.producer-tab small { padding: 1px 7px; border-radius: 999px; color: inherit; background: color-mix(in srgb,var(--producer-color,#8aa79a) 16%,#fff); font-size: .68rem; font-weight: 800; }
+.producer-tab.active small { background: rgba(255,255,255,.25); }
+.producer-tab.is-all { --_producer-bg: #f1f4f2; --_producer-border: #dbe6e0; color: #3c5148; }
+.producer-tab.is-all .producer-tab-dot { display: none; }
+.producer-tab.is-all.active { background: linear-gradient(135deg,#4a5c54,#2f3e38); box-shadow: 0 10px 24px rgba(47,62,56,.28); }
+
+@media (max-width: 600px) {
+    .producer-tab { padding: 8px 14px 8px 11px; font-size: .76rem; }
+}
 .catalog-sort { min-width: 210px; display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: .73rem; font-weight: 750; }
 .catalog-sort select { min-width: 142px; }
 .catalog-products-column .catalog-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
