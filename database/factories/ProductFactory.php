@@ -42,6 +42,8 @@ class ProductFactory extends Factory
             'base_minimum_quantity' => 1,
             'restaurant_minimum_quantity' => 5,
             'image_path' => null,
+            'image_path_2' => null,
+            'image_path_3' => null,
             'is_public' => true,
             'is_seasonal' => fake()->boolean(25),
             'sort_order' => fake()->numberBetween(0, 1000),

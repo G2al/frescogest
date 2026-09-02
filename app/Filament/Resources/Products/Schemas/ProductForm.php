@@ -33,7 +33,7 @@ class ProductForm
                         ->maxLength(255),
                     TextInput::make('code')
                         ->label('Codice articolo')
-                        ->required()
+                        ->helperText('Facoltativo.')
                         ->unique(ignoreRecord: true)
                         ->maxLength(255),
                     TextInput::make('brand')
@@ -100,18 +100,31 @@ class ProductForm
                         ->label('Note interne')
                         ->rows(3)
                         ->columnSpanFull(),
-                    FileUpload::make('image_path')
-                        ->label('Immagine')
-                        ->image()
-                        ->disk('public')
-                        ->visibility('public')
-                        ->directory('catalog/products')
-                        ->previewable()
-                        ->openable()
-                        ->imagePreviewHeight('280')
-                        ->columnSpanFull(),
+                    self::productImageUpload('image_path', 'Foto principale')
+                        ->helperText('Facoltativa. Le foto vengono ottimizzate automaticamente prima del caricamento.'),
+                    self::productImageUpload('image_path_2', 'Seconda foto'),
+                    self::productImageUpload('image_path_3', 'Terza foto'),
                 ]),
         ]);
+    }
+
+    private static function productImageUpload(string $name, string $label): FileUpload
+    {
+        return FileUpload::make($name)
+            ->label($label)
+            ->image()
+            ->maxSize(25600)
+            ->disk('public')
+            ->visibility('public')
+            ->directory('catalog/products')
+            ->previewable()
+            ->openable()
+            ->orientImagesFromExif()
+            ->automaticallyResizeImagesMode('contain')
+            ->automaticallyResizeImagesToWidth('1600')
+            ->automaticallyResizeImagesToHeight('1600')
+            ->automaticallyUpscaleImagesWhenResizing(false)
+            ->imagePreviewHeight('220');
     }
 
     private static function syncPricing(Get $get, Set $set): void

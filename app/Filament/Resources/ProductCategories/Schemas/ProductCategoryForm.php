@@ -45,10 +45,16 @@ class ProductCategoryForm
                         FileUpload::make('image_path')
                             ->label('Immagine pubblica')
                             ->image()
+                            ->maxSize(25600)
                             ->disk('public')
                             ->directory('catalog/categories')
+                            ->orientImagesFromExif()
+                            ->automaticallyResizeImagesMode('contain')
+                            ->automaticallyResizeImagesToWidth('1600')
+                            ->automaticallyResizeImagesToHeight('1600')
+                            ->automaticallyUpscaleImagesWhenResizing(false)
                             ->imagePreviewHeight('180')
-                            ->helperText('Immagine mostrata nella card della categoria sul catalogo.'),
+                            ->helperText('Immagine mostrata nel catalogo e ottimizzata automaticamente prima del caricamento.'),
                         ColorPicker::make('catalog_color')
                             ->label('Colore della card')
                             ->default('#eaf6ee')

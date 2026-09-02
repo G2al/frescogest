@@ -15,6 +15,12 @@ class ProductResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $imageUrls = collect([
+            $this->image_path,
+            $this->image_path_2,
+            $this->image_path_3,
+        ])->filter()->map(fn (string $path): string => Storage::disk('public')->url($path))->values();
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -27,7 +33,8 @@ class ProductResource extends JsonResource
             'has_personalized_price' => (bool) ($this->has_personalized_price ?? false),
             'pricing_source' => $this->pricing_source ?? 'base',
             'discount_percentage' => $this->discount_percentage,
-            'image_url' => $this->image_path ? Storage::disk('public')->url($this->image_path) : null,
+            'image_url' => $imageUrls->first(),
+            'image_urls' => $imageUrls,
             'is_seasonal' => $this->is_seasonal,
             'variants' => $this->whenLoaded('variants', fn () => $this->variants
                 ->where('active', true)

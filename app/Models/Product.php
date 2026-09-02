@@ -26,6 +26,8 @@ class Product extends Model
         'brand',
         'description',
         'image_path',
+        'image_path_2',
+        'image_path_3',
         'public_description',
         'price_per_kg',
         'purchase_cost_per_unit',

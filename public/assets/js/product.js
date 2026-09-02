@@ -10,9 +10,21 @@ if (slug) api(`/catalog/products/${encodeURIComponent(slug)}`).then(({ data }) =
     const unitPrice = data.price_per_unit ?? data.price_per_kg;
     const price = Number(unitPrice).toLocaleString('it-IT', { style: 'currency', currency: 'EUR' });
     const variants = Array.isArray(data.variants) ? data.variants : [];
+    const images = Array.isArray(data.image_urls) && data.image_urls.length
+        ? data.image_urls
+        : (data.image_url ? [data.image_url] : []);
+    const productMedia = images.length
+        ? `<div class="product-gallery">
+                <div class="product-image"><img id="product-main-image" src="${images[0]}" alt="${data.name}"></div>
+                ${images.length > 1 ? `<div class="product-gallery-thumbnails" aria-label="Altre foto del prodotto">${images.map((image, index) => `
+                    <button class="product-gallery-thumbnail${index === 0 ? ' is-active' : ''}" type="button" data-image="${image}" aria-label="Mostra foto ${index + 1}" aria-pressed="${index === 0}">
+                        <img src="${image}" alt="">
+                    </button>`).join('')}</div>` : ''}
+            </div>`
+        : '<div class="product-image"><span class="product-placeholder"><i data-lucide="shirt"></i><small>Cerino Store</small></span></div>';
     const variantPicker = variantPickerMarkup(variants, 'variant-picker-detail');
     document.querySelector('#product-detail').innerHTML = `
-        <div class="hero-card reveal"><div class="product-image">${data.image_url ? `<img src="${data.image_url}" alt="${data.name}">` : '<span class="product-placeholder"><i data-lucide="shirt"></i><small>Cerino Store</small></span>'}</div></div>
+        <div class="hero-card reveal">${productMedia}</div>
         <div class="reveal">
             <span class="eyebrow">${data.brand || data.category?.name || 'Cerino Store'}</span>
             <h1>${data.name}</h1>
@@ -25,6 +37,17 @@ if (slug) api(`/catalog/products/${encodeURIComponent(slug)}`).then(({ data }) =
             </div>
         </div>`;
     refreshIcons(document.querySelector('#product-detail'));
+
+    document.querySelectorAll('.product-gallery-thumbnail').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelector('#product-main-image').src = button.dataset.image;
+            document.querySelectorAll('.product-gallery-thumbnail').forEach(thumbnail => {
+                const isActive = thumbnail === button;
+                thumbnail.classList.toggle('is-active', isActive);
+                thumbnail.setAttribute('aria-pressed', String(isActive));
+            });
+        });
+    });
 
     document.querySelector('#add-product').addEventListener('click', async event => {
         const quantity = document.querySelector('#quantity');

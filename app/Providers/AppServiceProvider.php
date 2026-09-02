@@ -30,6 +30,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        config([
+            'livewire.temporary_file_upload.rules' => ['required', 'file', 'max:25600'],
+            'livewire.temporary_file_upload.max_upload_time' => 10,
+            'livewire.temporary_file_upload.preview_mimes' => [
+                'png', 'gif', 'bmp', 'svg', 'jpg', 'jpeg', 'webp',
+                'avif', 'heic', 'heif', 'tif', 'tiff',
+            ],
+        ]);
+
         Customer::observe(CustomerObserver::class);
         Product::observe(ProductObserver::class);
 

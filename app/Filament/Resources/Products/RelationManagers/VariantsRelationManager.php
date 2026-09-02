@@ -25,7 +25,7 @@ class VariantsRelationManager extends RelationManager
         return $schema->components([
             TextInput::make('sku')
                 ->label('SKU')
-                ->required()
+                ->helperText('Facoltativo.')
                 ->unique(ignoreRecord: true)
                 ->maxLength(255),
             TextInput::make('size')
