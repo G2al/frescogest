@@ -13,8 +13,13 @@ class StorefrontWineNoticeTest extends TestCase
 
         $this->assertStringContainsString('id="wine-order-notice"', $catalog);
         $this->assertStringContainsString('Ordina i vini con almeno 2 giorni di anticipo', $catalog);
-        $this->assertStringContainsString('Per riceverli il 5 settembre, invia l’ordine entro il 3 settembre.', $catalog);
+        $this->assertStringContainsString('id="wine-order-notice-text"', $catalog);
+        $this->assertStringContainsString('id="open-wine-info"', $catalog);
         $this->assertStringContainsString('function isWineCategory(category)', $script);
         $this->assertStringContainsString("wineNoticeRoot?.classList.toggle('hidden', !showWineNotice)", $script);
+        $this->assertStringContainsString('function computeWineDeliveryDate(', $script);
+        $this->assertStringContainsString('function updateWineOrderNoticeText(', $script);
+        $this->assertStringContainsString('function openWineInfoModal(', $script);
+        $this->assertStringContainsString('la domenica non si consegna', $script);
     }
 }

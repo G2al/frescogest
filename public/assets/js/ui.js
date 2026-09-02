@@ -127,6 +127,9 @@ export async function mountLayout() {
                     <a class="header-social-link header-social-tiktok" href="https://www.tiktok.com/@il.paradiso.della.frutta" target="_blank" rel="noopener noreferrer" aria-label="Apri TikTok" title="TikTok">
                         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a5.12 5.12 0 0 1-3.68-3.08A5.03 5.03 0 0 1 15.57 2h-3.38v13.61a2.86 2.86 0 1 1-2.86-2.86c.28 0 .56.04.82.12V9.42a6.2 6.2 0 1 0 5.37 6.14V8.11a8.5 8.5 0 0 0 4.8 1.54V6.27c-.25 0-.49-.03-.73-.08Z"></path></svg>
                     </a>
+                    <a class="header-social-link header-social-email" href="mailto:info.paradisodellafrutta@gmail.com" aria-label="Scrivici una email" title="Scrivici una email">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 7 8 6 8-6"></path></svg>
+                    </a>
                 </div>
                 <div class="nav-actions">
                     ${catalogActive ? '<label class="catalog-header-search"><span class="sr-only">Cerca prodotti</span><input type="search" placeholder="Cerca prodotti…" autocomplete="off"><i data-lucide="search"></i></label>' : ''}
@@ -181,6 +184,9 @@ export async function mountLayout() {
                             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                                 <path d="M19.59 6.69a5.12 5.12 0 0 1-3.68-3.08A5.03 5.03 0 0 1 15.57 2h-3.38v13.61a2.86 2.86 0 1 1-2.86-2.86c.28 0 .56.04.82.12V9.42a6.2 6.2 0 1 0 5.37 6.14V8.11a8.5 8.5 0 0 0 4.8 1.54V6.27c-.25 0-.49-.03-.73-.08Z"></path>
                             </svg>
+                        </a>
+                        <a class="footer-social-link footer-social-email" href="mailto:info.paradisodellafrutta@gmail.com" aria-label="Scrivici una email" title="Scrivici una email">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="m4 7 8 6 8-6"></path></svg>
                         </a>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import { api } from './api.js?v=20260720.5';
-import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260902.1';
+import { notify, productCard, refreshIcons, skeletonCards } from './ui.js?v=20260902.3';
 
 const categoriesRoot = document.querySelector('#categories');
 const previousCategoriesButton = document.querySelector('#categories-previous');
@@ -66,6 +66,120 @@ const categoryIcons = {
 };
 
 const producerPalette = ['#8b2942', '#c98a2b', '#2d6f8e', '#7a3f8a', '#3e7d4f', '#b8522f', '#4a5a8a', '#8a6d1f'];
+
+const WINE_ORDER_CUTOFF_HOUR = 10;
+
+function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+}
+
+function nextWineOperatingDay(date) {
+    const result = new Date(date);
+    while (result.getDay() === 0) result.setDate(result.getDate() + 1); // la domenica non si consegna
+    return result;
+}
+
+function computeWineDeliveryDate(now = new Date()) {
+    const daysToAdd = now.getHours() < WINE_ORDER_CUTOFF_HOUR ? 1 : 2;
+    return nextWineOperatingDay(addDays(now, daysToAdd));
+}
+
+const WINE_DAY_LABELS = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+
+// Genera la tabella schematica direttamente dalla stessa funzione che calcola la
+// data di consegna, così le due cose non possono mai disallinearsi tra loro.
+function buildWineInfoTableRows() {
+    const start = new Date();
+    const rows = Array.from({ length: 7 }, (_, offset) => {
+        const orderDay = addDays(start, offset);
+        const before = new Date(orderDay);
+        before.setHours(WINE_ORDER_CUTOFF_HOUR - 1, 0, 0, 0);
+        const after = new Date(orderDay);
+        after.setHours(WINE_ORDER_CUTOFF_HOUR, 0, 0, 0);
+
+        return {
+            day: orderDay.getDay(),
+            label: WINE_DAY_LABELS[orderDay.getDay()],
+            before: WINE_DAY_LABELS[computeWineDeliveryDate(before).getDay()],
+            after: WINE_DAY_LABELS[computeWineDeliveryDate(after).getDay()],
+        };
+    });
+
+    return [1, 2, 3, 4, 5, 6, 0].map(day => rows.find(row => row.day === day));
+}
+
+function updateWineOrderNoticeText() {
+    const textRoot = document.querySelector('#wine-order-notice-text');
+    if (!textRoot) return;
+    const delivery = computeWineDeliveryDate().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' });
+    textRoot.textContent = `Ordina oggi e ricevi i vini ${delivery}, disponibili dalle 16:00.`;
+}
+
+function ensureWineInfoModal() {
+    if (document.querySelector('#wine-info-modal')) return;
+    const tableRows = buildWineInfoTableRows()
+        .map(row => `<tr data-day="${row.day}"><td>${row.label}</td><td>${row.before}</td><td>${row.after}</td></tr>`)
+        .join('');
+    document.body.insertAdjacentHTML('beforeend', `
+        <div id="wine-info-modal-backdrop" class="product-modal-backdrop" aria-hidden="true"></div>
+        <section id="wine-info-modal" class="product-modal wine-info-modal" role="dialog" aria-modal="true" aria-labelledby="wine-info-modal-title" aria-hidden="true">
+            <div class="product-modal-panel wine-info-modal-panel">
+                <button class="product-modal-close wine-info-modal-close" type="button" aria-label="Chiudi"><i data-lucide="x"></i></button>
+                <div class="wine-info-modal-content">
+                    <span class="eyebrow">Consegna dei vini</span>
+                    <h2 id="wine-info-modal-title">Come funzionano i tempi di consegna</h2>
+                    <p>Il vino non resta in magazzino: lo ordiniamo in cantina dopo il tuo ordine, per questo servono un paio di giorni. La regola è semplice:</p>
+                    <ul class="wine-info-rules">
+                        <li><i data-lucide="sunrise" aria-hidden="true"></i><span><strong>Prima delle 10:00</strong> → consegna il giorno successivo.</span></li>
+                        <li><i data-lucide="sunset" aria-hidden="true"></i><span><strong>Dalle 10:00 in poi</strong> → consegna tra due giorni.</span></li>
+                        <li><i data-lucide="calendar-x" aria-hidden="true"></i><span>La domenica non si consegna: se il calcolo cade di domenica, slitta al lunedì.</span></li>
+                    </ul>
+                    <div class="wine-info-table-wrap">
+                        <table class="wine-info-table">
+                            <thead><tr><th>Giorno d'ordine</th><th>Prima delle 10:00</th><th>Dalle 10:00 in poi</th></tr></thead>
+                            <tbody>${tableRows}</tbody>
+                        </table>
+                    </div>
+                    <p class="wine-info-exception"><i data-lucide="triangle-alert" aria-hidden="true"></i><span>Eccezionalmente, se un vino non fosse disponibile in cantina o richiedesse l'imbottigliamento, la data potrebbe slittare: in quel caso ti avviseremo direttamente su WhatsApp con la nuova data.</span></p>
+                </div>
+            </div>
+        </section>
+    `);
+    refreshIcons(document.querySelector('#wine-info-modal'));
+}
+
+function highlightWineInfoToday() {
+    const today = new Date().getDay();
+    document.querySelectorAll('#wine-info-modal .wine-info-table tr[data-day]').forEach(row => {
+        row.classList.toggle('is-today', Number(row.dataset.day) === today);
+    });
+}
+
+function openWineInfoModal() {
+    ensureWineInfoModal();
+    highlightWineInfoToday();
+    const modal = document.querySelector('#wine-info-modal');
+    const backdrop = document.querySelector('#wine-info-modal-backdrop');
+    modal.classList.add('open');
+    backdrop.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    backdrop.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('product-modal-open');
+    modal.querySelector('.product-modal-close')?.focus();
+}
+
+function closeWineInfoModal() {
+    const modal = document.querySelector('#wine-info-modal');
+    const backdrop = document.querySelector('#wine-info-modal-backdrop');
+    modal?.classList.remove('open');
+    backdrop?.classList.remove('open');
+    modal?.setAttribute('aria-hidden', 'true');
+    backdrop?.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('product-modal-open');
+    document.querySelector('#open-wine-info')?.focus();
+}
 
 function isWineCategory(category) {
     const categoryName = `${category?.name || ''} ${category?.slug || ''}`.toLocaleLowerCase('it-IT');
@@ -691,12 +805,17 @@ productsRoot?.addEventListener('click', event => {
 
 document.addEventListener('click', event => {
     if (event.target.closest('.product-modal-close, #product-modal-backdrop')) closeProductModal();
+    if (event.target.closest('#open-wine-info')) openWineInfoModal();
+    if (event.target.closest('.wine-info-modal-close, #wine-info-modal-backdrop')) closeWineInfoModal();
 });
 
 document.addEventListener('keydown', event => {
     if (event.key === 'Escape' && document.querySelector('#product-modal.open')) closeProductModal();
+    if (event.key === 'Escape' && document.querySelector('#wine-info-modal.open')) closeWineInfoModal();
     if (event.key === 'Escape' && filterPanel.classList.contains('open')) closeFilters();
 });
+
+updateWineOrderNoticeText();
 
 document.addEventListener('cart:added', () => closeProductModal(false));
 

@@ -1,4 +1,4 @@
-import { notify, refreshIcons } from './ui.js?v=20260901.2';
+import { notify, refreshIcons } from './ui.js?v=20260902.3';
 
 const section = document.querySelector('#promo-sticker-section');
 const title = document.querySelector('#promo-sticker-title');
