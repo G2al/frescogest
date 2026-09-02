@@ -84,7 +84,7 @@ class ProductsTable
                     ->preload(),
             ])
             ->paginationPageOptions([10, 25, 50, 100, 'all'])
-            ->defaultPaginationPageOption('all')
+            ->defaultPaginationPageOption(50)
             ->defaultSort('name')
             ->recordActions([
                 EditAction::make(),
