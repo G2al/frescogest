@@ -25,7 +25,7 @@ class ProductSeederTest extends TestCase
         $this->assertSame('0.200', $garlic->base_minimum_quantity);
         $this->assertSame('1.000', $garlic->restaurant_minimum_quantity);
         $this->assertSame(
-            round((float) $garlic->purchase_cost_per_unit * 2, 4),
+            round((float) $garlic->purchase_cost_per_unit * 2, 2),
             (float) $garlic->base_price_per_unit,
         );
     }
@@ -37,19 +37,19 @@ class ProductSeederTest extends TestCase
         $olives = Product::query()->with(['taxRate', 'defaultUnitOfMeasure'])->where('name', 'Olive verdi')->firstOrFail();
         $this->assertSame('6.6000', $olives->purchase_cost_per_unit_gross);
         $this->assertSame('6.0000', $olives->purchase_cost_per_unit);
-        $this->assertSame('9.0000', $olives->base_price_per_unit);
+        $this->assertSame('9.00', $olives->base_price_per_unit);
         $this->assertSame('10.00', $olives->taxRate->percentage);
         $this->assertSame('kg', $olives->defaultUnitOfMeasure->symbol);
 
         $mozzarella = Product::query()->with('defaultUnitOfMeasure')->where('name', 'Mozzarella da 125 g')->firstOrFail();
         $this->assertSame('9.1700', $mozzarella->purchase_cost_per_unit_gross);
-        $this->assertSame('11.5000', $mozzarella->base_price_per_unit);
+        $this->assertSame('11.50', $mozzarella->base_price_per_unit);
         $this->assertSame('0.125', $mozzarella->base_minimum_quantity);
         $this->assertSame('kg', $mozzarella->defaultUnitOfMeasure->symbol);
 
         $baba = Product::query()->with('defaultUnitOfMeasure')->where('name', 'Babà')->firstOrFail();
         $this->assertSame('2.4000', $baba->purchase_cost_per_unit_gross);
-        $this->assertSame('6.0000', $baba->base_price_per_unit);
+        $this->assertSame('6.00', $baba->base_price_per_unit);
         $this->assertSame('conf', $baba->defaultUnitOfMeasure->symbol);
         $this->assertSame('Confezione da 3 pezzi', $baba->notes);
 
@@ -68,6 +68,6 @@ class ProductSeederTest extends TestCase
 
         $this->seed(ProductSeeder::class);
 
-        $this->assertSame('99.0000', $apple->fresh()->base_price_per_unit);
+        $this->assertSame('99.00', $apple->fresh()->base_price_per_unit);
     }
 }

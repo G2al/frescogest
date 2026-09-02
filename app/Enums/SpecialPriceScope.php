@@ -4,12 +4,14 @@ namespace App\Enums;
 
 enum SpecialPriceScope: string
 {
+    case Global = 'global';
     case Category = 'category';
     case Product = 'product';
 
     public function label(): string
     {
         return match ($this) {
+            self::Global => 'Tutti i prodotti',
             self::Category => 'Intera categoria',
             self::Product => 'Singolo prodotto',
         };

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Enums\SpecialPriceAudience;
 use App\Enums\SpecialPriceScope;
-use App\Services\Partners\PartnerPriceListService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,9 +44,11 @@ class SpecialPriceRule extends Model
 
     public function getTargetLabelAttribute(): string
     {
-        return $this->scope_type === SpecialPriceScope::Product
-            ? ($this->product?->name ?? 'Prodotto non disponibile')
-            : ($this->productCategory?->name ?? 'Categoria non disponibile');
+        return match ($this->scope_type) {
+            SpecialPriceScope::Global => 'Tutti i prodotti',
+            SpecialPriceScope::Product => $this->product?->name ?? 'Prodotto non disponibile',
+            SpecialPriceScope::Category => $this->productCategory?->name ?? 'Categoria non disponibile',
+        };
     }
 
     protected function casts(): array
@@ -65,7 +66,10 @@ class SpecialPriceRule extends Model
         static::saving(function (self $rule): void {
             if ($rule->scope_type === SpecialPriceScope::Product) {
                 $rule->product_category_id = null;
+            } elseif ($rule->scope_type === SpecialPriceScope::Category) {
+                $rule->product_id = null;
             } else {
+                $rule->product_category_id = null;
                 $rule->product_id = null;
             }
 
@@ -73,16 +77,5 @@ class SpecialPriceRule extends Model
                 $rule->partner_id = null;
             }
         });
-
-        static::saved(fn (self $rule) => $rule->syncPartnerPrices());
-        static::deleted(fn (self $rule) => $rule->syncPartnerPrices());
-    }
-
-    private function syncPartnerPrices(): void
-    {
-        if ($this->audience === SpecialPriceAudience::Partners
-            || $this->getOriginal('audience') === SpecialPriceAudience::Partners->value) {
-            app(PartnerPriceListService::class)->syncDefaults();
-        }
     }
 }

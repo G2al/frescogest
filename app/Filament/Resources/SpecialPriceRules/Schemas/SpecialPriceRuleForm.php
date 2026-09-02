@@ -19,7 +19,7 @@ class SpecialPriceRuleForm
     {
         return $schema->components([
             Section::make('Regola di prezzo')
-                ->description('Sovrascrive il ricarico predefinito del prodotto per il destinatario e l’ambito selezionati.')
+                ->description('La regola non si applica da sola: resta in elenco finché non premi "Applica" su di essa (o il bottone dei ricarichi di base). Applicandola, il ricarico viene scritto per davvero sui prodotti nel suo ambito.')
                 ->columnSpanFull()
                 ->schema([
                     TextInput::make('name')
@@ -49,13 +49,15 @@ class SpecialPriceRuleForm
                     Select::make('scope_type')
                         ->label('Ambito')
                         ->options(SpecialPriceScope::options())
-                        ->default(SpecialPriceScope::Category->value)
+                        ->default(SpecialPriceScope::Global->value)
+                        ->helperText('"Tutti i prodotti" non richiede categoria né prodotto: è la regola di base per l’intero catalogo.')
                         ->required()
                         ->live()
                         ->afterStateUpdated(function (?string $state, Set $set): void {
-                            if ($state === SpecialPriceScope::Product->value) {
+                            if ($state !== SpecialPriceScope::Category->value) {
                                 $set('product_category_id', null);
-                            } else {
+                            }
+                            if ($state !== SpecialPriceScope::Product->value) {
                                 $set('product_id', null);
                             }
                         }),

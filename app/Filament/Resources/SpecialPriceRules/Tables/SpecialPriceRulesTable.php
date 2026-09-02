@@ -4,9 +4,13 @@ namespace App\Filament\Resources\SpecialPriceRules\Tables;
 
 use App\Enums\SpecialPriceAudience;
 use App\Enums\SpecialPriceScope;
+use App\Models\SpecialPriceRule;
+use App\Services\Pricing\SpecialPriceRuleApplier;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -40,7 +44,25 @@ class SpecialPriceRulesTable
                 TernaryFilter::make('active')->label('Stato')->placeholder('Tutte')->trueLabel('Attive')->falseLabel('Disattivate'),
             ])
             ->defaultSort('id', 'desc')
-            ->recordActions([EditAction::make()])
+            ->recordActions([
+                Action::make('apply')
+                    ->label('Applica')
+                    ->icon('heroicon-o-bolt')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Applicare questa regola?')
+                    ->modalDescription('Il ricarico viene scritto subito sui prodotti nell’ambito di questa regola (o sul listino del partner specifico, se indicato), sovrascrivendo eventuali personalizzazioni già presenti.')
+                    ->modalSubmitActionLabel('Applica ora')
+                    ->action(function (SpecialPriceRule $record): void {
+                        $count = app(SpecialPriceRuleApplier::class)->apply($record);
+
+                        Notification::make()
+                            ->title("Regola applicata a {$count} ".($count === 1 ? 'prodotto' : 'prodotti'))
+                            ->success()
+                            ->send();
+                    }),
+                EditAction::make(),
+            ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->label('Elimina definitivamente'),
