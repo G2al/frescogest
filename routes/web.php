@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DeliveryDocumentController;
 use App\Http\Controllers\Admin\DeliveryDocumentExportController;
 use App\Http\Controllers\Admin\DeliveryDocumentFileController;
+use App\Http\Controllers\Admin\ProductCatalogExportController;
 use App\Http\Controllers\Employees\EmployeeAttendanceController;
 use App\Http\Controllers\Employees\EmployeeAuthController;
 use App\Http\Controllers\StorefrontPageController;
@@ -36,6 +37,10 @@ Route::get('/admin/delivery-documents/export', DeliveryDocumentExportController:
 Route::get('/admin/delivery-documents/{deliveryDocument}', DeliveryDocumentFileController::class)
     ->middleware('auth:admin')
     ->name('admin.delivery-documents.show');
+
+Route::get('/admin/products/catalog-pdf', ProductCatalogExportController::class)
+    ->middleware('auth:admin')
+    ->name('admin.products.catalog-pdf');
 
 Route::get('/api/v1/store/status', fn (StoreOpeningHours $openingHours) => response()->json([
     'data' => $openingHours->status(),
