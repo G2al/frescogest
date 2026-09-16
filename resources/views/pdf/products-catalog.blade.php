@@ -20,6 +20,8 @@
         .items td { padding: 6px 5px; border-bottom: 1px solid #d7e7e1; }
         .items tbody tr:nth-child(even) td { background: #f6fbf8; }
         .right { text-align: right; }
+        .fill-in { position: relative; }
+        .fill-in::after { content: ""; display: block; height: 0; border-bottom: 1px dashed #a9c4bb; }
         .status-inactive { color: #b23b3b; font-weight: bold; }
         .footer { position: fixed; bottom: -26px; width: 100%; color: #718d86; font-size: 8px; text-align: center; }
     </style>
@@ -54,10 +56,10 @@
                 <td><strong>{{ $product->name }}</strong></td>
                 <td>{{ $product->code }}</td>
                 <td>{{ $product->defaultUnitOfMeasure?->symbol }}</td>
-                <td class="right">&euro; {{ number_format((float) $product->purchase_cost_per_unit, 2, ',', '.') }}</td>
-                <td class="right">&euro; {{ number_format((float) $product->base_price_per_unit, 2, ',', '.') }}</td>
-                <td class="right">&euro; {{ number_format((float) $product->restaurant_price_per_unit, 2, ',', '.') }}</td>
-                <td class="right">&euro; {{ number_format((float) $product->partner_price_per_unit, 2, ',', '.') }}</td>
+                <td class="right fill-in"></td>
+                <td class="right fill-in"></td>
+                <td class="right fill-in"></td>
+                <td class="right fill-in"></td>
                 <td class="{{ $product->active ? '' : 'status-inactive' }}">{{ $product->active ? 'Attivo' : 'Non attivo' }}</td>
             </tr>
         @endforeach
