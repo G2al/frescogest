@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DeliveryDocuments\Tables;
 
+use App\Filament\Resources\DeliveryDocuments\Actions\EditOrderDeliveryDocumentAction;
 use App\Filament\Resources\Partners\Actions\DeletePartnerDeliveryDocumentAction;
 use App\Filament\Resources\Partners\Actions\EditPartnerDeliveryDocumentAction;
 use App\Models\Customer;
@@ -66,6 +67,9 @@ class DeliveryDocumentsTable
                 EditPartnerDeliveryDocumentAction::make()
                     ->visible(fn (DeliveryDocument $record): bool => auth('admin')->user()?->hasAdminPanelRole() === true
                         && filled($record->partner_id) && blank($record->order_id)),
+                EditOrderDeliveryDocumentAction::make()
+                    ->visible(fn (DeliveryDocument $record): bool => auth('admin')->user()?->hasAdminPanelRole() === true
+                        && filled($record->order_id)),
                 DeletePartnerDeliveryDocumentAction::make()
                     ->visible(fn (DeliveryDocument $record): bool => auth('admin')->user()?->hasAdminPanelRole() === true
                         && filled($record->partner_id) && blank($record->order_id)),
