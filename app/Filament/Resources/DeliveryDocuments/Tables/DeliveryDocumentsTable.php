@@ -64,9 +64,11 @@ class DeliveryDocumentsTable
                 Action::make('download')->label('Scarica')->icon('heroicon-o-arrow-down-tray')->iconButton()->tooltip('Scarica bolla')
                     ->url(fn (DeliveryDocument $record): string => route('admin.delivery-documents.show', $record))->openUrlInNewTab(),
                 EditPartnerDeliveryDocumentAction::make()
-                    ->visible(fn (): bool => auth('admin')->user()?->hasAdminPanelRole() === true),
+                    ->visible(fn (DeliveryDocument $record): bool => auth('admin')->user()?->hasAdminPanelRole() === true
+                        && filled($record->partner_id) && blank($record->order_id)),
                 DeletePartnerDeliveryDocumentAction::make()
-                    ->visible(fn (): bool => auth('admin')->user()?->hasAdminPanelRole() === true),
+                    ->visible(fn (DeliveryDocument $record): bool => auth('admin')->user()?->hasAdminPanelRole() === true
+                        && filled($record->partner_id) && blank($record->order_id)),
             ])
             ->toolbarActions([
                 Action::make('downloadFiltered')
