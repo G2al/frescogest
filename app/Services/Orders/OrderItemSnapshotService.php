@@ -61,10 +61,6 @@ class OrderItemSnapshotService
         $taxPercentage = $product->taxRate->percentage;
         $lineTax = $this->calculator->tax($lineNet, $taxPercentage);
         $lineGross = $this->calculator->sum([$lineNet, $lineTax]);
-        $purchaseCost = $this->calculator->lineTotal($product->purchase_cost_per_unit, $data['quantity']);
-        $purchaseGross = $this->calculator->lineTotal($product->purchase_cost_per_unit_gross, $data['quantity']);
-        $purchaseTax = $this->calculator->difference($purchaseGross, $purchaseCost);
-        $margin = $this->calculator->difference($lineNet, $purchaseCost);
 
         return [
             ...$data,
@@ -79,14 +75,31 @@ class OrderItemSnapshotService
             'line_net' => $lineNet,
             'line_tax' => $lineTax,
             'line_gross' => $lineGross,
+            ...$this->costSnapshot($product, $data['quantity'], $lineNet),
+            'unit_of_measure_name' => $product->defaultUnitOfMeasure->name,
+            'unit_of_measure_symbol' => $product->defaultUnitOfMeasure->symbol,
+        ];
+    }
+
+    /**
+     * Costo di acquisto e margine di una riga, calcolati sul costo che il prodotto
+     * ha adesso. È l'unico punto in cui questi valori vengono determinati: lo usano
+     * sia la creazione della riga sia il ricalcolo dei costi (OrderCostRefreshService).
+     */
+    public function costSnapshot(Product $product, string|int|float $quantity, string|int|float $lineNet): array
+    {
+        $purchaseCost = $this->calculator->lineTotal($product->purchase_cost_per_unit, $quantity);
+        $purchaseGross = $this->calculator->lineTotal($product->purchase_cost_per_unit_gross, $quantity);
+        $purchaseTax = $this->calculator->difference($purchaseGross, $purchaseCost);
+        $margin = $this->calculator->difference($lineNet, $purchaseCost);
+
+        return [
             'purchase_cost_per_unit_net' => $product->purchase_cost_per_unit,
             'purchase_cost_net' => $purchaseCost,
             'purchase_cost_tax' => $purchaseTax,
             'purchase_cost_gross' => $purchaseGross,
             'margin_amount' => $margin,
             'margin_percentage' => $this->calculator->percentage($margin, $lineNet),
-            'unit_of_measure_name' => $product->defaultUnitOfMeasure->name,
-            'unit_of_measure_symbol' => $product->defaultUnitOfMeasure->symbol,
         ];
     }
 
@@ -135,6 +148,22 @@ class OrderItemSnapshotService
                 'total_gross' => $totalGross,
             ]);
         }
+    }
+
+    /**
+     * Riallinea soltanto costo e margine dell'ordine alle sue righe. Ricavi, IVA,
+     * sconti e bolla restano esattamente come sono: qui cambia solo il guadagno.
+     */
+    public function recalculateCosts(Order $order): void
+    {
+        $purchaseCost = $this->calculator->sum($order->items()->pluck('purchase_cost_net')->all());
+        $margin = $this->calculator->difference($order->total_net, $purchaseCost);
+
+        $order->update([
+            'total_purchase_cost_net' => $purchaseCost,
+            'gross_margin' => $margin,
+            'gross_margin_percentage' => $this->calculator->percentage($margin, $order->total_net),
+        ]);
     }
 
     private function quantity(string|int|float $quantity): string

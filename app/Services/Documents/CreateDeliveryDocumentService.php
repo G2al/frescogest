@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\DeliveryDocument;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\Orders\OrderCostRefreshService;
 use App\Services\Orders\RecordOrderPaymentService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,7 @@ class CreateDeliveryDocumentService
         private readonly DeliveryDocumentSnapshotService $snapshots,
         private readonly RecordOrderPaymentService $payments,
         private readonly DeliveryDocumentNumberService $numbers,
+        private readonly OrderCostRefreshService $costs,
     ) {}
 
     public function create(Order $order, User $creator, array $data): DeliveryDocument
@@ -35,6 +37,13 @@ class CreateDeliveryDocumentService
         $issuedAt = Carbon::parse($data['issued_at']);
 
         return DB::transaction(function () use ($company, $creator, $data, $issuedAt, $order): DeliveryDocument {
+            // Bolla di oggi: il guadagno si calcola sui costi attuali dei prodotti, non su
+            // quelli di quando l'ordine è stato creato. Una bolla con data passata invece
+            // conserva il costo storico.
+            if ($issuedAt->isToday()) {
+                $this->costs->refreshOrder($order);
+            }
+
             if (($data['mark_as_paid'] ?? false) === true) {
                 $this->payments->record($order, $data);
             }
