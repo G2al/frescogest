@@ -242,6 +242,88 @@ class BusinessReports extends Page
         return $rows->sortByDesc('revenue')->values();
     }
 
+    /**
+     * Guadagno giorno per giorno del mese selezionato, con un totale ad ogni fine
+     * settimana (lunedì-domenica). Il guadagno qui è: ricavi netti - food cost netto
+     * - costi extra del giorno. Il costo del personale non è compreso: per il personale
+     * a stipendio mensile non esiste una data specifica su cui distribuirlo (solo per
+     * quello orario/giornaliero esisterebbe), quindi resta solo nel totale di fine mese
+     * mostrato più sopra, per non falsare i singoli giorni.
+     */
+    public function dailyBreakdown(): Collection
+    {
+        [$year, $month] = $this->period();
+        $start = CarbonImmutable::create($year, $month, 1)->startOfDay();
+        $end = $start->endOfMonth()->startOfDay();
+
+        $orders = (clone $this->paidOrders($year, $month))
+            ->selectRaw('DATE(paid_at) as day, SUM(total_net) as revenue, SUM(total_purchase_cost_net) as cost')
+            ->groupBy('day')
+            ->get()
+            ->keyBy('day');
+
+        $partnerGoods = (clone $this->partnerGoods($year, $month))
+            ->selectRaw('DATE(delivered_on) as day, SUM(total_net) as revenue, SUM(total_cost_net) as cost')
+            ->groupBy('day')
+            ->get()
+            ->keyBy('day');
+
+        $extraCosts = CostMovement::query()
+            ->whereYear('movement_date', $year)
+            ->whereMonth('movement_date', $month)
+            ->selectRaw('DATE(movement_date) as day, SUM(amount) as amount')
+            ->groupBy('day')
+            ->get()
+            ->keyBy('day');
+
+        $rows = collect();
+        $weekStart = $start;
+        $weekRevenue = 0.0;
+        $weekCost = 0.0;
+        $weekExtra = 0.0;
+        $cursor = $start;
+
+        while ($cursor->lessThanOrEqualTo($end)) {
+            $key = $cursor->toDateString();
+            $revenue = (float) ($orders[$key]->revenue ?? 0) + (float) ($partnerGoods[$key]->revenue ?? 0);
+            $cost = (float) ($orders[$key]->cost ?? 0) + (float) ($partnerGoods[$key]->cost ?? 0);
+            $extra = (float) ($extraCosts[$key]->amount ?? 0);
+
+            $rows->push((object) [
+                'type' => 'day',
+                'date' => $cursor,
+                'revenue' => $revenue,
+                'cost' => $cost,
+                'extra_costs' => $extra,
+                'margin' => $revenue - $cost - $extra,
+            ]);
+
+            $weekRevenue += $revenue;
+            $weekCost += $cost;
+            $weekExtra += $extra;
+
+            if ($cursor->isSunday() || $cursor->equalTo($end)) {
+                $rows->push((object) [
+                    'type' => 'week',
+                    'date' => $weekStart,
+                    'date_end' => $cursor,
+                    'revenue' => $weekRevenue,
+                    'cost' => $weekCost,
+                    'extra_costs' => $weekExtra,
+                    'margin' => $weekRevenue - $weekCost - $weekExtra,
+                ]);
+                $weekStart = $cursor->addDay();
+                $weekRevenue = 0.0;
+                $weekCost = 0.0;
+                $weekExtra = 0.0;
+            }
+
+            $cursor = $cursor->addDay();
+        }
+
+        return $rows;
+    }
+
     public function taxBreakdown(): Collection
     {
         [$year, $month] = $this->period();

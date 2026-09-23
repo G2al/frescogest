@@ -562,6 +562,30 @@
 .business-report-section.is-receipts { --br-section-color: var(--br-teal); --br-section-soft: var(--br-teal-soft); }
 .business-report-section.is-waste { --br-section-color: var(--br-orange); --br-section-soft: var(--br-orange-soft); }
 .business-report-section.is-expenses { --br-section-color: var(--br-pink); --br-section-soft: var(--br-pink-soft); }
+.business-report-section.is-daily { --br-section-color: var(--br-amber); --br-section-soft: var(--br-amber-soft); }
+
+.business-report-week-total td {
+    color: var(--br-text);
+    background: color-mix(in srgb, var(--br-section-soft) 65%, white);
+    font-weight: 850;
+}
+
+.business-report-today td {
+    box-shadow: inset 3px 0 0 var(--br-section-color);
+}
+
+.business-report-today .is-name::after {
+    content: 'Oggi';
+    margin-left: .5rem;
+    padding: .15rem .45rem;
+    border-radius: 999px;
+    color: #fff;
+    background: var(--br-section-color);
+    font-size: .62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
 
 .business-report-table-wrap {
     overflow-x: auto;
@@ -722,6 +746,10 @@
 .dark .business-report-select-option.is-selected {
     color: #79e2bd;
     background: rgba(16, 185, 129, .14);
+}
+
+.dark .business-report-week-total td {
+    background: color-mix(in srgb, var(--br-section-soft) 55%, rgba(255, 255, 255, .04));
 }
 
 .dark .business-report-table tbody tr:hover {

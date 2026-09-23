@@ -21,6 +21,10 @@
         $categories = $this->categories();
         $customers = $this->customers();
         $taxBreakdown = $this->taxBreakdown();
+        $dailyBreakdown = $this->dailyBreakdown();
+        $todayKey = now()->toDateString();
+        $dayNames = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
+        $monthNames = ['', 'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
     @endphp
 
     <div class="business-report">
@@ -110,6 +114,52 @@
         </section>
 
         <div class="business-report-grid">
+            <section class="business-report-section is-wide is-daily">
+                <header class="business-report-section-heading">
+                    <span class="business-report-section-icon"><x-heroicon-o-calendar /></span>
+                    <div>
+                        <h2>Guadagno giorno per giorno</h2>
+                        <p>Ricavi meno food cost meno costi extra di ogni giorno del mese, con il totale di ogni settimana. Il costo del personale mensile non è incluso qui: resta solo nel totale di fine mese qui sopra.</p>
+                    </div>
+                </header>
+                <div class="business-report-table-wrap">
+                    <table class="business-report-table">
+                        <thead>
+                            <tr>
+                                <th>Giorno</th>
+                                <th class="is-number">Ricavi netti</th>
+                                <th class="is-number">Food cost</th>
+                                <th class="is-number">Costi extra</th>
+                                <th class="is-number">Guadagno</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($dailyBreakdown as $row)
+                                @if ($row->type === 'week')
+                                    <tr class="business-report-week-total">
+                                        <td class="is-name">Totale settimana {{ $row->date->format('d') }}–{{ $row->date_end->format('d') }} {{ $monthNames[(int) $row->date_end->format('n')] }}</td>
+                                        <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
+                                        <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
+                                        <td class="is-number">€ {{ number_format($row->extra_costs, 2, ',', '.') }}</td>
+                                        <td class="is-number"><strong>€ {{ number_format($row->margin, 2, ',', '.') }}</strong></td>
+                                    </tr>
+                                @else
+                                    <tr @if ($row->date->toDateString() === $todayKey) class="business-report-today" @endif>
+                                        <td class="is-name">{{ $dayNames[(int) $row->date->format('w')] }} {{ $row->date->format('d') }} {{ $monthNames[(int) $row->date->format('n')] }}</td>
+                                        <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
+                                        <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
+                                        <td class="is-number">€ {{ number_format($row->extra_costs, 2, ',', '.') }}</td>
+                                        <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
+                                    </tr>
+                                @endif
+                            @empty
+                                <tr><td colspan="5" class="business-report-empty">Nessun dato nel periodo selezionato.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <section class="business-report-section is-wide is-tax">
                 <header class="business-report-section-heading">
                     <span class="business-report-section-icon"><x-heroicon-o-receipt-percent /></span>
