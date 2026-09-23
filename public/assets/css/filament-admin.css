@@ -587,6 +587,175 @@
     vertical-align: middle;
 }
 
+.business-report-day-row {
+    cursor: pointer;
+}
+
+.business-report-day-row:hover td {
+    background: color-mix(in srgb, var(--br-section-soft) 45%, white);
+}
+
+.business-report-section-heading.is-toggle {
+    width: 100%;
+    cursor: pointer;
+    border: 0;
+    font: inherit;
+    text-align: left;
+    appearance: none;
+}
+
+.business-report-section-heading-text {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.business-report-section-toggle-icon {
+    width: 1.3rem;
+    height: 1.3rem;
+    flex-shrink: 0;
+    color: var(--br-section-color);
+    transition: transform .2s ease;
+}
+
+.business-report-section-toggle-icon.is-open {
+    transform: rotate(180deg);
+}
+
+.business-report-daily-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: .7rem;
+    padding: 1.15rem 1.15rem 0;
+}
+
+.business-report-daily-hint {
+    color: var(--br-muted);
+    font-size: .78rem;
+}
+
+.business-report-daily-filter .business-report-period input {
+    min-width: 9.5rem;
+}
+
+.business-report-daily-filter-reset {
+    height: fit-content;
+    padding: .72rem 1rem;
+    cursor: pointer;
+    border: 1px solid var(--br-border);
+    border-radius: .75rem;
+    color: var(--br-muted);
+    background: var(--br-surface);
+    font: inherit;
+    font-size: .8rem;
+    font-weight: 750;
+}
+
+.business-report-daily-filter-reset:hover {
+    color: var(--br-section-color);
+    border-color: color-mix(in srgb, var(--br-section-color) 40%, var(--br-border));
+}
+
+.business-report-day-modal-backdrop {
+    position: fixed;
+    z-index: 60;
+    inset: 0;
+    background: rgba(6, 26, 20, .5);
+    backdrop-filter: blur(2px);
+}
+
+.business-report-day-modal {
+    display: grid;
+    position: fixed;
+    z-index: 61;
+    inset: 0;
+    padding: 1.5rem;
+    place-items: center;
+    overflow-y: auto;
+}
+
+.business-report-day-modal-panel {
+    width: min(46rem, 100%);
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    position: relative;
+    padding: 1.5rem;
+    border: 1px solid var(--br-border);
+    border-radius: 1.1rem;
+    background: var(--br-surface);
+    box-shadow: 0 30px 70px rgba(6, 26, 20, .3);
+}
+
+.business-report-day-modal-close {
+    width: 2.2rem;
+    height: 2.2rem;
+    display: grid;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    place-items: center;
+    cursor: pointer;
+    border: 1px solid var(--br-border);
+    border-radius: 50%;
+    color: var(--br-muted);
+    background: var(--br-surface);
+}
+
+.business-report-day-modal-close svg {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+.business-report-day-modal-header {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    margin-bottom: 1.1rem;
+    padding-right: 2.5rem;
+}
+
+.business-report-day-modal-header h2 {
+    color: var(--br-text);
+    font-weight: 900;
+}
+
+.business-report-day-modal-header p {
+    color: var(--br-muted);
+    font-size: .8rem;
+}
+
+.business-report-day-modal-totals {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: .6rem;
+    margin-bottom: 1.2rem;
+}
+
+.business-report-day-modal-totals > div {
+    padding: .7rem .85rem;
+    border: 1px solid var(--br-border);
+    border-radius: .75rem;
+    background: color-mix(in srgb, var(--br-primary-soft) 55%, white);
+}
+
+.business-report-day-modal-totals > div.is-margin {
+    background: color-mix(in srgb, var(--br-primary-soft) 90%, white);
+}
+
+.business-report-day-modal-totals span {
+    display: block;
+    margin-bottom: .2rem;
+    color: var(--br-muted);
+    font-size: .68rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.business-report-day-modal-totals strong {
+    color: var(--br-text);
+    font-size: 1rem;
+}
+
 .business-report-table-wrap {
     overflow-x: auto;
 }
@@ -752,6 +921,31 @@
     background: color-mix(in srgb, var(--br-section-soft) 55%, rgba(255, 255, 255, .04));
 }
 
+.dark .business-report-day-row:hover td {
+    background: color-mix(in srgb, var(--br-section-soft) 35%, rgba(255, 255, 255, .04));
+}
+
+.dark .business-report-daily-filter-reset {
+    color: var(--br-text);
+    background: rgba(255, 255, 255, .045);
+}
+
+.dark .business-report-day-modal-panel {
+    background: #1c1a19;
+}
+
+.dark .business-report-day-modal-close {
+    background: rgba(255, 255, 255, .06);
+}
+
+.dark .business-report-day-modal-totals > div {
+    background: rgba(255, 255, 255, .045);
+}
+
+.dark .business-report-day-modal-totals > div.is-margin {
+    background: rgba(16, 185, 129, .12);
+}
+
 .dark .business-report-table tbody tr:hover {
     background: rgba(255, 255, 255, .03);
 }
@@ -900,5 +1094,28 @@
     .business-report-table th,
     .business-report-table td {
         padding-inline: .8rem;
+    }
+
+    .business-report-daily-filter {
+        width: 100%;
+    }
+
+    .business-report-daily-filter .business-report-period {
+        flex: 1 1 8rem;
+    }
+
+    .business-report-day-modal {
+        padding: 0;
+        align-items: end;
+    }
+
+    .business-report-day-modal-panel {
+        width: 100%;
+        max-height: 88vh;
+        border-radius: 1.1rem 1.1rem 0 0;
+    }
+
+    .business-report-day-modal-totals {
+        grid-template-columns: repeat(2, 1fr);
     }
 }

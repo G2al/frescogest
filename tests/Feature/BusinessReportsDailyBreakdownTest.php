@@ -18,6 +18,7 @@ use App\Services\Orders\RecordOrderPaymentService;
 use Database\Seeders\UserSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class BusinessReportsDailyBreakdownTest extends TestCase
@@ -110,6 +111,101 @@ class BusinessReportsDailyBreakdownTest extends TestCase
         $this->assertTrue($days->every(fn ($row) => $row->margin === 0.0));
     }
 
+    public function test_a_custom_range_overrides_the_month_and_can_cross_months(): void
+    {
+        $this->payOrder('2026-08-30', quantity: 10, price: 3); // 30 € ricavi - agosto
+        $this->payOrder('2026-09-01', quantity: 10, price: 3); // 30 € ricavi - settembre
+
+        $page = new BusinessReports();
+        $page->month = '2026-09';
+        $page->customerType = 'all';
+        $page->dailyFrom = '2026-08-30';
+        $page->dailyTo = '2026-09-01';
+
+        $rows = $page->dailyBreakdown();
+        $days = $rows->filter(fn ($row) => $row->type === 'day');
+
+        $this->assertSame(3, $days->count()); // 30, 31 agosto, 1 settembre
+        $this->assertSame(30.0, $days->firstWhere(fn ($r) => $r->date->toDateString() === '2026-08-30')->revenue);
+        $this->assertSame(0.0, $days->firstWhere(fn ($r) => $r->date->toDateString() === '2026-08-31')->revenue);
+        $this->assertSame(30.0, $days->firstWhere(fn ($r) => $r->date->toDateString() === '2026-09-01')->revenue);
+    }
+
+    public function test_a_single_day_range_shows_one_row_without_a_redundant_week_total(): void
+    {
+        $this->payOrder('2026-09-05', quantity: 10, price: 3);
+
+        $page = new BusinessReports();
+        $page->month = '2026-09';
+        $page->customerType = 'all';
+        $page->dailyFrom = '2026-09-05';
+
+        $rows = $page->dailyBreakdown();
+
+        $this->assertSame(1, $rows->count());
+        $this->assertSame('day', $rows->first()->type);
+        $this->assertSame(30.0, $rows->first()->revenue);
+    }
+
+    public function test_an_inverted_range_is_swapped_automatically(): void
+    {
+        $page = new BusinessReports();
+        $page->dailyFrom = '2026-09-10';
+        $page->dailyTo = '2026-09-05';
+
+        [$start, $end] = $page->dailyRange();
+
+        $this->assertSame('2026-09-05', $start->toDateString());
+        $this->assertSame('2026-09-10', $end->toDateString());
+    }
+
+    public function test_reset_daily_range_returns_to_the_selected_month(): void
+    {
+        $page = new BusinessReports();
+        $page->month = '2026-09';
+        $page->dailyFrom = '2026-08-01';
+        $page->dailyTo = '2026-08-05';
+
+        $page->resetDailyRange();
+        [$start, $end] = $page->dailyRange();
+
+        $this->assertSame('2026-09-01', $start->toDateString());
+        $this->assertSame('2026-09-30', $end->toDateString());
+    }
+
+    public function test_clicking_a_day_shows_its_orders_and_totals(): void
+    {
+        $this->payOrder('2026-09-05', quantity: 10, price: 3); // 30 € ricavi, 10 € costo
+        CostMovement::create([
+            'cost_category_id' => CostCategory::query()->firstOrCreate(['name' => 'Varie'], ['active' => true])->id,
+            'movement_date' => '2026-09-05',
+            'amount' => 4,
+            'description' => 'Carburante',
+        ]);
+        // Ordine di un altro giorno: non deve comparire nel dettaglio del 5.
+        $this->payOrder('2026-09-06', quantity: 1, price: 3);
+
+        $page = new BusinessReports();
+        $page->month = '2026-09';
+        $page->customerType = 'all';
+        $page->showDay('2026-09-05');
+
+        $orders = $page->dayOrders();
+        $totals = $page->dayTotals();
+
+        $this->assertSame(1, $orders->count());
+        $this->assertSame(30.0, $orders->first()->revenue);
+        $this->assertSame('2026-09-05', $totals->date->toDateString());
+        $this->assertSame(30.0, $totals->revenue);
+        $this->assertSame(10.0, $totals->cost);
+        $this->assertSame(4.0, $totals->extra_costs);
+        $this->assertSame(16.0, $totals->margin); // 30 - 10 - 4
+
+        $page->closeDay();
+        $this->assertNull($page->dayTotals());
+        $this->assertTrue($page->dayOrders()->isEmpty());
+    }
+
     public function test_the_page_renders_with_the_new_section(): void
     {
         $this->payOrder('2026-09-01', quantity: 10, price: 3);
@@ -121,6 +217,39 @@ class BusinessReportsDailyBreakdownTest extends TestCase
         $response->assertOk();
         $response->assertSee('Guadagno giorno per giorno');
         $response->assertSee('Totale settimana', false);
+    }
+
+    public function test_the_livewire_component_opens_and_closes_the_day_modal_without_errors(): void
+    {
+        $this->payOrder('2026-09-05', quantity: 10, price: 3);
+        $this->seed(UserSeeder::class);
+        $admin = User::query()->where('panel_role', 'admin')->firstOrFail();
+
+        Livewire::actingAs($admin, 'admin')
+            ->test(BusinessReports::class)
+            ->set('month', '2026-09')
+            ->call('showDay', '2026-09-05')
+            ->assertSet('selectedDay', '2026-09-05')
+            ->assertSee('Bolle e forniture registrate in questa data')
+            ->call('closeDay')
+            ->assertSet('selectedDay', null);
+    }
+
+    public function test_the_livewire_component_applies_a_custom_range_live(): void
+    {
+        $this->payOrder('2026-09-05', quantity: 10, price: 3);
+        $this->seed(UserSeeder::class);
+        $admin = User::query()->where('panel_role', 'admin')->firstOrFail();
+
+        Livewire::actingAs($admin, 'admin')
+            ->test(BusinessReports::class)
+            ->set('month', '2026-09')
+            ->set('dailyFrom', '2026-09-05')
+            ->set('dailyTo', '2026-09-05')
+            ->assertSee('Torna al mese intero')
+            ->call('resetDailyRange')
+            ->assertSet('dailyFrom', null)
+            ->assertDontSee('Torna al mese intero');
     }
 
     private function payOrder(string $date, float $quantity, float $price): void

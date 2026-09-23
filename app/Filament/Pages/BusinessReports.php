@@ -37,6 +37,12 @@ class BusinessReports extends Page
 
     public string $customerType = 'all';
 
+    public ?string $dailyFrom = null;
+
+    public ?string $dailyTo = null;
+
+    public ?string $selectedDay = null;
+
     public static function canAccess(): bool
     {
         return auth('admin')->user()?->hasAdminPanelRole() === true;
@@ -45,6 +51,22 @@ class BusinessReports extends Page
     public function mount(): void
     {
         $this->month = now()->format('Y-m');
+    }
+
+    public function resetDailyRange(): void
+    {
+        $this->dailyFrom = null;
+        $this->dailyTo = null;
+    }
+
+    public function showDay(string $date): void
+    {
+        $this->selectedDay = $date;
+    }
+
+    public function closeDay(): void
+    {
+        $this->selectedDay = null;
     }
 
     public function summary(): array
@@ -243,34 +265,55 @@ class BusinessReports extends Page
     }
 
     /**
-     * Guadagno giorno per giorno del mese selezionato, con un totale ad ogni fine
-     * settimana (lunedì-domenica). Il guadagno qui è: ricavi netti - food cost netto
-     * - costi extra del giorno. Il costo del personale non è compreso: per il personale
-     * a stipendio mensile non esiste una data specifica su cui distribuirlo (solo per
-     * quello orario/giornaliero esisterebbe), quindi resta solo nel totale di fine mese
-     * mostrato più sopra, per non falsare i singoli giorni.
+     * L'intervallo mostrato dalla tabella giorno per giorno: quello scelto a mano nei
+     * campi "Dal"/"Al" se compilati, altrimenti l'intero mese selezionato in alto.
+     */
+    public function dailyRange(): array
+    {
+        if (filled($this->dailyFrom)) {
+            $start = CarbonImmutable::parse($this->dailyFrom)->startOfDay();
+            $end = filled($this->dailyTo) ? CarbonImmutable::parse($this->dailyTo)->startOfDay() : $start;
+
+            if ($end->lessThan($start)) {
+                [$start, $end] = [$end, $start];
+            }
+
+            return [$start, $end];
+        }
+
+        [$year, $month] = $this->period();
+        $start = CarbonImmutable::create($year, $month, 1)->startOfDay();
+
+        return [$start, $start->endOfMonth()->startOfDay()];
+    }
+
+    /**
+     * Guadagno giorno per giorno dell'intervallo mostrato (vedi dailyRange()), con un
+     * totale ad ogni fine settimana (lunedì-domenica). Il guadagno qui è: ricavi netti
+     * - food cost netto - costi extra del giorno. Il costo del personale non è compreso:
+     * per il personale a stipendio mensile non esiste una data specifica su cui
+     * distribuirlo (solo per quello orario/giornaliero esisterebbe), quindi resta solo
+     * nel totale di fine mese mostrato più sopra, per non falsare i singoli giorni.
      */
     public function dailyBreakdown(): Collection
     {
-        [$year, $month] = $this->period();
-        $start = CarbonImmutable::create($year, $month, 1)->startOfDay();
-        $end = $start->endOfMonth()->startOfDay();
+        [$start, $end] = $this->dailyRange();
+        $singleDay = $start->equalTo($end);
 
-        $orders = (clone $this->paidOrders($year, $month))
+        $orders = (clone $this->paidOrdersBetween($start, $end))
             ->selectRaw('DATE(paid_at) as day, SUM(total_net) as revenue, SUM(total_purchase_cost_net) as cost')
             ->groupBy('day')
             ->get()
             ->keyBy('day');
 
-        $partnerGoods = (clone $this->partnerGoods($year, $month))
+        $partnerGoods = (clone $this->partnerGoodsBetween($start, $end))
             ->selectRaw('DATE(delivered_on) as day, SUM(total_net) as revenue, SUM(total_cost_net) as cost')
             ->groupBy('day')
             ->get()
             ->keyBy('day');
 
         $extraCosts = CostMovement::query()
-            ->whereYear('movement_date', $year)
-            ->whereMonth('movement_date', $month)
+            ->whereBetween('movement_date', [$start->toDateString(), $end->toDateString()])
             ->selectRaw('DATE(movement_date) as day, SUM(amount) as amount')
             ->groupBy('day')
             ->get()
@@ -302,7 +345,9 @@ class BusinessReports extends Page
             $weekCost += $cost;
             $weekExtra += $extra;
 
-            if ($cursor->isSunday() || $cursor->equalTo($end)) {
+            // Con un solo giorno selezionato il totale settimana sarebbe identico alla
+            // riga del giorno: non ha senso ripeterlo.
+            if (! $singleDay && ($cursor->isSunday() || $cursor->equalTo($end))) {
                 $rows->push((object) [
                     'type' => 'week',
                     'date' => $weekStart,
@@ -322,6 +367,83 @@ class BusinessReports extends Page
         }
 
         return $rows;
+    }
+
+    /**
+     * Bolle/forniture del singolo giorno cliccato nella tabella, per il dettaglio a
+     * comparsa. Stessa forma di righe di customers(), così riusa la stessa tabella.
+     */
+    public function dayOrders(): Collection
+    {
+        if (blank($this->selectedDay)) {
+            return collect();
+        }
+
+        $day = CarbonImmutable::parse($this->selectedDay)->toDateString();
+        $rows = collect();
+
+        if ($this->includesCustomers()) {
+            $rows = $rows->concat(
+                Order::query()
+                    ->where('status', OrderStatus::Paid)
+                    ->whereDate('paid_at', $day)
+                    ->when($this->customerTypeValue(), fn (Builder $query, string $type) => $query->whereHas('customer', fn (Builder $customers) => $customers->where('type', $type)))
+                    ->with('customer')
+                    ->get()
+                    ->map(fn (Order $order): object => (object) [
+                        'row_key' => 'order-'.$order->id,
+                        'display_name' => $order->customer?->display_name ?? $order->order_number,
+                        'recipient_type' => 'Cliente · '.$order->order_number,
+                        'revenue' => (float) $order->total_net,
+                        'margin' => (float) $order->gross_margin,
+                    ])
+            );
+        }
+
+        if ($this->includesPartners()) {
+            $rows = $rows->concat(
+                DB::table('partner_goods_entries')
+                    ->join('partners', 'partners.id', '=', 'partner_goods_entries.partner_id')
+                    ->whereDate('partner_goods_entries.delivered_on', $day)
+                    ->selectRaw('partners.id, partners.name as display_name, SUM(partner_goods_entries.total_net) as revenue, SUM(partner_goods_entries.total_net - partner_goods_entries.total_cost_net) as margin')
+                    ->groupBy('partners.id', 'partners.name')
+                    ->get()
+                    ->map(fn (object $row): object => (object) [
+                        'row_key' => 'partner-'.$row->id,
+                        'display_name' => $row->display_name,
+                        'recipient_type' => 'Partner',
+                        'revenue' => (float) $row->revenue,
+                        'margin' => (float) $row->margin,
+                    ])
+            );
+        }
+
+        return $rows->sortByDesc('revenue')->values();
+    }
+
+    /**
+     * Riepilogo del giorno cliccato: stessa formula della tabella (ricavi - food cost
+     * - costi extra del giorno).
+     */
+    public function dayTotals(): ?object
+    {
+        if (blank($this->selectedDay)) {
+            return null;
+        }
+
+        $date = CarbonImmutable::parse($this->selectedDay)->startOfDay();
+        $orders = $this->dayOrders();
+        $revenue = (float) $orders->sum('revenue');
+        $marginBeforeExtra = (float) $orders->sum('margin');
+        $extra = (float) CostMovement::query()->whereDate('movement_date', $date->toDateString())->sum('amount');
+
+        return (object) [
+            'date' => $date,
+            'revenue' => $revenue,
+            'cost' => $revenue - $marginBeforeExtra,
+            'extra_costs' => $extra,
+            'margin' => $marginBeforeExtra - $extra,
+        ];
     }
 
     public function taxBreakdown(): Collection
@@ -467,6 +589,22 @@ class BusinessReports extends Page
         return PartnerGoodsEntry::query()
             ->whereYear('delivered_on', $year)
             ->whereMonth('delivered_on', $month)
+            ->when(! $this->includesPartners(), fn (Builder $query) => $query->whereRaw('1 = 0'));
+    }
+
+    private function paidOrdersBetween(CarbonImmutable $start, CarbonImmutable $end): Builder
+    {
+        return Order::query()
+            ->where('status', OrderStatus::Paid)
+            ->whereBetween('paid_at', [$start->startOfDay(), $end->endOfDay()])
+            ->when(! $this->includesCustomers(), fn (Builder $query) => $query->whereRaw('1 = 0'))
+            ->when($this->customerTypeValue(), fn (Builder $query, string $type) => $query->whereHas('customer', fn (Builder $customers) => $customers->where('type', $type)));
+    }
+
+    private function partnerGoodsBetween(CarbonImmutable $start, CarbonImmutable $end): Builder
+    {
+        return PartnerGoodsEntry::query()
+            ->whereBetween('delivered_on', [$start->toDateString(), $end->toDateString()])
             ->when(! $this->includesPartners(), fn (Builder $query) => $query->whereRaw('1 = 0'));
     }
 

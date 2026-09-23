@@ -22,6 +22,8 @@
         $customers = $this->customers();
         $taxBreakdown = $this->taxBreakdown();
         $dailyBreakdown = $this->dailyBreakdown();
+        $dayTotals = $this->dayTotals();
+        $dayOrders = $this->dayOrders();
         $todayKey = now()->toDateString();
         $dayNames = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
         $monthNames = ['', 'Gen', 'Feb', 'Mar', 'Apr', 'Mag', 'Giu', 'Lug', 'Ago', 'Set', 'Ott', 'Nov', 'Dic'];
@@ -114,49 +116,70 @@
         </section>
 
         <div class="business-report-grid">
-            <section class="business-report-section is-wide is-daily">
-                <header class="business-report-section-heading">
+            <section class="business-report-section is-wide is-daily" x-data="{ open: false }">
+                <button type="button" class="business-report-section-heading is-toggle" x-on:click="open = ! open" x-bind:aria-expanded="open">
                     <span class="business-report-section-icon"><x-heroicon-o-calendar /></span>
-                    <div>
+                    <span class="business-report-section-heading-text">
                         <h2>Guadagno giorno per giorno</h2>
-                        <p>Ricavi meno food cost meno costi extra di ogni giorno del mese, con il totale di ogni settimana. Il costo del personale mensile non è incluso qui: resta solo nel totale di fine mese qui sopra.</p>
+                        <p>Ricavi meno food cost meno costi extra di ogni giorno, con il totale di ogni settimana. Clicca per aprire.</p>
+                    </span>
+                    <x-heroicon-m-chevron-down class="business-report-section-toggle-icon" x-bind:class="{ 'is-open': open }" />
+                </button>
+                <div x-show="open" x-collapse x-cloak>
+                    <div class="business-report-daily-filter">
+                        <div class="business-report-period">
+                            <label for="business-report-daily-from">Dal</label>
+                            <input id="business-report-daily-from" type="date" wire:model.live="dailyFrom">
+                        </div>
+                        <div class="business-report-period">
+                            <label for="business-report-daily-to">Al</label>
+                            <input id="business-report-daily-to" type="date" wire:model.live="dailyTo">
+                        </div>
+                        @if ($dailyFrom)
+                            <button type="button" class="business-report-daily-filter-reset" wire:click="resetDailyRange">Torna al mese intero</button>
+                        @endif
+                        <span class="business-report-loading" wire:loading wire:target="dailyFrom, dailyTo">Aggiornamento…</span>
+                        <span class="business-report-daily-hint">Clicca un giorno per vedere le bolle di quella data.</span>
                     </div>
-                </header>
-                <div class="business-report-table-wrap">
-                    <table class="business-report-table">
-                        <thead>
-                            <tr>
-                                <th>Giorno</th>
-                                <th class="is-number">Ricavi netti</th>
-                                <th class="is-number">Food cost</th>
-                                <th class="is-number">Costi extra</th>
-                                <th class="is-number">Guadagno</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($dailyBreakdown as $row)
-                                @if ($row->type === 'week')
-                                    <tr class="business-report-week-total">
-                                        <td class="is-name">Totale settimana {{ $row->date->format('d') }}–{{ $row->date_end->format('d') }} {{ $monthNames[(int) $row->date_end->format('n')] }}</td>
-                                        <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
-                                        <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
-                                        <td class="is-number">€ {{ number_format($row->extra_costs, 2, ',', '.') }}</td>
-                                        <td class="is-number"><strong>€ {{ number_format($row->margin, 2, ',', '.') }}</strong></td>
-                                    </tr>
-                                @else
-                                    <tr @if ($row->date->toDateString() === $todayKey) class="business-report-today" @endif>
-                                        <td class="is-name">{{ $dayNames[(int) $row->date->format('w')] }} {{ $row->date->format('d') }} {{ $monthNames[(int) $row->date->format('n')] }}</td>
-                                        <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
-                                        <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
-                                        <td class="is-number">€ {{ number_format($row->extra_costs, 2, ',', '.') }}</td>
-                                        <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
-                                    </tr>
-                                @endif
-                            @empty
-                                <tr><td colspan="5" class="business-report-empty">Nessun dato nel periodo selezionato.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <div class="business-report-table-wrap">
+                        <table class="business-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Giorno</th>
+                                    <th class="is-number">Ricavi netti</th>
+                                    <th class="is-number">Food cost</th>
+                                    <th class="is-number">Costi extra</th>
+                                    <th class="is-number">Guadagno</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($dailyBreakdown as $row)
+                                    @if ($row->type === 'week')
+                                        <tr class="business-report-week-total">
+                                            <td class="is-name">Totale settimana {{ $row->date->format('d') }}–{{ $row->date_end->format('d') }} {{ $monthNames[(int) $row->date_end->format('n')] }}</td>
+                                            <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
+                                            <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
+                                            <td class="is-number">€ {{ number_format($row->extra_costs, 2, ',', '.') }}</td>
+                                            <td class="is-number"><strong>€ {{ number_format($row->margin, 2, ',', '.') }}</strong></td>
+                                        </tr>
+                                    @else
+                                        <tr
+                                            class="business-report-day-row @if ($row->date->toDateString() === $todayKey) business-report-today @endif"
+                                            wire:click="showDay('{{ $row->date->toDateString() }}')"
+                                        >
+                                            <td class="is-name">{{ $dayNames[(int) $row->date->format('w')] }} {{ $row->date->format('d') }} {{ $monthNames[(int) $row->date->format('n')] }}</td>
+                                            <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
+                                            <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
+                                            <td class="is-number">€ {{ number_format($row->extra_costs, 2, ',', '.') }}</td>
+                                            <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
+                                        </tr>
+                                    @endif
+                                @empty
+                                    <tr><td colspan="5" class="business-report-empty">Nessun dato nel periodo selezionato.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -287,5 +310,53 @@
                 </div>
             </section>
         </div>
+
+        @if ($selectedDay && $dayTotals)
+            <div class="business-report-day-modal-backdrop" wire:click="closeDay"></div>
+            <div class="business-report-day-modal" role="dialog" aria-modal="true">
+                <div class="business-report-day-modal-panel">
+                    <button type="button" class="business-report-day-modal-close" wire:click="closeDay" aria-label="Chiudi">
+                        <x-heroicon-o-x-mark />
+                    </button>
+                    <header class="business-report-day-modal-header">
+                        <span class="business-report-section-icon"><x-heroicon-o-calendar /></span>
+                        <div>
+                            <h2>{{ $dayNames[(int) $dayTotals->date->format('w')] }} {{ $dayTotals->date->format('d') }} {{ $monthNames[(int) $dayTotals->date->format('n')] }} {{ $dayTotals->date->format('Y') }}</h2>
+                            <p>Bolle e forniture registrate in questa data.</p>
+                        </div>
+                    </header>
+                    <div class="business-report-day-modal-totals">
+                        <div><span>Ricavi netti</span><strong>€ {{ number_format($dayTotals->revenue, 2, ',', '.') }}</strong></div>
+                        <div><span>Food cost</span><strong>€ {{ number_format($dayTotals->cost, 2, ',', '.') }}</strong></div>
+                        <div><span>Costi extra</span><strong>€ {{ number_format($dayTotals->extra_costs, 2, ',', '.') }}</strong></div>
+                        <div class="is-margin"><span>Guadagno</span><strong>€ {{ number_format($dayTotals->margin, 2, ',', '.') }}</strong></div>
+                    </div>
+                    <div class="business-report-table-wrap">
+                        <table class="business-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Destinatario</th>
+                                    <th>Tipo</th>
+                                    <th class="is-number">Ricavi</th>
+                                    <th class="is-number">Margine</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($dayOrders as $row)
+                                    <tr>
+                                        <td class="is-name">{{ $row->display_name }}</td>
+                                        <td><span class="business-report-source">{{ $row->recipient_type }}</span></td>
+                                        <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
+                                        <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" class="business-report-empty">Nessuna bolla in questa data.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 </x-filament-panels::page>
