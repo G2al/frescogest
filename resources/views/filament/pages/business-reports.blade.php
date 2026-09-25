@@ -201,112 +201,121 @@
                     </table>
                 </div>
             </section>
-            <section class="business-report-section is-wide is-product">
-                <header class="business-report-section-heading">
+            <section class="business-report-section is-wide is-product" x-data="{ open: false }">
+                <button type="button" class="business-report-section-heading is-toggle" x-on:click="open = ! open" x-bind:aria-expanded="open">
                     <span class="business-report-section-icon"><x-heroicon-o-cube /></span>
-                    <div>
+                    <span class="business-report-section-heading-text">
                         <h2>Redditività per prodotto</h2>
-                        <p>Quantità vendute, ricavi, food cost e margine di ogni prodotto.</p>
-                    </div>
-                </header>
-                <div class="business-report-table-wrap">
-                    <table class="business-report-table">
-                        <thead>
-                            <tr>
-                                <th>Prodotto</th>
-                                <th class="is-number">Quantità</th>
-                                <th class="is-number">Ricavi netti</th>
-                                <th class="is-number">Food cost</th>
-                                <th class="is-number">Margine</th>
-                                <th class="is-number">Margine %</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($products as $row)
-                                @php($marginPercentage = (float) $row->revenue > 0 ? (float) $row->margin / (float) $row->revenue * 100 : 0)
+                        <p>Quantità vendute, ricavi, food cost e margine di ogni prodotto. Clicca per aprire.</p>
+                    </span>
+                    <x-heroicon-m-chevron-down class="business-report-section-toggle-icon" x-bind:class="{ 'is-open': open }" />
+                </button>
+                <div x-show="open" x-collapse x-cloak>
+                    <div class="business-report-table-wrap">
+                        <table class="business-report-table">
+                            <thead>
                                 <tr>
-                                    <td class="is-name">{{ $row->product_name }}</td>
-                                    <td class="is-number">{{ rtrim(rtrim(number_format($row->quantity, 3, ',', '.'), '0'), ',') }} {{ $row->unit_of_measure_symbol }}</td>
-                                    <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
-                                    <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
-                                    <td class="is-number"><strong>€ {{ number_format($row->margin, 2, ',', '.') }}</strong></td>
-                                    <td class="is-number"><span class="business-report-margin">{{ number_format($marginPercentage, 1, ',', '.') }}%</span></td>
+                                    <th>Prodotto</th>
+                                    <th class="is-number">Quantità</th>
+                                    <th class="is-number">Ricavi netti</th>
+                                    <th class="is-number">Food cost</th>
+                                    <th class="is-number">Margine</th>
+                                    <th class="is-number">Margine %</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="6" class="business-report-empty">Nessun ordine pagato nel periodo selezionato.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($products as $row)
+                                    @php($marginPercentage = (float) $row->revenue > 0 ? (float) $row->margin / (float) $row->revenue * 100 : 0)
+                                    <tr>
+                                        <td class="is-name">{{ $row->product_name }}</td>
+                                        <td class="is-number">{{ rtrim(rtrim(number_format($row->quantity, 3, ',', '.'), '0'), ',') }} {{ $row->unit_of_measure_symbol }}</td>
+                                        <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
+                                        <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
+                                        <td class="is-number"><strong>€ {{ number_format($row->margin, 2, ',', '.') }}</strong></td>
+                                        <td class="is-number"><span class="business-report-margin">{{ number_format($marginPercentage, 1, ',', '.') }}%</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="6" class="business-report-empty">Nessun ordine pagato nel periodo selezionato.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
-            <section class="business-report-section is-category">
-                <header class="business-report-section-heading">
+            <section class="business-report-section is-category" x-data="{ open: false }">
+                <button type="button" class="business-report-section-heading is-toggle" x-on:click="open = ! open" x-bind:aria-expanded="open">
                     <span class="business-report-section-icon"><x-heroicon-o-tag /></span>
-                    <div>
+                    <span class="business-report-section-heading-text">
                         <h2>Redditività per categoria</h2>
-                        <p>Confronto economico tra le categorie vendute.</p>
-                    </div>
-                </header>
-                <div class="business-report-table-wrap">
-                    <table class="business-report-table">
-                        <thead>
-                            <tr>
-                                <th>Categoria</th>
-                                <th class="is-number">Ricavi</th>
-                                <th class="is-number">Costo</th>
-                                <th class="is-number">Margine</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($categories as $row)
+                        <p>Confronto economico tra le categorie vendute. Clicca per aprire.</p>
+                    </span>
+                    <x-heroicon-m-chevron-down class="business-report-section-toggle-icon" x-bind:class="{ 'is-open': open }" />
+                </button>
+                <div x-show="open" x-collapse x-cloak>
+                    <div class="business-report-table-wrap">
+                        <table class="business-report-table">
+                            <thead>
                                 <tr>
-                                    <td class="is-name">{{ $row->name }}</td>
-                                    <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
-                                    <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
-                                    <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
+                                    <th>Categoria</th>
+                                    <th class="is-number">Ricavi</th>
+                                    <th class="is-number">Costo</th>
+                                    <th class="is-number">Margine</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="4" class="business-report-empty">Nessuna categoria disponibile nel periodo.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($categories as $row)
+                                    <tr>
+                                        <td class="is-name">{{ $row->name }}</td>
+                                        <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
+                                        <td class="is-number">€ {{ number_format($row->cost, 2, ',', '.') }}</td>
+                                        <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="4" class="business-report-empty">Nessuna categoria disponibile nel periodo.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
-            <section class="business-report-section is-recipient">
-                <header class="business-report-section-heading">
+            <section class="business-report-section is-recipient" x-data="{ open: false }">
+                <button type="button" class="business-report-section-heading is-toggle" x-on:click="open = ! open" x-bind:aria-expanded="open">
                     <span class="business-report-section-icon"><x-heroicon-o-users /></span>
-                    <div>
+                    <span class="business-report-section-heading-text">
                         <h2>Forniture per destinatario</h2>
-                        <p>Clienti e partner ordinati per valore delle forniture registrate.</p>
-                    </div>
-                </header>
-                <div class="business-report-table-wrap">
-                    <table class="business-report-table">
-                        <thead>
-                            <tr>
-                                <th>Destinatario</th>
-                                <th>Tipo</th>
-                                <th class="is-number">Movimenti</th>
-                                <th class="is-number">Ricavi</th>
-                                <th class="is-number">Margine</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($customers as $row)
+                        <p>Clienti e partner ordinati per valore delle forniture registrate. Clicca per aprire.</p>
+                    </span>
+                    <x-heroicon-m-chevron-down class="business-report-section-toggle-icon" x-bind:class="{ 'is-open': open }" />
+                </button>
+                <div x-show="open" x-collapse x-cloak>
+                    <div class="business-report-table-wrap">
+                        <table class="business-report-table">
+                            <thead>
                                 <tr>
-                                    <td class="is-name">{{ $row->display_name }}</td>
-                                    <td><span class="business-report-source">{{ $row->recipient_type }}</span></td>
-                                    <td class="is-number">{{ $row->orders_count }}</td>
-                                    <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
-                                    <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
+                                    <th>Destinatario</th>
+                                    <th>Tipo</th>
+                                    <th class="is-number">Movimenti</th>
+                                    <th class="is-number">Ricavi</th>
+                                    <th class="is-number">Margine</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="5" class="business-report-empty">Nessuna fornitura disponibile nel periodo.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($customers as $row)
+                                    <tr>
+                                        <td class="is-name">{{ $row->display_name }}</td>
+                                        <td><span class="business-report-source">{{ $row->recipient_type }}</span></td>
+                                        <td class="is-number">{{ $row->orders_count }}</td>
+                                        <td class="is-number">€ {{ number_format($row->revenue, 2, ',', '.') }}</td>
+                                        <td class="is-number"><span class="business-report-margin">€ {{ number_format($row->margin, 2, ',', '.') }}</span></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" class="business-report-empty">Nessuna fornitura disponibile nel periodo.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </div>
