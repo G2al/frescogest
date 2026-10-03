@@ -183,22 +183,28 @@
                 </div>
             </section>
 
-            <section class="business-report-section is-wide is-tax">
-                <header class="business-report-section-heading">
+            <section class="business-report-section is-wide is-tax" x-data="{ open: false }">
+                <button type="button" class="business-report-section-heading is-toggle" x-on:click="open = ! open" x-bind:aria-expanded="open">
                     <span class="business-report-section-icon"><x-heroicon-o-receipt-percent /></span>
-                    <div><h2>Riepilogo IVA</h2><p>IVA sulle vendite, IVA compresa negli acquisti e relativo saldo, suddivisi per aliquota.</p></div>
-                </header>
-                <div class="business-report-table-wrap">
-                    <table class="business-report-table">
-                        <thead><tr><th>Aliquota</th><th class="is-number">Vendite nette</th><th class="is-number">IVA vendite</th><th class="is-number">Acquisti netti</th><th class="is-number">IVA acquisti</th><th class="is-number">Saldo IVA</th><th class="is-number">Vendite IVA inclusa</th></tr></thead>
-                        <tbody>
-                            @forelse ($taxBreakdown as $row)
-                                <tr><td class="is-name">IVA {{ number_format($row->tax_percentage, 2, ',', '.') }}%</td><td class="is-number">€ {{ number_format($row->taxable, 2, ',', '.') }}</td><td class="is-number"><strong>€ {{ number_format($row->tax, 2, ',', '.') }}</strong></td><td class="is-number">€ {{ number_format($row->purchase_taxable, 2, ',', '.') }}</td><td class="is-number">€ {{ number_format($row->purchase_tax, 2, ',', '.') }}</td><td class="is-number"><strong>€ {{ number_format($row->vat_balance, 2, ',', '.') }}</strong></td><td class="is-number">€ {{ number_format($row->gross, 2, ',', '.') }}</td></tr>
-                            @empty
-                                <tr><td colspan="7" class="business-report-empty">Nessun dato IVA nel periodo.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <span class="business-report-section-heading-text">
+                        <h2>Riepilogo IVA</h2>
+                        <p>IVA sulle vendite, IVA compresa negli acquisti e relativo saldo, suddivisi per aliquota. Clicca per aprire.</p>
+                    </span>
+                    <x-heroicon-m-chevron-down class="business-report-section-toggle-icon" x-bind:class="{ 'is-open': open }" />
+                </button>
+                <div x-show="open" x-collapse x-cloak>
+                    <div class="business-report-table-wrap">
+                        <table class="business-report-table">
+                            <thead><tr><th>Aliquota</th><th class="is-number">Vendite nette</th><th class="is-number">IVA vendite</th><th class="is-number">Acquisti netti</th><th class="is-number">IVA acquisti</th><th class="is-number">Saldo IVA</th><th class="is-number">Vendite IVA inclusa</th></tr></thead>
+                            <tbody>
+                                @forelse ($taxBreakdown as $row)
+                                    <tr><td class="is-name">IVA {{ number_format($row->tax_percentage, 2, ',', '.') }}%</td><td class="is-number">€ {{ number_format($row->taxable, 2, ',', '.') }}</td><td class="is-number"><strong>€ {{ number_format($row->tax, 2, ',', '.') }}</strong></td><td class="is-number">€ {{ number_format($row->purchase_taxable, 2, ',', '.') }}</td><td class="is-number">€ {{ number_format($row->purchase_tax, 2, ',', '.') }}</td><td class="is-number"><strong>€ {{ number_format($row->vat_balance, 2, ',', '.') }}</strong></td><td class="is-number">€ {{ number_format($row->gross, 2, ',', '.') }}</td></tr>
+                                @empty
+                                    <tr><td colspan="7" class="business-report-empty">Nessun dato IVA nel periodo.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
             <section class="business-report-section is-wide is-product" x-data="{ open: false }">
