@@ -36,6 +36,7 @@ class EditOrderDeliveryDocumentAction
                         'quantity' => $item->quantity,
                         'unit_price_net' => $item->unit_price_net,
                         'unit_symbol' => $item->unit_of_measure_symbol,
+                        'purchase_cost_per_unit_net' => $item->purchase_cost_is_custom ? $item->purchase_cost_per_unit_net : null,
                     ])
                     ->all() ?? [],
             ])

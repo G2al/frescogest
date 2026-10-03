@@ -63,7 +63,9 @@ class OrderCostRefreshService
 
     private function refresh(Collection $items): int
     {
-        $items = $items->filter(fn (OrderItem $item): bool => $item->product !== null);
+        // Le righe con costo scritto a mano non vengono mai toccate qui: è il punto
+        // che impedisce al ricalcolo automatico di sovrascrivere un costo personalizzato.
+        $items = $items->filter(fn (OrderItem $item): bool => $item->product !== null && ! $item->purchase_cost_is_custom);
 
         if ($items->isEmpty()) {
             return 0;

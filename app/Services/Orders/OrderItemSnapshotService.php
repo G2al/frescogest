@@ -38,6 +38,7 @@ class OrderItemSnapshotService
             ->with(['taxRate', 'defaultUnitOfMeasure'])
             ->findOrFail($data['product_id']);
         $unitPrice = $data['unit_price_net'] ?? $this->pricing->details($product, $order->customer)['price'];
+        $customCost = $this->customCost($data);
 
         if ((float) $data['quantity'] <= 0 || (float) $unitPrice < 0) {
             throw ValidationException::withMessages([
@@ -45,7 +46,20 @@ class OrderItemSnapshotService
             ]);
         }
 
-        return $this->snapshot($data, $order, $product, $unitPrice);
+        if ($customCost !== null && $customCost < 0) {
+            throw ValidationException::withMessages([
+                'items' => "Controlla il prezzo di costo di {$product->name}.",
+            ]);
+        }
+
+        return $this->snapshot($data, $order, $product, $unitPrice, $customCost);
+    }
+
+    private function customCost(array $data): ?float
+    {
+        $value = $data['purchase_cost_per_unit_net'] ?? null;
+
+        return $value === null || $value === '' ? null : (float) $value;
     }
 
     private function snapshot(
@@ -53,6 +67,7 @@ class OrderItemSnapshotService
         Order $order,
         Product $product,
         string|int|float $unitPrice,
+        ?float $customUnitCostNet = null,
     ): array {
         $originalLineNet = $this->calculator->lineTotal($unitPrice, $data['quantity']);
         $discountPercentage = (float) ($order->discount_percentage ?? 0);
@@ -75,26 +90,42 @@ class OrderItemSnapshotService
             'line_net' => $lineNet,
             'line_tax' => $lineTax,
             'line_gross' => $lineGross,
-            ...$this->costSnapshot($product, $data['quantity'], $lineNet),
+            ...$this->costSnapshot($product, $data['quantity'], $lineNet, $customUnitCostNet),
             'unit_of_measure_name' => $product->defaultUnitOfMeasure->name,
             'unit_of_measure_symbol' => $product->defaultUnitOfMeasure->symbol,
         ];
     }
 
     /**
-     * Costo di acquisto e margine di una riga, calcolati sul costo che il prodotto
-     * ha adesso. È l'unico punto in cui questi valori vengono determinati: lo usano
-     * sia la creazione della riga sia il ricalcolo dei costi (OrderCostRefreshService).
+     * Costo di acquisto e margine di una riga. Se $customUnitCostNet è valorizzato (lo
+     * ha scritto l'admin a mano in una riga d'ordine), si usa quello invece del costo
+     * attuale del prodotto, e la riga viene marcata "personalizzata": da quel momento
+     * OrderCostRefreshService non la tocca più quando il costo del prodotto cambia o
+     * quando si genera la bolla, altrimenti il valore scritto a mano verrebbe
+     * silenziosamente sovrascritto. Senza override è l'unico punto in cui questi valori
+     * vengono determinati: lo usano sia la creazione della riga sia il ricalcolo
+     * automatico dei costi.
      */
-    public function costSnapshot(Product $product, string|int|float $quantity, string|int|float $lineNet): array
-    {
-        $purchaseCost = $this->calculator->lineTotal($product->purchase_cost_per_unit, $quantity);
-        $purchaseGross = $this->calculator->lineTotal($product->purchase_cost_per_unit_gross, $quantity);
+    public function costSnapshot(
+        Product $product,
+        string|int|float $quantity,
+        string|int|float $lineNet,
+        ?float $customUnitCostNet = null,
+    ): array {
+        $isCustom = $customUnitCostNet !== null;
+        $unitCostNet = $isCustom ? $customUnitCostNet : (float) $product->purchase_cost_per_unit;
+        $unitCostGross = $isCustom
+            ? $unitCostNet * (1 + ((float) $product->taxRate->percentage / 100))
+            : (float) $product->purchase_cost_per_unit_gross;
+
+        $purchaseCost = $this->calculator->lineTotal($unitCostNet, $quantity);
+        $purchaseGross = $this->calculator->lineTotal($unitCostGross, $quantity);
         $purchaseTax = $this->calculator->difference($purchaseGross, $purchaseCost);
         $margin = $this->calculator->difference($lineNet, $purchaseCost);
 
         return [
-            'purchase_cost_per_unit_net' => $product->purchase_cost_per_unit,
+            'purchase_cost_per_unit_net' => $unitCostNet,
+            'purchase_cost_is_custom' => $isCustom,
             'purchase_cost_net' => $purchaseCost,
             'purchase_cost_tax' => $purchaseTax,
             'purchase_cost_gross' => $purchaseGross,

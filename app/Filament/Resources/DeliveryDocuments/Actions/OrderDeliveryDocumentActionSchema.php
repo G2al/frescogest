@@ -75,7 +75,7 @@ class OrderDeliveryDocumentActionSchema
                                     $set('quantity', $details['minimum_quantity'] ?? 1);
                                     $set('unit_symbol', $details['unit_symbol'] ?? null);
                                 })
-                                ->columnSpan(5)
+                                ->columnSpan(4)
                                 ->required(),
                             TextInput::make('quantity')
                                 ->label('Quantità')
@@ -95,10 +95,19 @@ class OrderDeliveryDocumentActionSchema
                                 ->live(debounce: 300)
                                 ->columnSpan(2)
                                 ->required(),
+                            TextInput::make('purchase_cost_per_unit_net')
+                                ->label('Prezzo di costo')
+                                ->helperText('Lascia vuoto per usare il costo attuale del prodotto.')
+                                ->numeric()
+                                ->minValue(0)
+                                ->step(0.01)
+                                ->prefix('€')
+                                ->live(debounce: 300)
+                                ->columnSpan(2),
                             Placeholder::make('line_total')
                                 ->label('Totale IVA inclusa')
                                 ->content(fn (Get $get): string => self::lineGross($get))
-                                ->columnSpan(3),
+                                ->columnSpan(2),
                         ])
                         ->columns(12)
                         ->itemLabel(fn (array $state): ?string => Product::query()
