@@ -108,6 +108,16 @@ button { cursor: pointer; }
 .history-date-filter button, .history-date-filter > a { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--green-800); border-radius: 10px; padding: .65rem 1rem; font-size: .8rem; font-weight: 850; text-decoration: none; }
 .history-date-filter button { color: #fff; background: var(--green-800); }
 .history-date-filter > a { color: var(--green-800); background: #fff; }
+
+.period-summary { margin-bottom: 1.25rem; padding: 1.25rem; border: 1px solid var(--line); border-radius: 15px; background: linear-gradient(145deg, var(--green-950), #0a7457); color: #fff; }
+.period-summary__label { margin: 0 0 1rem; color: #9ce8c8; font-size: .72rem; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.period-summary__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.period-summary__item { display: grid; gap: .35rem; padding: 0 1rem; border-left: 1px solid rgba(255,255,255,.18); }
+.period-summary__item:first-child { padding-left: 0; border-left: 0; }
+.period-summary__item span { color: rgba(255,255,255,.7); font-size: .74rem; font-weight: 700; }
+.period-summary__item strong { font-size: clamp(1.15rem, 2.4vw, 1.5rem); font-weight: 850; }
+.period-summary__item.is-pay strong { color: #9ce8c8; }
+.period-summary__note { margin: 1rem 0 0; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,.18); color: rgba(255,255,255,.75); font-size: .78rem; line-height: 1.6; }
 .history-list { display: grid; gap: 1rem; }
 .attendance-record { overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: #fff; box-shadow: 0 8px 24px rgba(5,63,50,.055); }
 .attendance-record__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.2rem; background: #f8fbf9; cursor: pointer; list-style: none; user-select: none; }
@@ -168,6 +178,8 @@ button { cursor: pointer; }
     .history-date-filter { grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: hidden; }
     .history-date-filter button, .history-date-filter > a { grid-column: 1 / -1; }
     .history-date-filter button, .history-date-filter > a { width: 100%; }
+    .period-summary__grid { grid-template-columns: repeat(2, 1fr); row-gap: 1.1rem; }
+    .period-summary__item:nth-child(3) { padding-left: 0; border-left: 0; }
     .attendance-record__header { align-items: flex-start; padding: .9rem; }
     .attendance-record__header > div:first-child { min-width: 0; }
     .attendance-record__header > div > strong { font-size: .92rem; }

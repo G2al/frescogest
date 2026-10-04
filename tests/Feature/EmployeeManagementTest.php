@@ -287,6 +287,150 @@ class EmployeeManagementTest extends TestCase
                 && $shifts->first()->work_date->isSameDay($selectedDate));
     }
 
+    public function test_employee_weekly_summary_totals_hours_and_pay_for_the_current_week_only(): void
+    {
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Luca',
+            'last_name' => 'Ottini',
+            'email' => 'luca.settimana@example.test',
+            'phone' => '3337654324',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Hourly->value,
+            'compensation_amount' => 10,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->subMonth()->toDateString(),
+            'active' => true,
+        ]);
+
+        EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => today()->startOfWeek()->toDateString(),
+            'status' => 'present',
+            'started_at' => '08:00',
+            'ended_at' => '12:00',
+            'break_minutes' => 0,
+        ]);
+
+        EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => today()->toDateString(),
+            'status' => 'present',
+            'started_at' => '08:00',
+            'ended_at' => '16:00',
+            'break_minutes' => 0,
+        ]);
+
+        EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => today()->toDateString(),
+            'status' => 'absent',
+        ]);
+
+        EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => today()->subWeek()->startOfWeek()->toDateString(),
+            'status' => 'present',
+            'started_at' => '08:00',
+            'ended_at' => '20:00',
+            'break_minutes' => 0,
+        ]);
+
+        $this->actingAs($employee->user, 'employee')
+            ->get(route('employee.attendance', ['period' => 'week']))
+            ->assertOk()
+            ->assertViewHas('periodSummary', function (array $summary): bool {
+                return $summary['worked_minutes'] === 720
+                    && $summary['worked_duration'] === '12h 00m'
+                    && (float) $summary['pay_amount'] === 120.0
+                    && $summary['present_days'] === 2
+                    && $summary['absent_days'] === 1
+                    && $summary['open_shifts'] === 0
+                    && $summary['label'] === 'questa settimana';
+            });
+    }
+
+    public function test_employee_monthly_summary_excludes_shifts_outside_the_month_and_flags_open_shifts(): void
+    {
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Luca',
+            'last_name' => 'Ottini',
+            'email' => 'luca.mese@example.test',
+            'phone' => '3337654325',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Hourly->value,
+            'compensation_amount' => 10,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->subMonths(2)->toDateString(),
+            'active' => true,
+        ]);
+
+        EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => today()->startOfMonth()->toDateString(),
+            'status' => 'present',
+            'started_at' => '08:00',
+            'ended_at' => '16:00',
+            'break_minutes' => 0,
+        ]);
+
+        EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => today()->toDateString(),
+            'status' => 'present',
+            'started_at' => '08:00',
+        ]);
+
+        EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => today()->subMonth()->startOfMonth()->toDateString(),
+            'status' => 'present',
+            'started_at' => '08:00',
+            'ended_at' => '20:00',
+            'break_minutes' => 0,
+        ]);
+
+        $this->actingAs($employee->user, 'employee')
+            ->get(route('employee.attendance', ['period' => 'month']))
+            ->assertOk()
+            ->assertViewHas('periodSummary', function (array $summary): bool {
+                return $summary['worked_minutes'] === 480
+                    && (float) $summary['pay_amount'] === 80.0
+                    && $summary['present_days'] === 2
+                    && $summary['open_shifts'] === 1
+                    && $summary['label'] === 'questo mese';
+            });
+    }
+
+    public function test_employee_recent_period_has_no_summary_box(): void
+    {
+        $employee = app(EmployeeAccountService::class)->create([
+            'first_name' => 'Luca',
+            'last_name' => 'Ottini',
+            'email' => 'luca.recenti@example.test',
+            'phone' => '3337654326',
+            'account_password' => 'password123',
+            'compensation_type' => EmployeeCompensationType::Hourly->value,
+            'compensation_amount' => 10,
+            'expected_daily_minutes' => 480,
+            'hired_on' => today()->subMonth()->toDateString(),
+            'active' => true,
+        ]);
+
+        EmployeeWorkShift::create([
+            'employee_id' => $employee->id,
+            'work_date' => today()->toDateString(),
+            'status' => 'present',
+            'started_at' => '08:00',
+            'ended_at' => '16:00',
+            'break_minutes' => 0,
+        ]);
+
+        $this->actingAs($employee->user, 'employee')
+            ->get(route('employee.attendance', ['period' => 'recent']))
+            ->assertOk()
+            ->assertViewHas('periodSummary', null);
+    }
+
     public function test_employee_account_cannot_access_filament(): void
     {
         $employee = app(EmployeeAccountService::class)->create([

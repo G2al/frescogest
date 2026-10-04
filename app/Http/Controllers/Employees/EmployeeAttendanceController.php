@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Employees;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Employees\StoreEmployeeAttendanceRequest;
+use App\Models\EmployeeWorkShift;
 use App\Services\Employees\EmployeeAttendanceService;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,6 +44,12 @@ class EmployeeAttendanceController extends Controller
 
         $this->applyPeriod($shiftsQuery, $period, $today, $from, $to);
 
+        // Il totale va calcolato su TUTTE le registrazioni del periodo, non sulle
+        // sole righe mostrate nell'elenco (limitato per non appesantire la pagina).
+        $periodSummary = $period === 'recent'
+            ? null
+            : $this->summarize((clone $shiftsQuery)->get(), $period);
+
         $recentShifts = $shiftsQuery
             ->latest('work_date')
             ->latest('id')
@@ -55,6 +63,7 @@ class EmployeeAttendanceController extends Controller
             'period',
             'from',
             'to',
+            'periodSummary',
         ));
     }
 
@@ -68,6 +77,33 @@ class EmployeeAttendanceController extends Controller
             ->with('success', 'La presenza di oggi è stata registrata.');
     }
 
+    /**
+     * @param  Collection<int, EmployeeWorkShift>  $shifts
+     * @return array{worked_minutes: int, worked_duration: string, pay_amount: float, present_days: int, absent_days: int, open_shifts: int, label: string}
+     */
+    private function summarize(Collection $shifts, string $period): array
+    {
+        $workedMinutes = (int) $shifts->sum('worked_minutes');
+        $openShifts = $shifts->filter(fn (EmployeeWorkShift $shift): bool => $shift->is_open)->count();
+
+        return [
+            'worked_minutes' => $workedMinutes,
+            'worked_duration' => sprintf('%dh %02dm', intdiv($workedMinutes, 60), $workedMinutes % 60),
+            'pay_amount' => (float) $shifts->sum('pay_amount'),
+            'present_days' => $shifts->where('status', 'present')->count(),
+            'absent_days' => $shifts->where('status', 'absent')->count(),
+            'open_shifts' => $openShifts,
+            'label' => match ($period) {
+                'today' => 'oggi',
+                'yesterday' => 'ieri',
+                'week' => 'questa settimana',
+                'month' => 'questo mese',
+                'custom' => 'nel periodo selezionato',
+                default => '',
+            },
+        ];
+    }
+
     private function applyPeriod(
         HasMany $query,
         string $period,
@@ -78,14 +114,12 @@ class EmployeeAttendanceController extends Controller
         match ($period) {
             'today' => $query->whereDate('work_date', $today->toDateString()),
             'yesterday' => $query->whereDate('work_date', $today->subDay()->toDateString()),
-            'week' => $query->whereBetween('work_date', [
-                $today->startOfWeek()->toDateString(),
-                $today->toDateString(),
-            ]),
-            'month' => $query->whereBetween('work_date', [
-                $today->startOfMonth()->toDateString(),
-                $today->toDateString(),
-            ]),
+            'week' => $query
+                ->whereDate('work_date', '>=', $today->startOfWeek()->toDateString())
+                ->whereDate('work_date', '<=', $today->toDateString()),
+            'month' => $query
+                ->whereDate('work_date', '>=', $today->startOfMonth()->toDateString())
+                ->whereDate('work_date', '<=', $today->toDateString()),
             'custom' => $this->applyCustomPeriod($query, $from, $to),
             default => null,
         };

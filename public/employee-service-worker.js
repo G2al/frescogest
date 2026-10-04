@@ -1,4 +1,4 @@
-const CACHE_NAME = 'il-paradiso-employees-v1';
+const CACHE_NAME = 'il-paradiso-employees-v2';
 const OFFLINE_URL = '/employee-offline.html';
 const PRECACHE_URLS = [
     OFFLINE_URL,

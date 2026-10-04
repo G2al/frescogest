@@ -170,6 +170,36 @@
                 @endif
             </form>
 
+            @if ($periodSummary)
+                <div class="period-summary">
+                    <p class="period-summary__label">Totale {{ $periodSummary['label'] }}</p>
+                    <div class="period-summary__grid">
+                        <div class="period-summary__item">
+                            <span>Ore lavorate</span>
+                            <strong>{{ $periodSummary['worked_duration'] }}</strong>
+                        </div>
+                        <div class="period-summary__item">
+                            <span>Giorni lavorati</span>
+                            <strong>{{ $periodSummary['present_days'] }}</strong>
+                        </div>
+                        <div class="period-summary__item">
+                            <span>Giorni assenti</span>
+                            <strong>{{ $periodSummary['absent_days'] }}</strong>
+                        </div>
+                        <div class="period-summary__item is-pay">
+                            <span>Compenso totale</span>
+                            <strong>€ {{ number_format($periodSummary['pay_amount'], 2, ',', '.') }}</strong>
+                        </div>
+                    </div>
+                    @if ($periodSummary['open_shifts'] > 0)
+                        <p class="period-summary__note">
+                            {{ $periodSummary['open_shifts'] === 1 ? 'C’è un turno' : 'Ci sono '.$periodSummary['open_shifts'].' turni' }}
+                            ancora in corso nel periodo: il relativo compenso non è ancora conteggiato nel totale.
+                        </p>
+                    @endif
+                </div>
+            @endif
+
             <div class="history-list">
                 @forelse ($recentShifts as $shift)
                     <details class="attendance-record" @if ($loop->first) open @endif>

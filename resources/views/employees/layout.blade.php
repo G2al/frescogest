@@ -17,6 +17,6 @@
 <body>
     @yield('content')
     <script src="/assets/js/employee-portal.js?v={{ filemtime(public_path('assets/js/employee-portal.js')) }}" defer></script>
-    <script type="module" src="/assets/js/employee-pwa.js?v=20261004.1"></script>
+    <script type="module" src="/assets/js/employee-pwa.js?v=20261004.2"></script>
 </body>
 </html>
