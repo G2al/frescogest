@@ -1,0 +1,40 @@
+{
+    "id": "/dipendenti/",
+    "name": "Il Paradiso della Frutta — Dipendenti",
+    "short_name": "Paradiso Dipendenti",
+    "description": "Area dipendenti de Il Paradiso della Frutta: accesso e registrazione presenze.",
+    "lang": "it-IT",
+    "start_url": "/dipendenti?source=pwa",
+    "scope": "/dipendenti",
+    "display": "standalone",
+    "display_override": ["standalone"],
+    "orientation": "any",
+    "background_color": "#69ccfd",
+    "theme_color": "#69ccfd",
+    "icons": [
+        {
+            "src": "/assets/pwa/employees/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/pwa/employees/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any"
+        },
+        {
+            "src": "/assets/pwa/employees/maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/assets/pwa/employees/maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

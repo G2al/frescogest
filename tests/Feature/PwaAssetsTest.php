@@ -28,6 +28,34 @@ class PwaAssetsTest extends TestCase
         $this->assertIconSetExists($manifest['icons']);
     }
 
+    public function test_employee_manifest_is_separate_and_uses_dipendenti_scope(): void
+    {
+        $manifest = $this->manifest('employee-manifest.webmanifest');
+
+        $this->assertSame('/dipendenti/', $manifest['id']);
+        $this->assertSame('/dipendenti', $manifest['scope']);
+        $this->assertSame('standalone', $manifest['display']);
+        $this->assertIconSetExists($manifest['icons']);
+    }
+
+    public function test_employee_layout_loads_the_manifest_and_registration_script(): void
+    {
+        $content = file_get_contents(resource_path('views/employees/layout.blade.php'));
+
+        $this->assertStringContainsString('/employee-manifest.webmanifest', $content);
+        $this->assertStringContainsString('/assets/js/employee-pwa.js', $content);
+        $this->assertStringContainsString('/assets/pwa/employees/apple-touch-icon.png', $content);
+        $this->assertStringContainsString('user-scalable=no', $content);
+    }
+
+    public function test_storefront_service_worker_excludes_the_employee_area(): void
+    {
+        $script = file_get_contents(public_path('service-worker.js'));
+
+        $this->assertStringContainsString("'/dipendenti'", $script);
+        $this->assertStringNotContainsString("'/employees'", $script);
+    }
+
     public function test_storefront_pages_load_the_manifest_and_registration_script(): void
     {
         $pages = [
@@ -79,8 +107,10 @@ class PwaAssetsTest extends TestCase
         foreach ([
             'service-worker.js',
             'admin-service-worker.js',
+            'employee-service-worker.js',
             'offline.html',
             'admin-offline.html',
+            'employee-offline.html',
         ] as $file) {
             $this->assertFileExists(public_path($file));
         }

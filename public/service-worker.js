@@ -9,7 +9,7 @@ const PRECACHE_URLS = [
     '/assets/pwa/frontend/maskable-512.png',
     '/assets/pwa/frontend/apple-touch-icon.png'
 ];
-const EXCLUDED_PREFIXES = ['/admin', '/partner', '/employees', '/livewire', '/api', '/storage'];
+const EXCLUDED_PREFIXES = ['/admin', '/partner', '/dipendenti', '/livewire', '/api', '/storage'];
 
 self.addEventListener('install', event => {
     event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE_URLS)));
