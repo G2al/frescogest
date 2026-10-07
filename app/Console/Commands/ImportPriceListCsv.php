@@ -253,6 +253,8 @@ class ImportPriceListCsv extends Command
             'Uova Fresche XXL' => 'Uova',
             'Piccola pasticceria mista - (500 g)' => 'Piccola pasticceria',
             'Insalata Novella (100G)' => 'Novella',
+            'Peperoni Frigitelli' => 'Peperoni Friggitelli',
+            'Patate Gialle' => 'Patate Gialle 1,5 kg',
         ];
     }
 
