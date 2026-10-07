@@ -1,0 +1,191 @@
+name,unit_symbol,costo_netto,prezzo_privati,prezzo_ristoratori,prezzo_partner
+Arance Spremuta,kg,,2.00,1.10,1.65
+Banane,kg,,2.00,1.60,1.55
+Banane Chiquita,kg,,2.50,2.00,2.00
+Kiwi Gialli,kg,,8.00,7.00,6.00
+Mele Golden,kg,,2.00,1.70,1.60
+Mele Smith,kg,,2.90,2.50,2.30
+Platano,kg,,2.00,1.80,1.80
+Fragole,kg,,12.00,10.00,9.00
+Pesche,kg,,2.99,2.40,2.30
+Pesche Noci,kg,,3.00,2.40,2.30
+Percoche,kg,,3.50,2.90,2.50
+Prugne Rosse,kg,,3.00,2.40,2.20
+Fichi,kg,,8.00,5.50,5.00
+Fichi d'India,kg,,4.00,3.10,2.80
+Mele Fuji,kg,,2.50,2.00,1.80
+Mele Melinda,kg,,3.00,2.30,2.10
+Mele Annurche,kg,,4.00,3.00,2.70
+Kiwi,kg,,4.00,3.70,3.30
+Cachi Vaniglia,kg,,4.00,3.00,2.70
+Cachi Mela,kg,,4.50,3.80,3.60
+Cachi Maturi,kg,,4.00,3.50,3.20
+Limoni Trattati,kg,,2.50,2.00,1.90
+Limoni Naturali,kg,,5.10,5.00,4.40
+Clementini,kg,,5.00,4.30,4.00
+Pompelmo,kg,,2.20,1.80,1.60
+Lime,kg,,5.50,4.50,4.00
+Uva Italia,kg,,3.80,3.00,2.70
+Uva Senza Semi,kg,,5.00,4.00,3.50
+Uva Nera,kg,,3.50,2.70,2.50
+Mirtilli,pz,,5.00,4.00,3.50
+Lamponi,pz,,5.00,4.00,3.50
+More,pz,,5.00,4.00,3.50
+Ribes,pz,,5.00,4.00,3.50
+Ananas,pz,,5.00,4.00,3.00
+Avocado,pz,,1.70,1.50,1.30
+Cetrioli Carosello,kg,,4.50,3.60,3.30
+Coste,kg,,3.00,2.50,2.50
+Fagioli borlotti freschi,kg,,6.00,5.00,4.50
+Mini Cavolo Cinese Pak-Choi,kg,,4.50,4.00,3.50
+Patate Novelline - Mini Patate (10Kg),kg,,2.80,2.20,2.00
+Peperoncini di Fiume,kg,,6.00,5.00,4.00
+Peperoni Frigitelli,kg,,4.00,3.00,2.80
+Pomodoro Insalataro,kg,,2.90,2.50,2.20
+Sacco carote - da 10 kg,sacco,,14.00,13.00,12.00
+Aglio confezione - (200 g),pz,,1.80,1.50,1.20
+Treccia d'Aglio,pz,,15.00,13.00,12.00
+Cipolle Dorate,kg,,1.30,1.10,0.80
+Cipolle Rosse,kg,,1.70,1.50,1.30
+Cipolle Bianche,kg,,1.60,1.40,1.20
+Cipolla di Tropea,kg,,4.00,3.30,3.10
+Porri,kg,,1.80,1.50,1.30
+Patate Gialle,kg,,1.80,1.50,1.30
+Sacco Patate Gialle 5 kg,kg,,1.50,1.20,1.00
+Patate Rosse - 5 kg,kg,,1.70,1.40,1.20
+Patata dolce o americana,kg,,2.40,2.00,1.90
+Barbabietole Rosse,pz,,2.50,1.80,1.60
+Carote confezione (1 KG),kg,,1.90,1.70,1.50
+Carote sfuse,kg,,1.70,1.50,1.30
+Cavolfiore Bianco,kg,,2.80,2.40,2.00
+Crauto Rosso,kg,,1.90,1.70,1.50
+Crauto Bianco,kg,,1.70,1.50,1.30
+Cime di Rapa pugliesi,kg,,3.00,2.20,2.00
+Fiori di Zucca Freschi,kg,,8.50,7.00,7.00
+Funghi Champignons,kg,,6.50,5.30,5.80
+Zucca Mantovana,kg,,2.90,2.50,2.20
+Zucca Napoli,kg,,3.00,2.40,2.00
+Sedano,kg,,2.70,2.30,2.00
+Melanzane,kg,,3.00,2.20,2.20
+Zucchine,kg,,2.30,1.90,1.70
+Finocchi,kg,,3.80,3.50,3.20
+Cetrioli,kg,,3.60,3.00,2.70
+Peperoni,kg,,3.30,3.00,2.80
+Pomodoro Ramato,kg,,3.40,3.10,2.90
+Pomodori Ciliegino,kg,,8.90,8.00,7.30
+Datterino Rosso,kg,,9.00,7.00,6.50
+Datterino Giallo,kg,,10.00,9.00,8.20
+Insalata Icerbeg,pz,,2.50,2.00,1.80
+Insalata Lattuga,kg,,4.50,3.00,3.00
+Insalata Gentile,kg,,4.50,3.00,3.00
+Radicchio Rosso,kg,,5.70,5.50,4.50
+Scarola,kg,,8.00,6.00,5.50
+Scarola Riccia,kg,,9.00,7.00,6.30
+Zenzero,kg,,9.00,3.00,2.80
+Prezzemolo,kg,,6.00,5.00,4.00
+Caciocavallo Affumicato,kg,,15.00,12.50,12.00
+Figliata di bufala - (1-2-3 KG),kg,,16.00,14.50,14.00
+La Zizzona di Bufala - (1-2-3-4-5 kg),kg,,14.00,14.00,14.00
+Treccia di bufala - (1/2/3 KG),kg,,14.00,12.00,11.00
+Mozzarella Bufala - 4 Pz da (125G),kg,,14.00,12.00,11.00
+Bocconcini Bufala - 10 Pz da (50G),kg,,14.00,12.00,11.00
+Mozzarella Bufala - 1 Pz da (500G),kg,,14.00,12.00,11.00
+Provola Affumicata - (500 G),kg,,14.00,12.00,11.00
+Ricotta Di Bufala - (500 G),kg,,6.00,5.00,5.00
+Burrata Di Vaccina - (500 G),kg,,14.00,12.00,11.00
+Stracciatella Di Vaccina - (500 G),kg,,14.00,12.00,11.00
+Fiordilatte Agerola - (500 G),kg,,14.00,12.00,11.00
+Mozzarella Senza Lattosio - (500 G),kg,,18.00,16.00,14.00
+Caciocavallo Bianco,kg,,15.00,13.00,11.00
+Provolone semipiccante,kg,,18.00,15.00,19.00
+Ricotta dura bianca,pz,,5.00,4.00,3.80
+Ricotta dura piccante,pz,,5.00,4.00,3.00
+Salsiccia cervellatina - (1 kg),kg,,13.00,11.50,10.00
+Salsiccia punta di coltello - (1 kg),kg,,13.00,11.50,10.00
+Salame a ciampa piccante,kg,,17.00,15.00,14.00
+Salame a Ciampa dolce,kg,,17.00,15.00,14.00
+Salame Napoli,kg,,17.00,15.00,14.00
+Olive condite,kg,,13.00,11.00,10.00
+Olive nere di gaeta,kg,,11.00,10.00,9.00
+Olive verdi napoletane,kg,,10.50,9.60,8.00
+Friselle integrali,conf,,3.00,2.50,2.00
+Costolette Di Maiale,kg,,14.00,11.00,10.00
+Fette Di Arrosto,kg,,20.00,17.00,16.00
+Friselle bianche,conf,,3.00,2.50,2.00
+Gnocchi di patate,kg,,4.00,3.00,2.80
+Taralli Extra Napoli,conf,,7.00,6.00,5.50
+Passata di pomodoro,bott,,2.49,2.00,1.80
+Melanzane sott'olio,pz,,8.00,6.00,5.30
+Scarole sott'olio,pz,,8.00,6.00,5.30
+Friarielli sott'olio,pz,,8.00,6.00,5.30
+Saltimbocca Pane Pizza,pz,,2.70,2.20,2.00
+Grano Cotto,pz,,2.30,2.00,1.80
+Fiale millefiori,pz,,0.40,0.30,0.30
+Pane cafone,pz,,3.50,2.50,2.00
+Pane misto cafone,pz,,3.90,2.50,2.00
+Taralli Pugliesi Il Covo,pz,,3.90,3.00,2.80
+Lupini,pz,,4.00,2.99,2.80
+Uova Fresche XXL,pz,,0.50,0.38,0.33
+Soffritto - (500 g),conf,,6.00,4.90,4.50
+Carciofi Arrostiti - (5 PZ),conf,,8.50,7.00,7.00
+Trippa napoletana - (1 kg),kg,,11.00,10.00,9.00
+Preparato misto casatiello - (500 g),kg,,16.00,14.00,12.00
+Babà - (3 pz),conf,,6.00,5.00,4.50
+Babà crema - (3 pz),conf,,7.00,6.00,5.00
+Sfogliatelle Frolle - (3 pz),conf,,6.00,5.00,4.50
+Sfogliatelle Ricce - (3 pz),conf,,6.00,5.00,4.50
+Cannoli - (3 pz),conf,,8.00,7.00,6.00
+Zeppole San Giuseppe - (3 pz),conf,,8.00,7.00,6.00
+Pastiera - (1 kg),kg,,15.00,13.00,12.00
+Diplomatica - (3 pz),conf,,6.00,5.00,4.50
+Piccola pasticceria mista - (500 g),conf,,9.00,7.50,6.50
+Codine al cioccolato - (500 g),conf,,9.00,7.50,6.60
+Biscotti amarena - (3 pz),conf,,6.00,5.00,4.50
+Aneto - (30 G),vaschetta,,2.00,1.40,1.20
+Box Mix Aromi (500G),box,,8.00,8.00,6.80
+Box Rucola (1KG),box,,10.00,8.00,7.00
+Erba Cipollina (30G),vaschetta,,2.00,1.40,1.20
+Finocchietto Selvatico (30G),vaschetta,,2.00,1.40,1.20
+Fiori Eduli Colorati (30G),vaschetta,,6.00,4.50,4.00
+Insalata Mista a Fili (200 G),vaschetta,,2.20,1.80,1.50
+Maggiorana (30G),vaschetta,,2.00,1.40,1.20
+Minestrone (500G),busta,,3.30,2.90,2.50
+Misticanza Orientale - (1 kg),box,,16.00,14.00,12.00
+Tenero mix (250 G),busta,,3.00,2.50,2.00
+Fiori di Zucca,vaschetta,,2.90,2.50,2.20
+Carote Julienne (200G),vaschetta,,2.80,2.20,2.00
+Rucola (100G),vaschetta,,2.00,1.40,1.20
+Valeriana (100G),vaschetta,,2.20,1.80,1.50
+Insalata Mista (100G),vaschetta,,2.20,1.80,1.50
+Insalata Novella (100G),vaschetta,,2.00,1.40,1.20
+Tenero Mix (100G),vaschetta,,2.00,1.40,1.20
+Rucola (250G),busta,,3.50,3.00,2.00
+Insalata Mista (500G),busta,,3.00,2.50,2.00
+Spinacino (500G),busta,,3.00,2.50,2.00
+Box Basilico (500G),box,,13.00,11.00,10.00
+Box Menta (500G),box,,11.00,10.00,8.00
+Basilico (30G),vaschetta,,2.00,1.40,1.20
+Box Rosmarino (500G),box,,8.00,7.00,6.00
+Menta (30G),vaschetta,,2.00,1.40,1.20
+Rosmarino (30G),vaschetta,,2.00,1.40,1.20
+Alloro (30G),vaschetta,,2.00,1.40,1.20
+Box Salvia (500G),box,,10.00,7.00,6.00
+Timo (30G),vaschetta,,2.00,1.40,1.20
+Fiordilatte Julienne,kg,,6.00,7.00,6.70
+Fiordilatte Intero,kg,,8.00,7.00,6.50
+Provola Fiordilatte,kg,,9.00,8.00,7.50
+Pistacchi,kg,,25.00,20.00,18.00
+Noccioline Tostate,kg,,17.00,13.00,11.00
+Noci,kg,,10.00,8.00,7.00
+Arachidi Spagnolette,kg,,9.00,8.00,7.00
+Rotoloni asciugatutto con da (2 pz),conf,,6.00,4.50,4.00
+Lenticchie Secche,kg,,6.00,3.30,3.00
+Fagioli Bianchi Secchi,kg,,4.00,3.30,3.00
+Fagioli Rossi Secchi,kg,,4.00,3.50,3.20
+Ceci Secchi,kg,,4.90,3.90,3.50
+Pacchetto Arcobaleno,conf,,60.00,60.00,50.00
+Pacchetto Bimbi,conf,,120.00,120.00,110.00
+Pacchetto Comunione,conf,,120.00,120.00,110.00
+Pacchetto Peter Pan,conf,,120.00,120.00,110.00
+Pacchetto Reale,conf,,120.00,120.00,110.00
+Pacchetto Scuola,conf,,60.00,60.00,50.00
