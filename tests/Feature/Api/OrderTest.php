@@ -252,7 +252,7 @@ class OrderTest extends TestCase
     {
         $user = User::factory()->create(['active' => true]);
         Customer::factory()->create(['user_id' => $user->id]);
-        $category = ProductCategory::create(['name' => 'Verdura', 'slug' => 'verdura', 'active' => true, 'is_public' => true]);
+        $category = ProductCategory::create(['name' => 'Verdura', 'slug' => 'verdura', 'active' => true, 'is_public' => true, 'auto_markup_enabled' => true]);
         $tax = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
         $unit = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
         $product = Product::create(['product_category_id' => $category->id, 'tax_rate_id' => $tax->id, 'default_unit_of_measure_id' => $unit->id, 'name' => 'Pomodori', 'slug' => 'pomodori', 'purchase_cost_per_unit' => 2.10, 'markup_percentage' => 100, 'active' => true]);

@@ -20,6 +20,7 @@ class ProductCategory extends Model
         'is_public',
         'sort_order',
         'sort_alphabetically',
+        'auto_markup_enabled',
         'active',
     ];
 
@@ -57,6 +58,7 @@ class ProductCategory extends Model
             'active' => 'boolean',
             'is_public' => 'boolean',
             'sort_alphabetically' => 'boolean',
+            'auto_markup_enabled' => 'boolean',
         ];
     }
 }

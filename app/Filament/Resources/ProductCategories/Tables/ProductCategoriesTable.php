@@ -42,6 +42,12 @@ class ProductCategoriesTable
                     ->badge()
                     ->formatStateUsing(fn (bool $state): string => $state ? 'Pubblica' : 'Nascosta')
                     ->color(fn (bool $state): string => $state ? 'success' : 'gray'),
+                TextColumn::make('auto_markup_enabled')
+                    ->label('Ricalcolo prezzo')
+                    ->badge()
+                    ->formatStateUsing(fn (bool $state): string => $state ? 'Automatico' : 'Manuale')
+                    ->color(fn (bool $state): string => $state ? 'success' : 'gray')
+                    ->toggleable(),
             ])
             ->filters([
                 TernaryFilter::make('active')

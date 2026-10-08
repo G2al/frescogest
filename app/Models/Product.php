@@ -131,6 +131,15 @@ class Product extends Model
             $taxPercentage = (float) (TaxRate::query()->whereKey($product->tax_rate_id)->value('percentage') ?? 0);
             $hasGrossCost = array_key_exists('purchase_cost_per_unit_gross', $product->getAttributes());
 
+            // Il ricalcolo automatico del prezzo quando cambia SOLO il costo di acquisto
+            // (senza che il prezzo o il ricarico siano stati toccati a mano) è limitato
+            // alle categorie con "auto_markup_enabled" attivo (oggi: Frutta e Verdura).
+            // Un'eventuale modifica esplicita del ricarico % o la creazione di un nuovo
+            // prodotto continuano ad aggiornare il prezzo in ogni categoria.
+            $categoryAutoMarkupEnabled = (bool) ProductCategory::query()
+                ->whereKey($product->product_category_id)
+                ->value('auto_markup_enabled');
+
             if ($product->isDirty('purchase_cost_per_unit_gross') || ($product->isDirty('tax_rate_id') && $hasGrossCost)) {
                 $product->purchase_cost_per_unit = $purchaseCosts->netFromGross(
                     $product->purchase_cost_per_unit_gross,
@@ -163,19 +172,19 @@ class Product extends Model
 
             if ($product->isDirty('base_price_per_unit') && ! $product->isDirty('markup_percentage')) {
                 $product->markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->base_price_per_unit);
-            } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('markup_percentage') || ! $product->exists) {
+            } elseif ($product->isDirty('markup_percentage') || ! $product->exists || ($product->isDirty('purchase_cost_per_unit') && $categoryAutoMarkupEnabled)) {
                 $product->base_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->markup_percentage);
             }
 
             if ($product->isDirty('restaurant_price_per_unit') && ! $product->isDirty('restaurant_markup_percentage')) {
                 $product->restaurant_markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->restaurant_price_per_unit);
-            } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('restaurant_markup_percentage') || ! $product->exists) {
+            } elseif ($product->isDirty('restaurant_markup_percentage') || ! $product->exists || ($product->isDirty('purchase_cost_per_unit') && $categoryAutoMarkupEnabled)) {
                 $product->restaurant_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->restaurant_markup_percentage ?? $product->markup_percentage);
             }
 
             if ($product->isDirty('partner_price_per_unit') && ! $product->isDirty('partner_markup_percentage')) {
                 $product->partner_markup_percentage = $calculator->markupFromPrice($product->purchase_cost_per_unit, $product->partner_price_per_unit);
-            } elseif ($product->isDirty('purchase_cost_per_unit') || $product->isDirty('partner_markup_percentage') || ! $product->exists) {
+            } elseif ($product->isDirty('partner_markup_percentage') || ! $product->exists || ($product->isDirty('purchase_cost_per_unit') && $categoryAutoMarkupEnabled)) {
                 $product->partner_price_per_unit = $calculator->priceFromMarkup($product->purchase_cost_per_unit, $product->partner_markup_percentage ?? 35);
             }
 

@@ -46,6 +46,10 @@ class ProductCategoryForm
                             ->label('Ordina i prodotti alfabeticamente (A-Z)')
                             ->helperText('Se attivo, nel catalogo pubblico questa categoria mostra i prodotti in ordine alfabetico per nome invece che nell’ordine manuale impostato sui singoli prodotti.')
                             ->default(false),
+                        Toggle::make('auto_markup_enabled')
+                            ->label('Ricalcolo automatico del prezzo di vendita')
+                            ->helperText('Se attivo, modificando il costo di acquisto di un prodotto di questa categoria il prezzo di vendita (privati/ristoratori/partner) si aggiorna da solo in base al ricarico % impostato. Se disattivo, cambiare il costo non tocca più il prezzo di vendita: resta quello inserito a mano finché non lo modifichi tu.')
+                            ->default(false),
                         FileUpload::make('image_path')
                             ->label('Immagine pubblica')
                             ->image()
