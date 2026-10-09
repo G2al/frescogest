@@ -62,7 +62,7 @@ class OrderDeliveryDocumentActionSchema
                                     ->orderBy('name')
                                     ->get()
                                     ->mapWithKeys(fn (Product $product): array => [
-                                        $product->getKey() => $product->name.' · '.$product->productCategory->name,
+                                        $product->getKey() => $product->name.' · '.($product->productCategory->name ?? 'Senza categoria'),
                                     ])
                                     ->all())
                                 ->searchable()

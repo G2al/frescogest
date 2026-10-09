@@ -80,7 +80,7 @@ class PermanentDeletionTest extends TestCase
         ]);
     }
 
-    public function test_deleting_a_category_permanently_removes_its_products(): void
+    public function test_deleting_a_category_keeps_its_products_without_a_category(): void
     {
         [$product] = $this->productAndCustomer();
         $category = $product->productCategory;
@@ -88,7 +88,7 @@ class PermanentDeletionTest extends TestCase
         $category->delete();
 
         $this->assertDatabaseMissing('product_categories', ['id' => $category->id]);
-        $this->assertDatabaseMissing('products', ['id' => $product->id]);
+        $this->assertDatabaseHas('products', ['id' => $product->id, 'product_category_id' => null]);
     }
 
     private function productAndCustomer(): array
