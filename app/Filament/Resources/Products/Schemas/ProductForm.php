@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Products\Schemas;
 
+use App\Models\ProductCategory;
 use App\Models\TaxRate;
 use App\Services\Pricing\ProductListPriceCalculator;
 use App\Services\Pricing\PurchaseCostCalculator;
@@ -160,7 +161,10 @@ class ProductForm
         );
 
         $set('purchase_cost_per_unit', number_format($netCost, 4, '.', ''));
-        self::updatePricesFromMarkups($get, $set, $netCost);
+
+        if (self::categoryAllowsAutoMarkup($get)) {
+            self::updatePricesFromMarkups($get, $set, $netCost);
+        }
     }
 
     private static function updateGrossCostAndPrices(Get $get, Set $set): void
@@ -170,7 +174,15 @@ class ProductForm
         $grossCost = app(PurchaseCostCalculator::class)->grossFromNet($netCost, $percentage);
 
         $set('purchase_cost_per_unit_gross', number_format($grossCost, 4, '.', ''));
-        self::updatePricesFromMarkups($get, $set, $netCost);
+
+        if (self::categoryAllowsAutoMarkup($get)) {
+            self::updatePricesFromMarkups($get, $set, $netCost);
+        }
+    }
+
+    private static function categoryAllowsAutoMarkup(Get $get): bool
+    {
+        return (bool) ProductCategory::query()->whereKey($get('product_category_id'))->value('auto_markup_enabled');
     }
 
     private static function updatePriceFromMarkup(

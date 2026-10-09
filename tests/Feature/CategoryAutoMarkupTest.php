@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use App\Models\TaxRate;
 use App\Models\UnitOfMeasure;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class CategoryAutoMarkupTest extends TestCase
@@ -84,6 +87,32 @@ class CategoryAutoMarkupTest extends TestCase
         ]);
 
         $this->assertSame('3.00', $product->base_price_per_unit);
+    }
+
+    public function test_editing_the_cost_in_the_admin_form_does_not_live_update_the_price_when_category_has_auto_markup_disabled(): void
+    {
+        $admin = User::factory()->create(['active' => true, 'can_access_panel' => true]);
+        $category = ProductCategory::create(['name' => 'Latticini', 'active' => true, 'auto_markup_enabled' => false]);
+        $product = $this->product($category);
+
+        $this->actingAs($admin, 'admin');
+
+        Livewire::test(EditProduct::class, ['record' => $product->getRouteKey()])
+            ->set('data.purchase_cost_per_unit', 2)
+            ->assertSet('data.base_price_per_unit', '1.75');
+    }
+
+    public function test_editing_the_cost_in_the_admin_form_live_updates_the_price_when_category_has_auto_markup_enabled(): void
+    {
+        $admin = User::factory()->create(['active' => true, 'can_access_panel' => true]);
+        $category = ProductCategory::create(['name' => 'Frutta', 'active' => true, 'auto_markup_enabled' => true]);
+        $product = $this->product($category);
+
+        $this->actingAs($admin, 'admin');
+
+        Livewire::test(EditProduct::class, ['record' => $product->getRouteKey()])
+            ->set('data.purchase_cost_per_unit', 2)
+            ->assertSet('data.base_price_per_unit', '3.50');
     }
 
     private function product(ProductCategory $category): Product
