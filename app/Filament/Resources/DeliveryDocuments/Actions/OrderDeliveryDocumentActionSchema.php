@@ -58,6 +58,8 @@ class OrderDeliveryDocumentActionSchema
                                 ->label('Prodotto')
                                 ->options(fn (): array => Product::query()
                                     ->where('active', true)
+                                    ->whereNotNull('product_category_id')
+                                    ->whereNotNull('default_unit_of_measure_id')
                                     ->with('productCategory')
                                     ->orderBy('name')
                                     ->get()

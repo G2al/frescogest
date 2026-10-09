@@ -95,6 +95,7 @@ class Product extends Model
             ->where('active', true)
             ->where('base_price_per_unit', '>', 0)
             ->whereNotNull('slug')
+            ->whereNotNull('default_unit_of_measure_id')
             ->whereHas('productCategory', fn (Builder $category): Builder => $category->publicCatalog());
     }
 

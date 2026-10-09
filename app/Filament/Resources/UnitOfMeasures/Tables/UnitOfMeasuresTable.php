@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources\UnitOfMeasures\Tables;
 
+use App\Models\Product;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -47,7 +49,32 @@ class UnitOfMeasuresTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->modalDescription('I prodotti che usano queste unità non verranno eliminati: perderanno solo l\'unità di misura assegnata e resteranno "da ricategorizzare" finché non li riassegni tu.')
+                        ->before(function ($records): void {
+                            $unitIds = collect($records)->pluck('id');
+
+                            $names = Product::query()
+                                ->whereIn('default_unit_of_measure_id', $unitIds)
+                                ->pluck('name')
+                                ->all();
+
+                            session()->flash('orphaned_unit_product_names', $names);
+                        })
+                        ->after(function (): void {
+                            $names = session()->pull('orphaned_unit_product_names', []);
+
+                            if ($names === []) {
+                                return;
+                            }
+
+                            Notification::make()
+                                ->title(count($names).' prodotti hanno perso l\'unità di misura')
+                                ->body(implode(', ', $names))
+                                ->warning()
+                                ->persistent()
+                                ->send();
+                        }),
                 ]),
             ]);
     }
