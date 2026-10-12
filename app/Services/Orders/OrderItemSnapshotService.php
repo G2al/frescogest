@@ -114,13 +114,17 @@ class OrderItemSnapshotService
     ): array {
         $isCustom = $customUnitCostNet !== null;
         $unitCostNet = $isCustom ? $customUnitCostNet : (float) $product->purchase_cost_per_unit;
-        $unitCostGross = $isCustom
-            ? $unitCostNet * (1 + ((float) $product->taxRate->percentage / 100))
-            : (float) $product->purchase_cost_per_unit_gross;
+        $taxPercentage = (float) $product->taxRate->percentage;
 
+        // L'IVA sugli acquisti va calcolata sul totale di riga già arrotondato (come
+        // per l'IVA di vendita), non moltiplicando la quantità per un costo unitario
+        // IVA inclusa arrotondato a 2 decimali: con quantità grandi e costi con un
+        // terzo decimale (es. 0,104 €), arrotondare prima del prodotto cancellava
+        // l'IVA quasi per intero (vedi segnalazione "Carciofi Spine": 0,10 € x 10 pz
+        // con IVA 4% doveva dare 0,04 € di IVA e invece ne dava 0,00 €).
         $purchaseCost = $this->calculator->lineTotal($unitCostNet, $quantity);
-        $purchaseGross = $this->calculator->lineTotal($unitCostGross, $quantity);
-        $purchaseTax = $this->calculator->difference($purchaseGross, $purchaseCost);
+        $purchaseTax = $this->calculator->tax($purchaseCost, $taxPercentage);
+        $purchaseGross = $this->calculator->sum([$purchaseCost, $purchaseTax]);
         $margin = $this->calculator->difference($lineNet, $purchaseCost);
 
         return [

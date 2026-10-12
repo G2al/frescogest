@@ -170,6 +170,71 @@ class ManualOrderCostOverrideTest extends TestCase
         $this->assertSame('1.0000', $this->lemon->fresh()->purchase_cost_per_unit);
     }
 
+    public function test_a_custom_cost_calculates_the_correct_vat_on_purchases(): void
+    {
+        // Segnalazione del cliente: con IVA 4% e costo netto scritto a mano di 1€,
+        // l'IVA sugli acquisti deve risultare 0,04€, non 0€.
+        $order = app(CreateManualOrderService::class)->create([
+            'customer_id' => $this->customer()->id,
+            'status' => 'confirmed',
+            'requested_at' => now(),
+            'items' => [['product_id' => $this->lemon->id, 'quantity' => 1, 'unit_price_net' => 5, 'purchase_cost_per_unit_net' => 1]],
+        ]);
+
+        $item = $order->fresh()->items->first();
+
+        $this->assertSame('1.00', $item->purchase_cost_net);
+        $this->assertSame('0.04', $item->purchase_cost_tax);
+        $this->assertSame('1.04', $item->purchase_cost_gross);
+    }
+
+    public function test_a_custom_cost_with_a_large_quantity_calculates_the_correct_vat_on_purchases(): void
+    {
+        // Segnalazione reale del cliente ("Carciofi Spine"): costo unitario 0,10€,
+        // quantità 10, IVA 4%. Il costo con IVA unitario (0,104€) ha un terzo decimale
+        // che un arrotondamento prematuro "prima di moltiplicare per la quantità"
+        // cancellava quasi del tutto, facendo risultare l'IVA sugli acquisti a 0€
+        // invece di 0,04€.
+        $order = app(CreateManualOrderService::class)->create([
+            'customer_id' => $this->customer()->id,
+            'status' => 'confirmed',
+            'requested_at' => now(),
+            'items' => [['product_id' => $this->lemon->id, 'quantity' => 10, 'unit_price_net' => 5, 'purchase_cost_per_unit_net' => 0.10]],
+        ]);
+
+        $item = $order->fresh()->items->first();
+
+        $this->assertSame('1.00', $item->purchase_cost_net);
+        $this->assertSame('0.04', $item->purchase_cost_tax);
+        $this->assertSame('1.04', $item->purchase_cost_gross);
+    }
+
+    public function test_regenerating_the_delivery_document_with_a_custom_cost_keeps_the_correct_vat_on_purchases(): void
+    {
+        $order = app(CreateManualOrderService::class)->create([
+            'customer_id' => $this->customer()->id,
+            'status' => 'confirmed',
+            'requested_at' => now(),
+            'items' => [['product_id' => $this->lemon->id, 'quantity' => 1, 'unit_price_net' => 5]],
+        ]);
+        $document = app(CreateDeliveryDocumentService::class)->create($order, $this->admin, ['issued_at' => now()]);
+
+        // Flusso "Modifica e rigenera bolla": Antonio scrive il suo costo a mano.
+        app(\App\Services\Documents\OrderDeliveryDocumentService::class)->update($document, [
+            'issued_at' => now()->toDateTimeString(),
+            'discount_percentage' => 0,
+            'items' => [
+                ['product_id' => $this->lemon->id, 'quantity' => 1, 'unit_price_net' => 5, 'purchase_cost_per_unit_net' => 1],
+            ],
+        ]);
+
+        $item = $order->fresh()->items->first();
+
+        $this->assertTrue($item->purchase_cost_is_custom);
+        $this->assertSame('1.00', $item->purchase_cost_net);
+        $this->assertSame('0.04', $item->purchase_cost_tax);
+    }
+
     public function test_the_new_order_form_mounts_without_errors(): void
     {
         $this->actingAs($this->admin, 'admin');
