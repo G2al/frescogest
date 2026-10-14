@@ -117,7 +117,7 @@ class CreateManualOrderAction
                                     ->numeric()
                                     ->minValue(0.001)
                                     ->step(0.001)
-                                    ->live(debounce: 300)
+                                    ->live(onBlur: true)
                                     ->suffix(fn (Get $get): ?string => $get('unit_symbol'))
                                     ->helperText(fn (Get $get): ?string => filled($get('minimum_quantity'))
                                         ? 'Listino: minimo '.$get('minimum_quantity').' '.$get('unit_symbol')
@@ -130,7 +130,7 @@ class CreateManualOrderAction
                                     ->minValue(0)
                                     ->step(0.01)
                                     ->prefix('€')
-                                    ->live(debounce: 300)
+                                    ->live(onBlur: true)
                                     ->columnSpan(2)
                                     ->required(),
                                 TextInput::make('purchase_cost_per_unit_net')
@@ -140,7 +140,7 @@ class CreateManualOrderAction
                                     ->minValue(0)
                                     ->step(0.01)
                                     ->prefix('€')
-                                    ->live(debounce: 300)
+                                    ->live(onBlur: true)
                                     ->columnSpan(2),
                                 Placeholder::make('line_total')
                                     ->label('Totale IVA inclusa')

@@ -77,7 +77,7 @@ class PartnerDeliveryDocumentActionSchema
                                 ->minValue(0.001)
                                 ->step(0.001)
                                 ->suffix(fn (Get $get): ?string => $get('unit_symbol'))
-                                ->live(debounce: 300)
+                                ->live(onBlur: true)
                                 ->columnSpan(2)
                                 ->required(),
                             TextInput::make('unit_price_net')
@@ -86,7 +86,7 @@ class PartnerDeliveryDocumentActionSchema
                                 ->minValue(0)
                                 ->step(0.01)
                                 ->prefix('€')
-                                ->live(debounce: 300)
+                                ->live(onBlur: true)
                                 ->columnSpan(2)
                                 ->required(),
                             Hidden::make('unit_symbol'),

@@ -45,7 +45,7 @@ class OrderDeliveryDocumentActionSchema
                         ->maxValue(100)
                         ->suffix('%')
                         ->default(0)
-                        ->live(debounce: 350)
+                        ->live(onBlur: true)
                         ->required(),
                 ]),
             Section::make('Prodotti consegnati')
@@ -85,7 +85,7 @@ class OrderDeliveryDocumentActionSchema
                                 ->minValue(0.001)
                                 ->step(0.001)
                                 ->suffix(fn (Get $get): ?string => $get('unit_symbol'))
-                                ->live(debounce: 300)
+                                ->live(onBlur: true)
                                 ->columnSpan(2)
                                 ->required(),
                             TextInput::make('unit_price_net')
@@ -94,7 +94,7 @@ class OrderDeliveryDocumentActionSchema
                                 ->minValue(0)
                                 ->step(0.01)
                                 ->prefix('€')
-                                ->live(debounce: 300)
+                                ->live(onBlur: true)
                                 ->columnSpan(2)
                                 ->required(),
                             TextInput::make('purchase_cost_per_unit_net')
@@ -104,7 +104,7 @@ class OrderDeliveryDocumentActionSchema
                                 ->minValue(0)
                                 ->step(0.01)
                                 ->prefix('€')
-                                ->live(debounce: 300)
+                                ->live(onBlur: true)
                                 ->columnSpan(2),
                             Placeholder::make('line_total')
                                 ->label('Totale IVA inclusa')
