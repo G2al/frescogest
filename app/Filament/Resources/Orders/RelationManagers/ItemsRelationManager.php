@@ -54,12 +54,15 @@ class ItemsRelationManager extends RelationManager
             ->headerActions([
                 CreateAction::make()
                     ->label('Aggiungi prodotto')
-                    ->mutateDataUsing(fn (array $data): array => app(OrderItemSnapshotService::class)->enrich($data, $this->getOwnerRecord()))
+                    // enrichManual (non enrich) perché in admin, come nella creazione di
+                    // una bolla/ordine manuale, non va applicata la quantità minima:
+                    // quel vincolo esiste solo per chi prenota dal sito pubblico.
+                    ->mutateDataUsing(fn (array $data): array => app(OrderItemSnapshotService::class)->enrichManual($data, $this->getOwnerRecord()))
                     ->after(fn () => app(OrderItemSnapshotService::class)->recalculate($this->getOwnerRecord())),
             ])
             ->recordActions([
                 EditAction::make()
-                    ->mutateDataUsing(fn (array $data): array => app(OrderItemSnapshotService::class)->enrich($data, $this->getOwnerRecord()))
+                    ->mutateDataUsing(fn (array $data): array => app(OrderItemSnapshotService::class)->enrichManual($data, $this->getOwnerRecord()))
                     ->after(fn () => app(OrderItemSnapshotService::class)->recalculate($this->getOwnerRecord())),
                 DeleteAction::make()
                     ->after(fn () => app(OrderItemSnapshotService::class)->recalculate($this->getOwnerRecord())),
