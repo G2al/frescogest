@@ -5,6 +5,7 @@ namespace App\Services\Orders;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\UnitOfMeasure;
 use App\Services\Documents\DeliveryDocumentSnapshotService;
 use App\Services\Pricing\PriceCalculator;
 use App\Services\Pricing\ProductPricingService;
@@ -39,6 +40,8 @@ class OrderItemSnapshotService
             ->findOrFail($data['product_id']);
         $unitPrice = $data['unit_price_net'] ?? $this->pricing->details($product, $order->customer)['price'];
         $customCost = $this->customCost($data);
+        $taxPercentage = $this->customTaxPercentage($data) ?? (float) $product->taxRate->percentage;
+        $unit = $this->customUnit($data) ?? $product->defaultUnitOfMeasure;
 
         if ((float) $data['quantity'] <= 0 || (float) $unitPrice < 0) {
             throw ValidationException::withMessages([
@@ -52,7 +55,13 @@ class OrderItemSnapshotService
             ]);
         }
 
-        return $this->snapshot($data, $order, $product, $unitPrice, $customCost);
+        if ($taxPercentage < 0) {
+            throw ValidationException::withMessages([
+                'items' => "Controlla l'IVA di {$product->name}.",
+            ]);
+        }
+
+        return $this->snapshot($data, $order, $product, $unitPrice, $customCost, $taxPercentage, $unit);
     }
 
     private function customCost(array $data): ?float
@@ -62,18 +71,36 @@ class OrderItemSnapshotService
         return $value === null || $value === '' ? null : (float) $value;
     }
 
+    private function customTaxPercentage(array $data): ?float
+    {
+        $value = $data['tax_percentage'] ?? null;
+
+        return $value === null || $value === '' ? null : (float) $value;
+    }
+
+    private function customUnit(array $data): ?UnitOfMeasure
+    {
+        $id = $data['unit_of_measure_id'] ?? null;
+
+        return $id ? UnitOfMeasure::query()->find($id) : null;
+    }
+
     private function snapshot(
         array $data,
         Order $order,
         Product $product,
         string|int|float $unitPrice,
         ?float $customUnitCostNet = null,
+        ?float $taxPercentage = null,
+        ?UnitOfMeasure $unit = null,
     ): array {
+        $taxPercentage ??= (float) $product->taxRate->percentage;
+        $unit ??= $product->defaultUnitOfMeasure;
+
         $originalLineNet = $this->calculator->lineTotal($unitPrice, $data['quantity']);
         $discountPercentage = (float) ($order->discount_percentage ?? 0);
         $lineNet = $this->calculator->discountedPrice($originalLineNet, $discountPercentage);
         $discountAmount = $this->calculator->difference($originalLineNet, $lineNet);
-        $taxPercentage = $product->taxRate->percentage;
         $lineTax = $this->calculator->tax($lineNet, $taxPercentage);
         $lineGross = $this->calculator->sum([$lineNet, $lineTax]);
 
@@ -91,8 +118,8 @@ class OrderItemSnapshotService
             'line_tax' => $lineTax,
             'line_gross' => $lineGross,
             ...$this->costSnapshot($product, $data['quantity'], $lineNet, $customUnitCostNet),
-            'unit_of_measure_name' => $product->defaultUnitOfMeasure->name,
-            'unit_of_measure_symbol' => $product->defaultUnitOfMeasure->symbol,
+            'unit_of_measure_name' => $unit->name,
+            'unit_of_measure_symbol' => $unit->symbol,
         ];
     }
 
