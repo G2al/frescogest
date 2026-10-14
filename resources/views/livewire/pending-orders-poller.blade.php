@@ -1,4 +1,4 @@
-<div wire:poll.5s="poll" class="hidden" aria-hidden="true">
+<div wire:poll.30s="poll" class="hidden" aria-hidden="true">
     <div data-pending-orders-badge-template>
         @if ($count > 0)
             <span class="fi-sidebar-item-badge-ctn">
