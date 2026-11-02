@@ -89,7 +89,12 @@ class PartnerGoodsEntry extends Model
                 $entry->tax_percentage = $product?->taxRate?->percentage ?? 0;
             }
 
-            if (! $entry->exists || $entry->isDirty('product_id') || ! array_key_exists('unit_cost_net', $entry->getAttributes())) {
+            // Se unit_cost_net è già stato scritto esplicitamente (anche su una riga
+            // nuova, es. costo personalizzato per questa bolla), non va sovrascritto
+            // col costo attuale del prodotto. Nota: isDirty('product_id') è sempre
+            // vero su un record nuovo (non c'è uno stato "originale" con cui
+            // confrontare), quindi va controllato solo quando la riga esiste già.
+            if (($entry->exists && $entry->isDirty('product_id')) || ! array_key_exists('unit_cost_net', $entry->getAttributes())) {
                 $product ??= Product::query()->find($entry->product_id);
                 $entry->unit_cost_net = $product?->purchase_cost_per_unit ?? 0;
             }

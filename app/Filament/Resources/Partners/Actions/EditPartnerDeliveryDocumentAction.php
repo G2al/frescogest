@@ -34,6 +34,7 @@ class EditPartnerDeliveryDocumentAction
                         'product_id' => $item['product_id'] ?? null,
                         'quantity' => $item['quantity'] ?? null,
                         'unit_price_net' => $item['unit_price_net'] ?? null,
+                        'purchase_cost_per_unit_net' => $item['purchase_cost_per_unit_net'] ?? null,
                         'unit_symbol' => $item['unit_symbol'] ?? null,
                     ])
                     ->all(),

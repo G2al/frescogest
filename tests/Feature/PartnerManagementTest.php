@@ -286,6 +286,57 @@ class PartnerManagementTest extends TestCase
         $this->assertDatabaseMissing('partner_goods_entries', ['delivery_document_id' => $document->id]);
     }
 
+    /**
+     * Richiesta del cliente: la bolla partner deve poter avere, riga per riga, un
+     * prezzo di costo scritto a mano (quanto e' costato davvero ad Antonio), come
+     * gia' succede per le bolle cliente. Senza valore, resta il costo del prodotto.
+     */
+    public function test_partner_delivery_document_can_override_the_purchase_cost_per_line(): void
+    {
+        [$partner, $product] = $this->partnerAndProduct();
+        $admin = User::factory()->create([
+            'active' => true,
+            'can_access_panel' => true,
+            'panel_role' => 'admin',
+        ]);
+        Company::create([
+            'business_name' => 'Il Paradiso della Frutta di Castaldo Mariarosaria',
+            'vat_number' => '02396610186',
+            'active' => true,
+        ]);
+
+        $documents = app(PartnerDeliveryDocumentService::class);
+        $document = $documents->create($partner, $admin, [
+            'issued_at' => now(),
+            'items' => [[
+                'product_id' => $product->id,
+                'quantity' => 3,
+                'unit_price_net' => 2,
+                'purchase_cost_per_unit_net' => 1.5,
+            ]],
+        ]);
+
+        $entry = PartnerGoodsEntry::query()->firstOrFail();
+        $this->assertSame('1.5000', $entry->unit_cost_net);
+        $this->assertSame('4.50', $entry->total_cost_net);
+
+        // Il prodotto in anagrafica non deve essere stato toccato.
+        $this->assertSame('1.0000', $product->fresh()->purchase_cost_per_unit);
+
+        // Senza valore, resta il costo attuale del prodotto (comportamento di sempre).
+        $documents->update($document, $admin, [
+            'issued_at' => now(),
+            'items' => [[
+                'product_id' => $product->id,
+                'quantity' => 3,
+                'unit_price_net' => 2,
+            ]],
+        ]);
+
+        $entry = PartnerGoodsEntry::query()->firstOrFail();
+        $this->assertSame('1.0000', $entry->unit_cost_net);
+    }
+
     public function test_panel_roles_keep_admin_and_partner_access_separate(): void
     {
         $admin = User::factory()->create([

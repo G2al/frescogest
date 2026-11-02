@@ -89,6 +89,15 @@ class PartnerDeliveryDocumentActionSchema
                                 ->live(onBlur: true)
                                 ->columnSpan(2)
                                 ->required(),
+                            TextInput::make('purchase_cost_per_unit_net')
+                                ->label('Prezzo di costo')
+                                ->helperText('Lascia vuoto per usare il costo attuale del prodotto.')
+                                ->numeric()
+                                ->minValue(0)
+                                ->step(0.01)
+                                ->prefix('€')
+                                ->live(onBlur: true)
+                                ->columnSpan(2),
                             Hidden::make('unit_symbol'),
                             Placeholder::make('line_total')
                                 ->label('Totale IVA inclusa')
@@ -103,6 +112,8 @@ class PartnerDeliveryDocumentActionSchema
                         ->defaultItems(1)
                         ->minItems(1)
                         ->reorderable(false)
+                        ->collapsible()
+                        ->collapsed()
                         ->required(),
                     Placeholder::make('document_totals')
                         ->hiddenLabel()

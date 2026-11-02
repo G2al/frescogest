@@ -135,6 +135,11 @@ class PartnerDeliveryDocumentService
                 'unit_purchase_price_net' => $item['unit_price_net'],
                 'tax_percentage' => $item['tax_percentage'],
                 'notes' => $data['notes'] ?? null,
+                // Solo se scritto a mano per questa bolla: altrimenti il modello usa da
+                // solo il costo attuale del prodotto (vedi PartnerGoodsEntry::booted()).
+                ...($item['purchase_cost_per_unit_net'] !== null
+                    ? ['unit_cost_net' => $item['purchase_cost_per_unit_net']]
+                    : []),
             ]);
         }
     }
@@ -156,10 +161,20 @@ class PartnerDeliveryDocumentService
                     ->findOrFail($item['product_id']);
                 $quantity = (float) ($item['quantity'] ?? 0);
                 $unitPrice = (float) ($item['unit_price_net'] ?? 0);
+                $customCostValue = $item['purchase_cost_per_unit_net'] ?? null;
+                $customCost = $customCostValue === null || $customCostValue === ''
+                    ? null
+                    : (float) $customCostValue;
 
                 if ($quantity <= 0 || $unitPrice < 0) {
                     throw ValidationException::withMessages([
                         'items' => "Controlla quantità e prezzo di {$product->name}.",
+                    ]);
+                }
+
+                if ($customCost !== null && $customCost < 0) {
+                    throw ValidationException::withMessages([
+                        'items' => "Controlla il prezzo di costo di {$product->name}.",
                     ]);
                 }
 
@@ -172,6 +187,7 @@ class PartnerDeliveryDocumentService
                     'quantity' => number_format($quantity, 3, '.', ''),
                     'unit_symbol' => $product->defaultUnitOfMeasure->symbol,
                     'unit_price_net' => number_format($unitPrice, 4, '.', ''),
+                    'purchase_cost_per_unit_net' => $customCost,
                     'tax_percentage' => number_format((float) $product->taxRate->percentage, 2, '.', ''),
                     'original_line_net' => $lineNet,
                     'discount_percentage' => '0.00',
