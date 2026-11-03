@@ -14,7 +14,10 @@ class DailySummaryPdfService
 
     public function __construct(private readonly DailySummaryService $summary) {}
 
-    public function stream(Carbon $date, bool $includePartners): Response
+    /**
+     * @param  array<int, string>  $columns  Sottoinsieme di quelle in DailySummary::pdfColumnOptions().
+     */
+    public function stream(Carbon $date, bool $includePartners, array $columns): Response
     {
         $rows = $this->summary->build($date, $includePartners);
         $generatedAt = Carbon::now();
@@ -23,6 +26,7 @@ class DailySummaryPdfService
             'rows' => $rows,
             'date' => $date,
             'includePartners' => $includePartners,
+            'columns' => array_flip($columns),
             'totals' => [
                 'net' => $rows->sum('net'),
                 'tax' => $rows->sum('tax'),

@@ -99,4 +99,18 @@ class DailySummaryTest extends TestCase
 
         Livewire::test(DailySummary::class)->assertOk();
     }
+
+    public function test_the_pdf_download_action_opens_the_chosen_columns_only(): void
+    {
+        $this->seed([CompanySeeder::class, UserSeeder::class]);
+        $admin = User::query()->where('panel_role', 'admin')->firstOrFail();
+
+        $this->actingAs($admin, 'admin');
+
+        Livewire::test(DailySummary::class)
+            ->mountAction('downloadPdf')
+            ->setActionData(['columns' => ['tax']])
+            ->callMountedAction()
+            ->assertHasNoActionErrors();
+    }
 }

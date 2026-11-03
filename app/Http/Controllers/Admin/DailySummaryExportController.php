@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Filament\Pages\DailySummary;
 use App\Http\Controllers\Controller;
 use App\Services\Documents\DailySummaryPdfService;
 use Illuminate\Http\Request;
@@ -18,6 +19,11 @@ class DailySummaryExportController extends Controller
         $date = Carbon::parse($request->query('date') ?: now()->toDateString());
         $includePartners = $request->query('includePartners', '1') !== '0';
 
-        return $pdf->stream($date, $includePartners);
+        $allowedColumns = array_keys(DailySummary::pdfColumnOptions());
+        $requestedColumns = array_filter(explode(',', (string) $request->query('columns', '')));
+        $matchedColumns = array_values(array_intersect($allowedColumns, $requestedColumns));
+        $columns = $matchedColumns === [] ? $allowedColumns : $matchedColumns;
+
+        return $pdf->stream($date, $includePartners, $columns);
     }
 }

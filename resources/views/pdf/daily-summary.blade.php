@@ -41,45 +41,56 @@
     </td>
 </tr></table>
 
+@php
+    $colCount = 1 + count($columns);
+@endphp
+
 <table class="summary"><tr>
-    <td><span class="label">Costo netto totale</span><span class="value">€ {{ number_format($totals['net'], 2, ',', '.') }}</span></td>
-    <td><span class="label">IVA sugli acquisti</span><span class="value">€ {{ number_format($totals['tax'], 2, ',', '.') }}</span></td>
-    <td><span class="label">Costo totale IVA inclusa</span><span class="value">€ {{ number_format($totals['gross'], 2, ',', '.') }}</span></td>
+    @if (isset($columns['net']))
+        <td><span class="label">Costo netto totale</span><span class="value">€ {{ number_format($totals['net'], 2, ',', '.') }}</span></td>
+    @endif
+    @if (isset($columns['tax']))
+        <td><span class="label">IVA sugli acquisti</span><span class="value">€ {{ number_format($totals['tax'], 2, ',', '.') }}</span></td>
+    @endif
+    @if (isset($columns['gross']))
+        <td><span class="label">Costo totale IVA inclusa</span><span class="value">€ {{ number_format($totals['gross'], 2, ',', '.') }}</span></td>
+    @endif
 </tr></table>
 
 <table class="items">
     <thead>
         <tr>
             <th>Prodotto</th>
-            <th class="right">Quantità totale</th>
-            <th class="right">Costo netto</th>
-            <th class="right">IVA</th>
-            <th class="right">Costo totale</th>
-            <th>Origine</th>
+            @if (isset($columns['quantity']))<th class="right">Quantità totale</th>@endif
+            @if (isset($columns['net']))<th class="right">Costo netto</th>@endif
+            @if (isset($columns['tax']))<th class="right">IVA</th>@endif
+            @if (isset($columns['gross']))<th class="right">Costo totale</th>@endif
+            @if (isset($columns['source']))<th>Origine</th>@endif
         </tr>
     </thead>
     <tbody>
     @forelse ($rows as $row)
         <tr>
             <td><strong>{{ $row->name }}</strong></td>
-            <td class="right">{{ rtrim(rtrim(number_format($row->quantity, 3, ',', '.'), '0'), ',') }} {{ $row->symbol }}</td>
-            <td class="right">€ {{ number_format($row->net, 2, ',', '.') }}</td>
-            <td class="right">€ {{ number_format($row->tax, 2, ',', '.') }}</td>
-            <td class="right">€ {{ number_format($row->gross, 2, ',', '.') }}</td>
-            <td>{{ implode(' + ', $row->sources) }}</td>
+            @if (isset($columns['quantity']))<td class="right">{{ rtrim(rtrim(number_format($row->quantity, 3, ',', '.'), '0'), ',') }} {{ $row->symbol }}</td>@endif
+            @if (isset($columns['net']))<td class="right">€ {{ number_format($row->net, 2, ',', '.') }}</td>@endif
+            @if (isset($columns['tax']))<td class="right">€ {{ number_format($row->tax, 2, ',', '.') }}</td>@endif
+            @if (isset($columns['gross']))<td class="right">€ {{ number_format($row->gross, 2, ',', '.') }}</td>@endif
+            @if (isset($columns['source']))<td>{{ implode(' + ', $row->sources) }}</td>@endif
         </tr>
     @empty
-        <tr><td colspan="6">Nessuna bolla in questo giorno.</td></tr>
+        <tr><td colspan="{{ $colCount }}">Nessuna bolla in questo giorno.</td></tr>
     @endforelse
     </tbody>
     @if ($rows->isNotEmpty())
         <tfoot>
             <tr>
-                <td colspan="2">Totale</td>
-                <td class="right">€ {{ number_format($totals['net'], 2, ',', '.') }}</td>
-                <td class="right">€ {{ number_format($totals['tax'], 2, ',', '.') }}</td>
-                <td class="right">€ {{ number_format($totals['gross'], 2, ',', '.') }}</td>
-                <td></td>
+                <td>Totale</td>
+                @if (isset($columns['quantity']))<td></td>@endif
+                @if (isset($columns['net']))<td class="right">€ {{ number_format($totals['net'], 2, ',', '.') }}</td>@endif
+                @if (isset($columns['tax']))<td class="right">€ {{ number_format($totals['tax'], 2, ',', '.') }}</td>@endif
+                @if (isset($columns['gross']))<td class="right">€ {{ number_format($totals['gross'], 2, ',', '.') }}</td>@endif
+                @if (isset($columns['source']))<td></td>@endif
             </tr>
         </tfoot>
     @endif

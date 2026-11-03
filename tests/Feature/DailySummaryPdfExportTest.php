@@ -55,6 +55,50 @@ class DailySummaryPdfExportTest extends TestCase
         $response->assertHeader('Content-Type', 'application/pdf');
     }
 
+    public function test_admin_can_restrict_the_pdf_to_a_subset_of_columns(): void
+    {
+        $this->seed([CompanySeeder::class, UserSeeder::class]);
+        $admin = User::query()->where('panel_role', 'admin')->firstOrFail();
+
+        $category = ProductCategory::create(['name' => 'Verdura', 'active' => true]);
+        $taxRate = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
+        $unit = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
+        $tomato = Product::create([
+            'product_category_id' => $category->id,
+            'tax_rate_id' => $taxRate->id,
+            'default_unit_of_measure_id' => $unit->id,
+            'name' => 'Pomodori',
+            'purchase_cost_per_unit' => 1,
+            'markup_percentage' => 75,
+            'active' => true,
+        ]);
+        $customer = Customer::factory()->create(['type' => CustomerType::Restaurant]);
+        $order = app(CreateManualOrderService::class)->create([
+            'customer_id' => $customer->id,
+            'status' => 'paid',
+            'requested_at' => now(),
+            'items' => [['product_id' => $tomato->id, 'quantity' => 10, 'unit_price_net' => 2]],
+        ]);
+        app(CreateDeliveryDocumentService::class)->create($order, $admin, ['issued_at' => now()]);
+
+        // Solo IVA, come richiesto dal cliente ("mi serve solo IVA").
+        $response = $this->actingAs($admin, 'admin')->get(route('admin.daily-summary.pdf', [
+            'date' => now()->toDateString(),
+            'columns' => 'tax',
+        ]));
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/pdf');
+
+        // Un elenco di colonne sconosciute/vuoto non deve rompere il PDF: usa tutte.
+        $fallback = $this->actingAs($admin, 'admin')->get(route('admin.daily-summary.pdf', [
+            'date' => now()->toDateString(),
+            'columns' => 'not-a-real-column',
+        ]));
+
+        $fallback->assertOk();
+    }
+
     public function test_the_pdf_works_with_no_deliveries_in_the_day(): void
     {
         $this->seed([CompanySeeder::class, UserSeeder::class]);

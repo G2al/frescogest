@@ -6,9 +6,11 @@ use App\Services\Reports\DailySummaryService;
 use BackedEnum;
 use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
 use Illuminate\Support\Collection;
+use Livewire\Component;
 use UnitEnum;
 
 class DailySummary extends Page
@@ -39,6 +41,22 @@ class DailySummary extends Page
         return auth('admin')->user()?->hasAdminPanelRole() === true;
     }
 
+    /**
+     * Colonne selezionabili per il PDF (oltre a "Prodotto", sempre presente).
+     *
+     * @return array<string, string>
+     */
+    public static function pdfColumnOptions(): array
+    {
+        return [
+            'quantity' => 'Quantità totale',
+            'net' => 'Costo netto',
+            'tax' => 'IVA',
+            'gross' => 'Costo totale',
+            'source' => 'Origine',
+        ];
+    }
+
     protected function getHeaderActions(): array
     {
         return [
@@ -46,11 +64,25 @@ class DailySummary extends Page
                 ->label('Scarica PDF')
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('success')
-                ->url(fn (): string => route('admin.daily-summary.pdf', [
-                    'date' => $this->date,
-                    'includePartners' => $this->includePartners ? 1 : 0,
-                ]))
-                ->openUrlInNewTab(),
+                ->modalHeading('Scegli cosa stampare nel PDF')
+                ->modalSubmitActionLabel('Genera PDF')
+                ->schema([
+                    CheckboxList::make('columns')
+                        ->label('Colonne da includere')
+                        ->helperText('"Prodotto" è sempre presente. Seleziona solo quello che ti serve stampare.')
+                        ->options(self::pdfColumnOptions())
+                        ->default(array_keys(self::pdfColumnOptions()))
+                        ->columns(2)
+                        ->required(),
+                ])
+                ->action(function (array $data, Component $livewire): void {
+                    $url = route('admin.daily-summary.pdf', [
+                        'date' => $this->date,
+                        'includePartners' => $this->includePartners ? 1 : 0,
+                        'columns' => implode(',', $data['columns']),
+                    ]);
+                    $livewire->js('window.open('.json_encode($url).', "_blank", "noopener,noreferrer")');
+                }),
         ];
     }
 
