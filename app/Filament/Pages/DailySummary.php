@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Services\Reports\DailySummaryService;
 use BackedEnum;
 use Carbon\CarbonImmutable;
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Filament\Support\Enums\Width;
 use Illuminate\Support\Collection;
@@ -36,6 +37,21 @@ class DailySummary extends Page
     public static function canAccess(): bool
     {
         return auth('admin')->user()?->hasAdminPanelRole() === true;
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('downloadPdf')
+                ->label('Scarica PDF')
+                ->icon('heroicon-o-document-arrow-down')
+                ->color('success')
+                ->url(fn (): string => route('admin.daily-summary.pdf', [
+                    'date' => $this->date,
+                    'includePartners' => $this->includePartners ? 1 : 0,
+                ]))
+                ->openUrlInNewTab(),
+        ];
     }
 
     /**
