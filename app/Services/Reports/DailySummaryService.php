@@ -22,6 +22,9 @@ class DailySummaryService
     {
         $rows = collect();
 
+        // Il riepilogo serve ad Antonio per sapere quanto SPENDE, non quanto incassa:
+        // usa sempre il costo di acquisto della riga (quello "fotografato" sull'ordine
+        // o sul carico partner), mai il prezzo di vendita al cliente/partner.
         OrderItem::query()
             ->whereHas('order.deliveryDocument', fn ($query) => $query->whereDate('issued_at', $date->toDateString()))
             ->get()
@@ -32,9 +35,9 @@ class DailySummaryService
                     $item->product_name,
                     $item->unit_of_measure_symbol,
                     (float) $item->quantity,
-                    (float) $item->line_net,
-                    (float) $item->line_tax,
-                    (float) $item->line_gross,
+                    (float) $item->purchase_cost_net,
+                    (float) $item->purchase_cost_tax,
+                    (float) $item->purchase_cost_gross,
                     'Cliente',
                 );
             });
@@ -51,9 +54,9 @@ class DailySummaryService
                         $entry->product?->name ?? 'Prodotto eliminato',
                         $entry->product?->defaultUnitOfMeasure?->symbol,
                         (float) $entry->quantity,
-                        (float) $entry->total_net,
-                        (float) $entry->total_tax,
-                        (float) $entry->total_gross,
+                        (float) $entry->total_cost_net,
+                        (float) $entry->total_cost_tax,
+                        (float) $entry->total_cost_gross,
                         'Partner',
                     );
                 });

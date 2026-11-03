@@ -75,6 +75,12 @@ class DailySummaryTest extends TestCase
         $this->assertSame(15.0, $row->quantity);
         $this->assertSame(['Cliente', 'Partner'], $row->sources);
 
+        // Deve mostrare quanto Antonio SPENDE (costo, 1€/kg), non quanto incassa
+        // (prezzo cliente 2€/kg, prezzo partner 1,8€/kg): 10kg + 5kg a 1€ = 15€ netti.
+        $this->assertSame(15.0, $row->net);
+        $this->assertSame(0.6, round($row->tax, 2));
+        $this->assertSame(15.6, round($row->gross, 2));
+
         // Escludendo i partner, deve restare solo la quantita' del cliente.
         $customerOnly = app(DailySummaryService::class)->build(Carbon::today(), false);
         $this->assertSame(10.0, $customerOnly->first()->quantity);

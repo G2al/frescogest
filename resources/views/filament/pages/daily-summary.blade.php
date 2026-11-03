@@ -40,54 +40,60 @@
             <article class="business-report-card is-green">
                 <span class="business-report-card-icon"><x-heroicon-o-banknotes /></span>
                 <div class="business-report-card-copy">
-                    <span class="business-report-card-label">Totale netto</span>
+                    <span class="business-report-card-label">Costo netto totale</span>
                     <strong class="business-report-card-value">{{ $money($totals['net']) }}</strong>
-                    <span class="business-report-card-description">Somma di tutte le righe</span>
+                    <span class="business-report-card-description">Quanto hai speso, somma di tutte le righe</span>
                 </div>
             </article>
             <article class="business-report-card is-violet">
                 <span class="business-report-card-icon"><x-heroicon-o-receipt-percent /></span>
                 <div class="business-report-card-copy">
-                    <span class="business-report-card-label">Totale IVA inclusa</span>
+                    <span class="business-report-card-label">Costo IVA inclusa</span>
                     <strong class="business-report-card-value">{{ $money($totals['gross']) }}</strong>
-                    <span class="business-report-card-description">IVA: {{ $money($totals['tax']) }}</span>
+                    <span class="business-report-card-description">IVA sugli acquisti: {{ $money($totals['tax']) }}</span>
                 </div>
             </article>
         </section>
 
         <div class="business-report-grid">
-            <section class="business-report-section is-wide is-product">
-                <header class="business-report-section-heading">
+            <section class="business-report-section is-wide is-product" x-data="{ open: false }">
+                <button type="button" class="business-report-section-heading is-toggle" x-on:click="open = ! open" x-bind:aria-expanded="open">
                     <span class="business-report-section-icon"><x-heroicon-o-clipboard-document-list /></span>
-                    <div><h2>Elenco complessivo del giorno</h2><p>Quantità totale da preparare per ogni prodotto.</p></div>
-                </header>
-                <div class="business-report-table-wrap">
-                    <table class="business-report-table">
-                        <thead>
-                            <tr>
-                                <th>Prodotto</th>
-                                <th class="is-number">Quantità totale</th>
-                                <th class="is-number">Netto</th>
-                                <th class="is-number">IVA</th>
-                                <th class="is-number">Totale</th>
-                                <th>Origine</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($rows as $row)
+                    <span class="business-report-section-heading-text">
+                        <h2>Elenco complessivo del giorno</h2>
+                        <p>Quantità totale da preparare e costo di acquisto per ogni prodotto. Clicca per aprire.</p>
+                    </span>
+                    <x-heroicon-m-chevron-down class="business-report-section-toggle-icon" x-bind:class="{ 'is-open': open }" />
+                </button>
+                <div x-show="open" x-collapse x-cloak>
+                    <div class="business-report-table-wrap">
+                        <table class="business-report-table">
+                            <thead>
                                 <tr>
-                                    <td class="is-name">{{ $row->name }}</td>
-                                    <td class="is-number">{{ $quantity($row->quantity) }} {{ $row->symbol }}</td>
-                                    <td class="is-number">{{ $money($row->net) }}</td>
-                                    <td class="is-number">{{ $money($row->tax) }}</td>
-                                    <td class="is-number"><strong>{{ $money($row->gross) }}</strong></td>
-                                    <td>{{ implode(' + ', $row->sources) }}</td>
+                                    <th>Prodotto</th>
+                                    <th class="is-number">Quantità totale</th>
+                                    <th class="is-number">Costo netto</th>
+                                    <th class="is-number">IVA</th>
+                                    <th class="is-number">Costo totale</th>
+                                    <th>Origine</th>
                                 </tr>
-                            @empty
-                                <tr><td colspan="6" class="business-report-empty">Nessuna bolla in questo giorno.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse ($rows as $row)
+                                    <tr>
+                                        <td class="is-name">{{ $row->name }}</td>
+                                        <td class="is-number">{{ $quantity($row->quantity) }} {{ $row->symbol }}</td>
+                                        <td class="is-number">{{ $money($row->net) }}</td>
+                                        <td class="is-number">{{ $money($row->tax) }}</td>
+                                        <td class="is-number"><strong>{{ $money($row->gross) }}</strong></td>
+                                        <td>{{ implode(' + ', $row->sources) }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="6" class="business-report-empty">Nessuna bolla in questo giorno.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </div>
