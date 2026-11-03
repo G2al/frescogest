@@ -35,7 +35,7 @@
             <div class="business-report-period">
                 <label for="partner-report-date">Data di riferimento</label>
                 <input id="partner-report-date" type="date" wire:model.live="referenceDate">
-                <span class="business-report-loading">{{ $this->periodLabel() }}</span>
+                <span class="business-report-period-caption">{{ $this->periodLabel() }}</span>
             </div>
         </section>
 
@@ -73,28 +73,34 @@
         </section>
 
         <div class="business-report-grid">
-            <section class="business-report-section is-wide is-product">
-                <header class="business-report-section-heading">
+            <section class="business-report-section is-wide is-product" x-data="{ open: false }">
+                <button type="button" class="business-report-section-heading is-toggle" x-on:click="open = ! open" x-bind:aria-expanded="open">
                     <span class="business-report-section-icon"><x-heroicon-o-cube /></span>
-                    <div><h2>Merce caricata per prodotto</h2><p>Valore effettivamente fornito da Antonio ad Angela.</p></div>
-                </header>
-                <div class="business-report-table-wrap">
-                    <table class="business-report-table">
-                        <thead><tr><th>Prodotto</th><th class="is-number">Quantità</th><th class="is-number">Netto</th><th class="is-number">IVA</th><th class="is-number">Totale</th></tr></thead>
-                        <tbody>
-                            @forelse ($report['products'] as $row)
-                                <tr>
-                                    <td class="is-name">{{ $row->name }}</td>
-                                    <td class="is-number">{{ rtrim(rtrim(number_format($row->quantity, 3, ',', '.'), '0'), ',') }} {{ $row->symbol }}</td>
-                                    <td class="is-number">{{ $money($row->net) }}</td>
-                                    <td class="is-number">{{ $money($row->tax) }}</td>
-                                    <td class="is-number"><strong>{{ $money($row->gross) }}</strong></td>
-                                </tr>
-                            @empty
-                                <tr><td colspan="5" class="business-report-empty">Nessun carico nel periodo.</td></tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                    <span class="business-report-section-heading-text">
+                        <h2>Merce caricata per prodotto</h2>
+                        <p>Valore effettivamente fornito da Antonio ad Angela. Clicca per aprire.</p>
+                    </span>
+                    <x-heroicon-m-chevron-down class="business-report-section-toggle-icon" x-bind:class="{ 'is-open': open }" />
+                </button>
+                <div x-show="open" x-collapse x-cloak>
+                    <div class="business-report-table-wrap">
+                        <table class="business-report-table">
+                            <thead><tr><th>Prodotto</th><th class="is-number">Quantità</th><th class="is-number">Netto</th><th class="is-number">IVA</th><th class="is-number">Totale</th></tr></thead>
+                            <tbody>
+                                @forelse ($report['products'] as $row)
+                                    <tr>
+                                        <td class="is-name">{{ $row->name }}</td>
+                                        <td class="is-number">{{ rtrim(rtrim(number_format($row->quantity, 3, ',', '.'), '0'), ',') }} {{ $row->symbol }}</td>
+                                        <td class="is-number">{{ $money($row->net) }}</td>
+                                        <td class="is-number">{{ $money($row->tax) }}</td>
+                                        <td class="is-number"><strong>{{ $money($row->gross) }}</strong></td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="5" class="business-report-empty">Nessun carico nel periodo.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -103,22 +109,28 @@
                 ['Scarti giornalieri', $report['wastes'], 'waste_date', 'amount', 'is-waste'],
                 ['Spese', $report['expenses'], 'expense_date', 'amount', 'is-expenses'],
             ] as [$title, $rows, $dateField, $amountField, $tone])
-                <section class="business-report-section {{ $tone }}">
-                    <header class="business-report-section-heading">
+                <section class="business-report-section {{ $tone }}" x-data="{ open: false }">
+                    <button type="button" class="business-report-section-heading is-toggle" x-on:click="open = ! open" x-bind:aria-expanded="open">
                         <span class="business-report-section-icon"><x-heroicon-o-calendar-days /></span>
-                        <div><h2>{{ $title }}</h2><p>Movimenti inseriti nel periodo.</p></div>
-                    </header>
-                    <div class="business-report-table-wrap">
-                        <table class="business-report-table">
-                            <thead><tr><th>Data</th><th class="is-number">Importo</th></tr></thead>
-                            <tbody>
-                                @forelse ($rows as $row)
-                                    <tr><td class="is-name">{{ $row->{$dateField}->format('d/m/Y') }}</td><td class="is-number"><strong>{{ $money($row->{$amountField}) }}</strong></td></tr>
-                                @empty
-                                    <tr><td colspan="2" class="business-report-empty">Nessun movimento.</td></tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                        <span class="business-report-section-heading-text">
+                            <h2>{{ $title }}</h2>
+                            <p>Movimenti inseriti nel periodo. Clicca per aprire.</p>
+                        </span>
+                        <x-heroicon-m-chevron-down class="business-report-section-toggle-icon" x-bind:class="{ 'is-open': open }" />
+                    </button>
+                    <div x-show="open" x-collapse x-cloak>
+                        <div class="business-report-table-wrap">
+                            <table class="business-report-table">
+                                <thead><tr><th>Data</th><th class="is-number">Importo</th></tr></thead>
+                                <tbody>
+                                    @forelse ($rows as $row)
+                                        <tr><td class="is-name">{{ $row->{$dateField}->format('d/m/Y') }}</td><td class="is-number"><strong>{{ $money($row->{$amountField}) }}</strong></td></tr>
+                                    @empty
+                                        <tr><td colspan="2" class="business-report-empty">Nessun movimento.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </section>
             @endforeach

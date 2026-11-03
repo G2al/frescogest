@@ -282,7 +282,8 @@
 
 .business-report-select {
     position: relative;
-    min-width: 13rem;
+    width: 100%;
+    min-width: 0;
 }
 
 .business-report-select-trigger {
@@ -381,6 +382,21 @@
     color: var(--br-primary);
     font-size: .72rem;
     font-weight: 700;
+}
+
+/* A differenza di .business-report-loading (testo transitorio durante un
+   aggiornamento, nascosto di norma), questa è una didascalia sempre visibile
+   (es. l'intervallo di date risolto). Va "fuori" dal flusso cosi il riquadro
+   ha la stessa altezza degli altri campi del filtro, invece di allungarsi. */
+.business-report-period-caption {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: .3rem;
+    color: var(--br-primary);
+    font-size: .72rem;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .business-report-cards {
