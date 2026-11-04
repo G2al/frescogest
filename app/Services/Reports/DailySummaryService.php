@@ -2,6 +2,7 @@
 
 namespace App\Services\Reports;
 
+use App\Models\DailySummaryOverride;
 use App\Models\OrderItem;
 use App\Models\PartnerGoodsEntry;
 use Carbon\CarbonInterface;
@@ -62,9 +63,42 @@ class DailySummaryService
                 });
         }
 
+        $this->applyOverrides($rows, $date);
+
         return $rows
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
+    }
+
+    /**
+     * Sovrascrive (replace, non somma) le righe calcolate con le eventuali
+     * correzioni manuali di Antonio per quel giorno, e aggiunge come righe a
+     * parte le correzioni per prodotti non presenti in nessuna bolla del giorno.
+     * Le bolle/ordini/carichi partner non vengono mai modificati da qui.
+     *
+     * @param  Collection<int|string, object>  $rows
+     */
+    private function applyOverrides(Collection $rows, CarbonInterface $date): void
+    {
+        DailySummaryOverride::query()
+            ->whereDate('date', $date->toDateString())
+            ->get()
+            ->each(function (DailySummaryOverride $override) use ($rows): void {
+                $key = $override->product_id ?? 'name:'.$override->name;
+
+                $rows->put($key, (object) [
+                    'override_id' => $override->id,
+                    'product_id' => $override->product_id,
+                    'name' => $override->name,
+                    'symbol' => $override->symbol,
+                    'quantity' => (float) $override->quantity,
+                    'net' => (float) $override->net,
+                    'tax' => (float) $override->tax,
+                    'gross' => (float) $override->gross,
+                    'sources' => ['Modificato manualmente'],
+                    'is_manual' => true,
+                ]);
+            });
     }
 
     /**

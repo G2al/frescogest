@@ -76,20 +76,44 @@
                                     <th class="is-number">IVA</th>
                                     <th class="is-number">Costo totale</th>
                                     <th>Origine</th>
+                                    <th></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($rows as $row)
-                                    <tr>
+                                    @php $isManual = $row->is_manual ?? false; @endphp
+                                    <tr @class(['is-manual-override' => $isManual])>
                                         <td class="is-name">{{ $row->name }}</td>
                                         <td class="is-number">{{ $quantity($row->quantity) }} {{ $row->symbol }}</td>
                                         <td class="is-number">{{ $money($row->net) }}</td>
                                         <td class="is-number">{{ $money($row->tax) }}</td>
                                         <td class="is-number"><strong>{{ $money($row->gross) }}</strong></td>
-                                        <td>{{ implode(' + ', $row->sources) }}</td>
+                                        <td>
+                                            @if ($isManual)
+                                                <span class="business-report-badge is-manual">Modificato manualmente</span>
+                                            @else
+                                                {{ implode(' + ', $row->sources) }}
+                                            @endif
+                                        </td>
+                                        <td class="is-actions">
+                                            @if ($row->product_id)
+                                                <button type="button" class="business-report-link-action"
+                                                    wire:click="mountAction('editRow', {{ json_encode([
+                                                        'productId' => $row->product_id,
+                                                        'quantity' => $row->quantity,
+                                                        'net' => $row->net,
+                                                        'tax' => $row->tax,
+                                                        'gross' => $row->gross,
+                                                    ]) }})">Modifica</button>
+                                            @endif
+                                            @if ($isManual)
+                                                <button type="button" class="business-report-link-action is-danger"
+                                                    wire:click="mountAction('deleteOverride', {{ json_encode(['overrideId' => $row->override_id]) }})">Annulla</button>
+                                            @endif
+                                        </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="business-report-empty">Nessuna bolla in questo giorno.</td></tr>
+                                    <tr><td colspan="7" class="business-report-empty">Nessuna bolla in questo giorno.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

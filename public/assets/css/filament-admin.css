@@ -849,6 +849,53 @@
     text-align: center;
 }
 
+.business-report-badge.is-manual {
+    display: inline-flex;
+    padding: .25rem .55rem;
+    border-radius: 999px;
+    color: #a3450a;
+    background: #fdecd8;
+    font-size: .68rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+tr.is-manual-override td {
+    background: #fff8f0;
+}
+
+.business-report-table .is-actions {
+    white-space: nowrap;
+    text-align: right;
+}
+
+.business-report-link-action {
+    background: none;
+    border: 0;
+    padding: 0;
+    margin-left: .6rem;
+    color: #07845f;
+    font-size: .76rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.business-report-link-action:first-child {
+    margin-left: 0;
+}
+
+.business-report-link-action:hover {
+    text-decoration: underline;
+}
+
+.business-report-link-action.is-danger {
+    color: #b02a2a;
+}
+
+.dark tr.is-manual-override td {
+    background: rgba(216, 131, 17, .12);
+}
+
 .dark .business-report {
     --br-primary-soft: rgba(16, 185, 129, .13);
     --br-blue-soft: rgba(37, 131, 219, .13);
