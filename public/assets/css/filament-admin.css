@@ -1126,6 +1126,11 @@ tr.is-manual-override td {
     .business-report-section {
         grid-column: 1 / -1;
     }
+
+    .business-report-period input,
+    .business-report-period select {
+        min-width: 0;
+    }
 }
 
 @media (max-width: 640px) {
