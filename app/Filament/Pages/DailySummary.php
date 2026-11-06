@@ -56,6 +56,7 @@ class DailySummary extends Page
     {
         return [
             'quantity' => 'Quantità totale',
+            'unit_price' => 'Prezzo unitario',
             'net' => 'Costo netto',
             'tax' => 'IVA',
             'gross' => 'Costo totale',

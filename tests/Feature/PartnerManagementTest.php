@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Enums\CustomerType;
 use App\Enums\OrderStatus;
 use App\Filament\Pages\BusinessReports;
+use App\Filament\Pages\PartnerReports;
+use App\Filament\Partner\Pages\Dashboard as PartnerDashboard;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\DeliveryDocument;
@@ -27,6 +29,7 @@ use App\Services\Partners\PartnerReportService;
 use Filament\Panel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class PartnerManagementTest extends TestCase
@@ -446,6 +449,63 @@ class PartnerManagementTest extends TestCase
         $this->actingAs($partnerUser, 'admin')
             ->get(route('admin.delivery-documents.show', $document))
             ->assertForbidden();
+    }
+
+    public function test_partner_reports_can_be_grouped_by_a_single_day(): void
+    {
+        $admin = User::factory()->create(['active' => true, 'can_access_panel' => true]);
+        [$partner, $product] = $this->partnerAndProduct();
+        PartnerGoodsEntry::create([
+            'partner_id' => $partner->id,
+            'product_id' => $product->id,
+            'delivered_on' => now()->toDateString(),
+            'quantity' => 5,
+            'unit_purchase_price_net' => 1,
+        ]);
+
+        $this->actingAs($admin, 'admin');
+
+        Livewire::test(PartnerReports::class)
+            ->set('partnerId', $partner->id)
+            ->set('period', 'day')
+            ->set('referenceDate', now()->toDateString())
+            ->assertOk();
+    }
+
+    public function test_partner_dashboard_can_be_grouped_by_a_single_day(): void
+    {
+        $partnerUser = User::factory()->create([
+            'active' => true,
+            'can_access_panel' => true,
+            'panel_role' => 'partner',
+        ]);
+        $partner = Partner::create(['user_id' => $partnerUser->id, 'name' => 'Angela', 'active' => true]);
+        $category = ProductCategory::create(['name' => 'Frutta', 'active' => true]);
+        $taxRate = TaxRate::create(['name' => 'IVA 4%', 'percentage' => 4, 'active' => true]);
+        $unit = UnitOfMeasure::create(['name' => 'Chilogrammi', 'symbol' => 'kg', 'active' => true]);
+        $product = Product::create([
+            'product_category_id' => $category->id,
+            'tax_rate_id' => $taxRate->id,
+            'default_unit_of_measure_id' => $unit->id,
+            'name' => 'Mele',
+            'purchase_cost_per_unit' => 1,
+            'markup_percentage' => 100,
+            'active' => true,
+        ]);
+        PartnerGoodsEntry::create([
+            'partner_id' => $partner->id,
+            'product_id' => $product->id,
+            'delivered_on' => now()->toDateString(),
+            'quantity' => 5,
+            'unit_purchase_price_net' => 1,
+        ]);
+
+        $this->actingAs($partnerUser, 'admin');
+
+        Livewire::test(PartnerDashboard::class)
+            ->set('period', 'day')
+            ->set('referenceDate', now()->toDateString())
+            ->assertOk();
     }
 
     private function partnerAndProduct(): array

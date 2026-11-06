@@ -28,6 +28,7 @@
             <div class="business-report-period">
                 <label for="partner-report-period">Raggruppamento</label>
                 <select id="partner-report-period" wire:model.live="period">
+                    <option value="day">Giorno</option>
                     <option value="week">Settimana</option>
                     <option value="month">Mese</option>
                 </select>

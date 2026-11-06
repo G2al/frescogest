@@ -72,6 +72,7 @@
                                 <tr>
                                     <th>Prodotto</th>
                                     <th class="is-number">Quantità totale</th>
+                                    <th class="is-number">Prezzo unitario</th>
                                     <th class="is-number">Costo netto</th>
                                     <th class="is-number">IVA</th>
                                     <th class="is-number">Costo totale</th>
@@ -85,6 +86,7 @@
                                     <tr @class(['is-manual-override' => $isManual])>
                                         <td class="is-name">{{ $row->name }}</td>
                                         <td class="is-number">{{ $quantity($row->quantity) }} {{ $row->symbol }}</td>
+                                        <td class="is-number">{{ $row->quantity > 0 ? $money($row->net / $row->quantity).' / '.$row->symbol : '—' }}</td>
                                         <td class="is-number">{{ $money($row->net) }}</td>
                                         <td class="is-number">{{ $money($row->tax) }}</td>
                                         <td class="is-number"><strong>{{ $money($row->gross) }}</strong></td>
@@ -113,7 +115,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="7" class="business-report-empty">Nessuna bolla in questo giorno.</td></tr>
+                                    <tr><td colspan="8" class="business-report-empty">Nessuna bolla in questo giorno.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>

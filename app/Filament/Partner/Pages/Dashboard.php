@@ -44,9 +44,11 @@ class Dashboard extends Page
     public function trends(): array
     {
         [$from, $to] = $this->range();
-        [$previousFrom, $previousTo] = $this->period === 'week'
-            ? [$from->subWeek(), $to->subWeek()]
-            : [$from->subMonthNoOverflow()->startOfMonth(), $from->subMonthNoOverflow()->endOfMonth()];
+        [$previousFrom, $previousTo] = match ($this->period) {
+            'day' => [$from->subDay(), $to->subDay()],
+            'week' => [$from->subWeek(), $to->subWeek()],
+            default => [$from->subMonthNoOverflow()->startOfMonth(), $from->subMonthNoOverflow()->endOfMonth()],
+        };
         $service = app(PartnerReportService::class);
         $partner = static::currentPartner();
         $current = $service->build($partner, $from, $to)['summary'];
@@ -69,8 +71,10 @@ class Dashboard extends Page
     {
         $date = CarbonImmutable::parse($this->referenceDate ?: now()->toDateString());
 
-        return $this->period === 'week'
-            ? [$date->startOfWeek(), $date->endOfWeek()]
-            : [$date->startOfMonth(), $date->endOfMonth()];
+        return match ($this->period) {
+            'day' => [$date->startOfDay(), $date->endOfDay()],
+            'week' => [$date->startOfWeek(), $date->endOfWeek()],
+            default => [$date->startOfMonth(), $date->endOfMonth()],
+        };
     }
 }

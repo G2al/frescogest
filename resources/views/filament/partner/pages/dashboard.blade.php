@@ -15,6 +15,7 @@
             <div class="business-report-period">
                 <label for="partner-period">Periodo</label>
                 <select id="partner-period" wire:model.live="period">
+                    <option value="day">Giorno</option>
                     <option value="week">Settimana</option>
                     <option value="month">Mese</option>
                 </select>
